@@ -1,5 +1,8 @@
 # Promenade
 
+[![Build Status](https://travis-ci.org/errm/promenade.svg?branch=master)](https://travis-ci.org/errm/promenade)
+[![Gem Version](https://badge.fury.io/rb/promenade.svg)](https://badge.fury.io/rb/promenade)
+
 Promenade is a libary to simplify instrumenting Ruby applications with prometheus.
 
 It is currently under development.
