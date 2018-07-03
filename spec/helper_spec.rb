@@ -247,5 +247,16 @@ RSpec.describe Promenade::Helper do
         )
       end
     end
+
+    context "invalid bucket preset" do
+      it "throws an error" do
+        expect do
+          klass.histogram :promenade_testing_oven_temperature do
+            doc "Temperature of the oven in degrees science (Celsius)"
+            buckets :gas_oven
+          end
+        end.to raise_error "gas_oven is not a valid bucket preset"
+      end
+    end
   end
 end
