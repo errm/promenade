@@ -5,7 +5,7 @@ module Promenade
     extend ActiveSupport::Concern
 
     class_methods do
-      %i[gauge counter summary histogram].each do |type|
+      %i(gauge counter summary histogram).each do |type|
         define_method type do |*args, &block|
           Promenade::Prometheus.define_metric(type, *args, &block)
         end

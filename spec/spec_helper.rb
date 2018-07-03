@@ -1,4 +1,4 @@
-require 'simplecov'
+require "simplecov"
 SimpleCov.minimum_coverage 100
 SimpleCov.start
 
@@ -13,6 +13,7 @@ RSpec.configure do |config|
   config.disable_monkey_patching!
 
   config.before(:each) do
+    Promenade::Prometheus.reset! if Promenade.const_defined? :Prometheus
     allow(Prometheus::Client.configuration).to receive(:value_class).and_return(Prometheus::Client::SimpleValue)
   end
 

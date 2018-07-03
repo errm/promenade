@@ -9,10 +9,6 @@ RSpec.describe Promenade::Helper do
 
   subject { klass.new }
 
-  before(:each) do
-    Promenade::Prometheus.reset!
-  end
-
   describe "defining and using a counter" do
     describe "defaults" do
       before do
@@ -25,7 +21,7 @@ RSpec.describe Promenade::Helper do
         subject.metric(:promenade_testing_counter).increment
         expect(subject.metric(:promenade_testing_counter).get).to eq 1
 
-        10.times { subject.metric(:promenade_testing_counter).increment}
+        10.times { subject.metric(:promenade_testing_counter).increment }
         expect(subject.metric(:promenade_testing_counter).get).to eq 11
 
         subject.metric(:promenade_testing_counter).increment({}, 9)
@@ -189,17 +185,17 @@ RSpec.describe Promenade::Helper do
       it "can observe" do
         subject.metric(:promenade_testing_histogram).observe({}, 0.5)
         expect(subject.metric(:promenade_testing_histogram).get).to eq(
-          0.005=>0.0,
-          0.01=>0.0,
-          0.025=>0.0,
-          0.05=>0.0,
-          0.1=>0.0,
-          0.25=>0.0,
-          0.5=>1.0,
-          1=>1.0,
-          2.5=>1.0,
-          5=>1.0,
-          10=>1.0
+          0.005 => 0.0,
+          0.01 => 0.0,
+          0.025 => 0.0,
+          0.05 => 0.0,
+          0.1 => 0.0,
+          0.25 => 0.0,
+          0.5 => 1.0,
+          1 => 1.0,
+          2.5 => 1.0,
+          5 => 1.0,
+          10 => 1.0
         )
       end
     end
@@ -215,9 +211,9 @@ RSpec.describe Promenade::Helper do
       it "can observe" do
         subject.metric(:promenade_testing_histogram).observe({}, 0.5)
         expect(subject.metric(:promenade_testing_histogram).get).to eq(
-          0.25=>0.0,
-          0.5=>1.0,
-          1.0=>1.0,
+          0.25 => 0.0,
+          0.5 => 1.0,
+          1.0 => 1.0
         )
       end
     end
@@ -233,17 +229,17 @@ RSpec.describe Promenade::Helper do
       it "can observe" do
         subject.metric(:promenade_testing_histogram).observe({}, 0.5)
         expect(subject.metric(:promenade_testing_histogram).get).to eq(
-          0.005=>0.0,
-          0.01=>0.0,
-          0.025=>0.0,
-          0.05=>0.0,
-          0.1=>0.0,
-          0.25=>0.0,
-          0.5=>1.0,
-          1=>1.0,
-          2.5=>1.0,
-          5=>1.0,
-          10=>1.0
+          0.005 => 0.0,
+          0.01 => 0.0,
+          0.025 => 0.0,
+          0.05 => 0.0,
+          0.1 => 0.0,
+          0.25 => 0.0,
+          0.5 => 1.0,
+          1 => 1.0,
+          2.5 => 1.0,
+          5 => 1.0,
+          10 => 1.0
         )
       end
     end
