@@ -132,6 +132,52 @@ RSpec.describe Promenade::Helper do
     end
   end
 
+  describe "defining and using a summary" do
+    context "defaults" do
+      before do
+        klass.summary :promenade_testing_summary do
+          doc "This is a summary to use in the tests"
+        end
+      end
+
+      it "can observe" do
+        subject.metric(:promenade_testing_summary).observe({}, 7)
+        expect(subject.metric(:promenade_testing_summary).get).to eq 7.0
+
+        subject.metric(:promenade_testing_summary).observe({}, 11)
+        expect(subject.metric(:promenade_testing_summary).get).to eq 18.0
+      end
+
+      it "can observe from the class" do
+        klass.metric(:promenade_testing_summary).observe({}, 21)
+        expect(subject.metric(:promenade_testing_summary).get).to eq 21
+      end
+
+      it "throws an error when trying to redefine a summary" do
+        expect do
+          klass.gauge :promenade_testing_summary
+        end.to raise_error "Metric: promenade_testing_summary, is allready defined"
+      end
+    end
+
+    context "setting some options" do
+      before do
+        klass.summary :promenade_testing_summary do
+          doc "some other docstring"
+          base_labels all_your_base: "isbelongtous"
+        end
+      end
+
+      it "sets the base_labels" do
+        expect(subject.metric(:promenade_testing_summary).base_labels).to eq(all_your_base: "isbelongtous")
+      end
+
+      it "sets the docstring" do
+        expect(subject.metric(:promenade_testing_summary).docstring).to eq "some other docstring"
+      end
+    end
+  end
+
   describe "defining and using a histogram" do
     context "defaults" do
       before do
