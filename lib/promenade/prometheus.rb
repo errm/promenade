@@ -25,16 +25,16 @@ module Promenade
     end
 
     def self.registry
-      @_registry ||= begin
-                       REGISTRY_MUTEX.synchronize do
-                         ::Prometheus::Client.registry
-                       end
-                     end
+      REGISTRY_MUTEX.synchronize do
+        @_registry ||= ::Prometheus::Client.registry
+      end
     end
 
     def self.reset!
-      @_registry = nil
-      ::Prometheus::Client.reset!
+      REGISTRY_MUTEX.synchronize do
+        @_registry = nil
+        ::Prometheus::Client.reset!
+      end
     end
   end
 
