@@ -279,4 +279,21 @@ RSpec.describe Promenade::Kafka do
       end
     end
   end
+
+  describe "fetcher" do
+    describe "loop" do
+      before do
+        backend.instrument(
+          "loop.fetcher.kafka",
+          client_id: client_id,
+          group_id: "fetcher_group",
+          queue_size: 17,
+        )
+      end
+
+      it "gauges the queue size" do
+        expect(metric(:kafka_fetcher_queue_size).get(client: client_id, group: "fetcher_group")).to eq 17
+      end
+    end
+  end
 end
