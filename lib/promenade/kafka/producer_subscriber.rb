@@ -18,6 +18,10 @@ module Promenade
         doc "The current size of the Kafka producer buffer, in messages"
       end
 
+      gauge :kafka_producer_max_buffer_size do
+        doc "The max size of the Kafka producer buffer"
+      end
+
       gauge :kafka_producer_buffer_fill_ratio do
         doc "The current ratio of Kafka producer buffer in use"
       end
@@ -67,6 +71,7 @@ module Promenade
         metric(:kafka_producer_messages).increment(labels)
         metric(:kafka_producer_message_size).observe(labels, message_size)
         metric(:kafka_producer_buffer_size).set(labels.slice(:client), buffer_size)
+        metric(:kafka_producer_max_buffer_size).set(labels.slice(:client), max_buffer_size)
         metric(:kafka_producer_buffer_fill_ratio).set(labels.slice(:client), buffer_fill_ratio)
       end
 
