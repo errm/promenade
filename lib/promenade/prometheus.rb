@@ -30,13 +30,6 @@ module Promenade
       end
     end
 
-    def self.reset!
-      REGISTRY_MUTEX.synchronize do
-        @_registry = nil
-        ::Prometheus::Client.reset!
-      end
-    end
-
     class Options
       BUCKET_PRESETS = {
         network: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10].freeze,

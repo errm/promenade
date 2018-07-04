@@ -195,7 +195,7 @@ RSpec.describe Promenade::Helper do
           1 => 1.0,
           2.5 => 1.0,
           5 => 1.0,
-          10 => 1.0
+          10 => 1.0,
         )
       end
     end
@@ -213,7 +213,7 @@ RSpec.describe Promenade::Helper do
         expect(subject.metric(:promenade_testing_histogram).get).to eq(
           0.25 => 0.0,
           0.5 => 1.0,
-          1.0 => 1.0
+          1.0 => 1.0,
         )
       end
     end
@@ -239,7 +239,7 @@ RSpec.describe Promenade::Helper do
           1 => 1.0,
           2.5 => 1.0,
           5 => 1.0,
-          10 => 1.0
+          10 => 1.0,
         )
       end
     end

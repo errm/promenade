@@ -12,12 +12,33 @@ RSpec.configure do |config|
   # Disable RSpec exposing methods globally on `Module` and `main`
   config.disable_monkey_patching!
 
-  config.before(:each) do
-    Promenade::Prometheus.reset! if Promenade.const_defined? :Prometheus
+  config.before(:each) do |_example|
+    ::Prometheus::Client.registry.reset!
     allow(Prometheus::Client.configuration).to receive(:value_class).and_return(Prometheus::Client::SimpleValue)
   end
 
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+end
+
+module Prometheus
+  module Client
+    class Registry
+      def reset!
+        @metrics.each do |key, metric|
+          if key.to_s.match?(/promenade_testing_.*/)
+            @metrics.delete(key)
+          end
+          metric.reset!
+        end
+      end
+    end
+
+    class Metric
+      def reset!
+        @values = Hash.new { |hash, key| hash[key] = default(key) }
+      end
+    end
   end
 end
