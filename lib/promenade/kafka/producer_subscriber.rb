@@ -11,7 +11,7 @@ module Promenade
 
       histogram :kafka_producer_message_size do
         doc "Historgram of message sizes written to Kafka producer"
-        buckets((0..10).map { |i| 128 * 2**i })
+        buckets :memory
       end
 
       gauge :kafka_producer_buffer_size do

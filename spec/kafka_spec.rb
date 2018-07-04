@@ -225,4 +225,58 @@ RSpec.describe Promenade::Kafka do
       end
     end
   end
+
+  describe "connection" do
+    let(:api) { "an_api" }
+    let(:host) { "my-awesome-broker.aws.om" }
+    let(:labels) { { client: client_id, api: api, broker: host } }
+
+    describe "request" do
+      context "happy path" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.5)
+
+          size = 128
+          11.times do
+            backend.instrument(
+              "request.connection.kafka",
+              client_id: client_id,
+              api: api,
+              broker_host: host,
+              request_size: size,
+              response_size: size,
+            )
+
+            size *= 2
+          end
+        end
+
+        it "counts the calls" do
+          expect(metric(:kafka_connection_calls).get(labels)).to eq 11
+        end
+
+        it "mesures the connection latency" do
+          expect(metric(:kafka_connection_latency).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 0.0,
+            0.5 => 11.0,
+            1 => 11.0,
+            2.5 => 11.0,
+            5 => 11.0,
+            10 => 11.0,
+          )
+        end
+
+        it "records the request and response size" do
+          # TODO: summary metrics have count + sum, but I can't work out how to access the count
+          expect(metric(:kafka_connection_response_size).get(labels)).to eq 262016
+          expect(metric(:kafka_connection_response_size).get(labels)).to eq 262016
+        end
+      end
+    end
+  end
 end
