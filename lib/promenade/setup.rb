@@ -3,7 +3,7 @@ require "prometheus/client/support/unicorn"
 
 module Promenade
   def self.root_dir
-    defined? Rails ? Rails.root : Dir.pwd
+    defined?(Rails) ? Rails.root : Dir.pwd
   end
 
   def self.multiprocess_files_dir
