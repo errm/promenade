@@ -37,7 +37,7 @@ RSpec.describe Promenade::Kafka do
         expect(metric(:kafka_producer_messages).get(labels)).to eq 10
       end
 
-      it "has a historgram of message size" do
+      it "has a histogram of message size" do
         expect(metric(:kafka_producer_message_size).get(labels)).to eq(
           128 => 1.0,
           256 => 2.0,
@@ -293,6 +293,422 @@ RSpec.describe Promenade::Kafka do
 
       it "gauges the queue size" do
         expect(metric(:kafka_fetcher_queue_size).get(client: client_id, group: "fetcher_group")).to eq 17
+      end
+    end
+  end
+
+  describe "consumer" do
+    let(:labels) do
+      { client: client_id, group: "test_group", topic: topic, partition: 6 }
+    end
+
+    describe "process_message" do
+      describe "happy_path" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.5)
+          backend.instrument(
+            "process_message.consumer.kafka",
+            client_id: client_id,
+            group_id: "test_group",
+            topic: topic,
+            partition: 6,
+            offset_lag: 5,
+            create_time: (Time.now.utc - 5),
+          )
+        end
+
+        it "exposes the time lag between processing and now" do
+          expect(metric(:kafka_consumer_time_lag).get(labels)).to eq 5000
+        end
+
+        it "exposes the ofest lag" do
+          expect(metric(:kafka_consumer_ofset_lag).get(labels)).to eq 5
+        end
+
+        it "records a histogram of consumer timing" do
+          expect(metric(:kafka_consumer_message_processing_latency).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 0.0,
+            0.5 => 1.0,
+            1 => 1.0,
+            2.5 => 1.0,
+            5 => 1.0,
+            10 => 1.0,
+          )
+        end
+
+        it "counts the messages processed" do
+          expect(metric(:kafka_consumer_messages_processed).get(labels)).to eq 1
+        end
+      end
+
+      describe "errors" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.5)
+          5.times do
+            backend.instrument(
+              "process_message.consumer.kafka",
+              client_id: client_id,
+              group_id: "test_group",
+              topic: topic,
+              partition: 6,
+              offset_lag: 5,
+              create_time: (Time.now.utc - 5),
+              exception: "really broken",
+            )
+          end
+        end
+
+        it "counts errors" do
+          expect(metric(:kafka_consumer_message_processing_errors).get(labels)).to eq 5
+        end
+
+        it "does not count processed metrics or record latency" do
+          expect(metric(:kafka_consumer_messages_processed).get(labels)).to eq 0
+          expect(metric(:kafka_consumer_message_processing_latency).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 0.0,
+            0.5 => 0.0,
+            1 => 0.0,
+            2.5 => 0.0,
+            5 => 0.0,
+            10 => 0.0,
+          )
+        end
+
+        it "does record other relevent metrics" do
+          expect(metric(:kafka_consumer_time_lag).get(labels)).to eq 5000
+          expect(metric(:kafka_consumer_ofset_lag).get(labels)).to eq 5
+        end
+      end
+
+      describe "messages without timestamps" do
+        before do
+          backend.instrument(
+            "process_message.consumer.kafka",
+            client_id: client_id,
+            group_id: "test_group",
+            topic: topic,
+            partition: 6,
+            offset_lag: 5,
+            create_time: Time.now.utc - 7,
+          )
+
+          backend.instrument(
+            "process_message.consumer.kafka",
+            client_id: client_id,
+            group_id: "test_group",
+            topic: topic,
+            partition: 6,
+            offset_lag: 5,
+            create_time: nil,
+          )
+        end
+
+        it "doesn't change the time lag" do
+          expect(metric(:kafka_consumer_time_lag).get(labels)).to eq 7000
+        end
+      end
+    end
+
+    describe "process_batch" do
+      describe "happy_path" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(1)
+          backend.instrument(
+            "process_batch.consumer.kafka",
+            client_id: client_id,
+            group_id: "test_group",
+            topic: topic,
+            partition: 6,
+            offset_lag: 200,
+            message_count: 100,
+          )
+        end
+
+        it "counts the messages processed" do
+          expect(metric(:kafka_consumer_messages_processed).get(labels)).to eq 100
+        end
+
+        it "has a histogram of batch latency" do
+          expect(metric(:kafka_consumer_batch_processing_latency).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 0.0,
+            0.5 => 0.0,
+            1 => 1,
+            2.5 => 1,
+            5 => 1,
+            10 => 1,
+          )
+        end
+
+        it "records the ofset lag" do
+          expect(metric(:kafka_consumer_ofset_lag).get(labels)).to eq 200
+        end
+      end
+
+      describe "with an error" do
+        before do
+          backend.instrument(
+            "process_batch.consumer.kafka",
+            client_id: client_id,
+            group_id: "test_group",
+            topic: topic,
+            partition: 6,
+            offset_lag: 200,
+            message_count: 100,
+            exception: "Broken, really broken",
+          )
+        end
+
+        it "counts the error" do
+          expect(metric(:kafka_consumer_batch_processing_errors).get(labels)).to eq 1
+        end
+      end
+    end
+
+    describe "join_group" do
+      let(:labels) do
+        { client: client_id, group: "test_group" }
+      end
+
+      describe "happy_path" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
+          backend.instrument(
+            "join_group.consumer.kafka",
+            client_id: client_id,
+            group_id: "test_group",
+          )
+        end
+
+        it "records a histogram for the time taken" do
+          expect(metric(:kafka_consumer_join_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 1,
+            0.5 => 1,
+            1 => 1,
+            2.5 => 1,
+            5 => 1,
+            10 => 1,
+          )
+        end
+      end
+
+      describe "with error" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
+
+          5.times do
+            backend.instrument(
+              "join_group.consumer.kafka",
+              client_id: client_id,
+              group_id: "test_group",
+              exception: "could not join the group",
+            )
+          end
+        end
+
+        it "records a histogram for the time taken" do
+          expect(metric(:kafka_consumer_join_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 5,
+            0.5 => 5,
+            1 => 5,
+            2.5 => 5,
+            5 => 5,
+            10 => 5,
+          )
+        end
+
+        it "counts the error" do
+          expect(metric(:kafka_consumer_join_group_errors).get(labels)).to eq 5
+        end
+      end
+    end
+
+    describe "sync_group" do
+      let(:labels) do
+        { client: client_id, group: "test_group" }
+      end
+
+      describe "happy_path" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
+          backend.instrument(
+            "sync_group.consumer.kafka",
+            client_id: client_id,
+            group_id: "test_group",
+          )
+        end
+
+        it "records a histogram for the time taken" do
+          expect(metric(:kafka_consumer_sync_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 1,
+            0.5 => 1,
+            1 => 1,
+            2.5 => 1,
+            5 => 1,
+            10 => 1,
+          )
+        end
+      end
+
+      describe "with error" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
+
+          3.times do
+            backend.instrument(
+              "sync_group.consumer.kafka",
+              client_id: client_id,
+              group_id: "test_group",
+              exception: "could not sync the group",
+            )
+          end
+        end
+
+        it "records a histogram for the time taken" do
+          expect(metric(:kafka_consumer_sync_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 3,
+            0.5 => 3,
+            1 => 3,
+            2.5 => 3,
+            5 => 3,
+            10 => 3,
+          )
+        end
+
+        it "counts the error" do
+          expect(metric(:kafka_consumer_sync_group_errors).get(labels)).to eq 3
+        end
+      end
+    end
+
+    describe "leave_group" do
+      let(:labels) do
+        { client: client_id, group: "test_group" }
+      end
+
+      describe "happy_path" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
+          backend.instrument(
+            "leave_group.consumer.kafka",
+            client_id: client_id,
+            group_id: "test_group",
+          )
+        end
+
+        it "records a histogram for the time taken" do
+          expect(metric(:kafka_consumer_leave_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 1,
+            0.5 => 1,
+            1 => 1,
+            2.5 => 1,
+            5 => 1,
+            10 => 1,
+          )
+        end
+      end
+
+      describe "with error" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
+
+          3.times do
+            backend.instrument(
+              "leave_group.consumer.kafka",
+              client_id: client_id,
+              group_id: "test_group",
+              exception: "could not leave the group",
+            )
+          end
+        end
+
+        it "records a histogram for the time taken" do
+          expect(metric(:kafka_consumer_leave_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 3,
+            0.5 => 3,
+            1 => 3,
+            2.5 => 3,
+            5 => 3,
+            10 => 3,
+          )
+        end
+
+        it "counts the error" do
+          expect(metric(:kafka_consumer_leave_group_errors).get(labels)).to eq 3
+        end
+      end
+    end
+
+    describe "pause_status" do
+      before do
+        backend.instrument(
+          "pause_status.consumer.kafka",
+          client_id: client_id,
+          group_id: "test_group",
+          topic: topic,
+          partition: 6,
+          duration: 0.25,
+        )
+      end
+
+      it "records the pause time" do
+        expect(metric(:kafka_consumer_pause_duration).get(labels)).to eq(
+          0.005 => 0.0,
+          0.01 => 0.0,
+          0.025 => 0.0,
+          0.05 => 0.0,
+          0.1 => 0.0,
+          0.25 => 1,
+          0.5 => 1,
+          1 => 1,
+          2.5 => 1,
+          5 => 1,
+          10 => 1,
+        )
       end
     end
   end
