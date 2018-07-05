@@ -1,3 +1,4 @@
+require "promenade"
 require "active_support/concern"
 require "prometheus/client"
 
