@@ -4,6 +4,7 @@ PATH
     promenade (0.1.1)
       activesupport
       prometheus-client-mmap (~> 0.9.3)
+      rack
 
 GEM
   remote: https://rubygems.org/
@@ -27,6 +28,7 @@ GEM
       ast (~> 2.4.0)
     powerpack (0.1.2)
     prometheus-client-mmap (0.9.3)
+    rack (2.0.5)
     rainbow (3.0.0)
     rake (10.5.0)
     rspec (3.7.0)

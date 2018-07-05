@@ -1,5 +1,5 @@
 require "promenade/version"
+require "promenade/setup"
 
 module Promenade
-  # Your code goes here...
 end

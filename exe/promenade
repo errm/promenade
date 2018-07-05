@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require "promenade"
+require "rack"
+require "prometheus/client/rack/exporter"
+
+app = Rack::Builder.app do
+  use Rack::Deflater
+  use ::Prometheus::Client::Rack::Exporter
+  run ->(_env) { [404, {}, ["visit /metrics for metrics"]] }
+end
+
+Rack::Handler::WEBrick.run app, Port: ENV.fetch("PORT", "9394")
