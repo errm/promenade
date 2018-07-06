@@ -6,4 +6,9 @@ RSpec::Core::RakeTask.new(:spec)
 RuboCop::RakeTask.new
 
 task default: %i(spec rubocop)
-task release: :default
+
+task :clean do
+  sh "rm -rf tmp/promenade"
+end
+
+task spec: :clean
