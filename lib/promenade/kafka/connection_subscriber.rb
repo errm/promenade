@@ -22,9 +22,8 @@ module Promenade
         doc "Average size of responses made by kafka"
       end
 
-      histogram :kafka_connection_errors do
+      counter :kafka_connection_errors do
         doc "Count of Kafka connection errors"
-        buckets :memory
       end
 
       def request(event) # rubocop:disable Metrics/AbcSize

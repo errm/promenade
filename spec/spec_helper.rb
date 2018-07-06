@@ -1,3 +1,4 @@
+require "deep_cover/builtin_takeover"
 require "simplecov"
 SimpleCov.minimum_coverage 100
 SimpleCov.start
@@ -5,6 +6,12 @@ SimpleCov.start
 if ENV["CI"]
   require "codecov"
   SimpleCov.formatter = SimpleCov::Formatter::Codecov
+end
+
+module Rails
+  def self.root
+    nil
+  end
 end
 
 require "bundler/setup"

@@ -277,6 +277,31 @@ RSpec.describe Promenade::Kafka do
           expect(metric(:kafka_connection_response_size).get(labels)).to eq 262016
         end
       end
+
+      describe "connection errors" do
+        before do
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.5)
+
+          size = 128
+          11.times do
+            backend.instrument(
+              "request.connection.kafka",
+              client_id: client_id,
+              api: api,
+              broker_host: host,
+              request_size: size,
+              response_size: size,
+              exception: "there was a connection error",
+            )
+
+            size *= 2
+          end
+        end
+
+        it "counts the number of errors" do
+          expect(metric(:kafka_connection_errors).get).to eq 11
+        end
+      end
     end
   end
 

@@ -3,7 +3,7 @@ require "prometheus/client/support/unicorn"
 
 module Promenade
   def self.root_dir
-    defined?(Rails) && Rails.root || Pathname.new(ENV.fetch("RAILS_ROOT", Dir.pwd))
+    Pathname.new(ENV.fetch("RAILS_ROOT", Dir.pwd))
   end
 
   def self.multiprocess_files_dir
@@ -15,9 +15,9 @@ module Promenade
       FileUtils.mkdir_p multiprocess_files_dir
     end
 
-    Prometheus::Client.configure do |config|
+    ::Prometheus::Client.configure do |config|
       config.multiprocess_files_dir = multiprocess_files_dir
-      config.pid_provider = Prometheus::Client::Support::Unicorn.method(:worker_pid_provider)
+      config.pid_provider = ::Prometheus::Client::Support::Unicorn.method(:worker_pid_provider)
     end
   end
 end

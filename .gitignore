@@ -7,6 +7,7 @@
 /spec/reports/
 /tmp/
 .rubocop-https*yml
+.sass-cache/
 
 # rspec failure tracking
 .rspec_status
