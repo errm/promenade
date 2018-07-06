@@ -2,6 +2,11 @@ require "simplecov"
 SimpleCov.minimum_coverage 100
 SimpleCov.start
 
+if ENV["CI"]
+  require "codecov"
+  SimpleCov.formatter = SimpleCov::Formatter::Codecov
+end
+
 require "bundler/setup"
 require "promenade"
 
