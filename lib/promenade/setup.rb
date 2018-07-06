@@ -7,10 +7,14 @@ module Promenade
   end
 
   def self.multiprocess_files_dir
-    ENV.fetch("PROMETHEUS_MULTIPROC_DIR", root_dir.join("tmp", "prometheus"))
+    ENV.fetch("PROMETHEUS_MULTIPROC_DIR", root_dir.join("tmp", "promenade"))
   end
 
   def self.setup
+    unless File.directory? multiprocess_files_dir
+      FileUtils.mkdir_p multiprocess_files_dir
+    end
+
     Prometheus::Client.configure do |config|
       config.multiprocess_files_dir = multiprocess_files_dir
       config.pid_provider = Prometheus::Client::Support::Unicorn.method(:worker_pid_provider)
