@@ -148,6 +148,10 @@ The exporter runs by default on port `9394` and the metrics are avaible at the s
 
 ### Configuration
 
+If you are using rails it should load a railtie and configure promenade.
+
+If are not using rails you should call `Promenade.setup` after your environment has loaded.
+
 In a typical development environment there should be nothing for you to do. Promenade stores its state files in `tmp/promenade` and will create that directory if it does not exist.
 
 In a production environment you should try to store the state files on tmpfs for performance, you can configure the path that promenade will write to by setting the `PROMETHEUS_MULTIPROC_DIR` environment variable.

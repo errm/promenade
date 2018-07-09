@@ -1,5 +1,3 @@
 require "promenade/version"
 require "promenade/setup"
-
-module Promenade
-end
+require "promenade/railtie" if defined? ::Rails::Railtie

@@ -4,6 +4,8 @@ require "promenade"
 require "rack"
 require "prometheus/client/rack/exporter"
 
+Promenade.setup
+
 app = Rack::Builder.app do
   use Rack::Deflater
   use ::Prometheus::Client::Rack::Exporter

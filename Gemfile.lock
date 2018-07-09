@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    promenade (0.1.7)
+    promenade (0.1.8)
       activesupport
       prometheus-client-mmap (~> 0.9.3)
       rack
@@ -18,6 +18,7 @@ GEM
     backports (3.11.3)
     binding_of_caller (0.8.0)
       debug_inspector (>= 0.0.1)
+    climate_control (0.2.0)
     codecov (0.1.10)
       json
       simplecov
@@ -112,6 +113,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.16)
+  climate_control
   codecov
   deep-cover
   promenade!

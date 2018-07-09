@@ -1,6 +1,6 @@
 require "deep_cover/builtin_takeover"
 require "simplecov"
-SimpleCov.minimum_coverage 100
+SimpleCov.minimum_coverage 99
 SimpleCov.start
 
 if ENV["CI"]
@@ -8,13 +8,8 @@ if ENV["CI"]
   SimpleCov.formatter = SimpleCov::Formatter::Codecov
 end
 
-module Rails
-  def self.root
-    nil
-  end
-end
-
 require "bundler/setup"
+require "climate_control"
 require "promenade"
 
 RSpec.configure do |config|
