@@ -1,5 +1,6 @@
 require "prometheus/client"
 require "prometheus/client/support/unicorn"
+require "pathname"
 
 module Promenade
   def self.root_dir
