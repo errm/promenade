@@ -1,5 +1,3 @@
-require "prometheus/client"
-require "prometheus/client/support/unicorn"
 require "pathname"
 
 module Promenade
@@ -16,6 +14,11 @@ module Promenade
     unless File.directory? multiprocess_files_dir
       FileUtils.mkdir_p multiprocess_files_dir
     end
+
+    ENV["prometheus_multiproc_dir"] = multiprocess_files_dir.to_s
+
+    require "prometheus/client"
+    require "prometheus/client/support/unicorn"
 
     ::Prometheus::Client.configure do |config|
       config.multiprocess_files_dir = multiprocess_files_dir
