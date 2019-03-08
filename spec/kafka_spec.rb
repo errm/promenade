@@ -504,6 +504,28 @@ RSpec.describe Promenade::Kafka do
       end
     end
 
+    describe "fetch_batch" do
+      before do
+        backend.instrument(
+          "fetch_batch.consumer.kafka",
+          client_id: client_id,
+          group_id: "test_group",
+          topic: topic,
+          partition: 6,
+          offset_lag: 1997,
+          message_count: 78,
+        )
+      end
+
+      it "counts the messages processed" do
+        expect(metric(:kafka_consumer_messages_fetched).get(labels)).to eq 78
+      end
+
+      it "records the ofset lag" do
+        expect(metric(:kafka_consumer_ofset_lag).get(labels)).to eq 1997
+      end
+    end
+
     describe "join_group" do
       let(:labels) do
         { client: client_id, group: "test_group" }

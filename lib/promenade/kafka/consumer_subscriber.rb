@@ -22,6 +22,10 @@ module Promenade
         doc "Messages processed by this consumer"
       end
 
+      counter :kafka_consumer_messages_fetched do
+        doc "Messages fetched by this consumer"
+      end
+
       counter :kafka_consumer_message_processing_errors do
         doc "Consumer errors while processing a message"
       end
@@ -88,7 +92,7 @@ module Promenade
 
       def process_batch(event) # rubocop:disable Metrics/AbcSize
         labels = get_labels(event)
-        lag = event.payload.fetch(:offset_lag)
+        offset_lag = event.payload.fetch(:offset_lag)
         messages = event.payload.fetch(:message_count)
 
         if event.payload.key?(:exception)
@@ -98,7 +102,16 @@ module Promenade
           metric(:kafka_consumer_batch_processing_latency).observe(labels, event.duration)
         end
 
-        metric(:kafka_consumer_ofset_lag).set(labels, lag)
+        metric(:kafka_consumer_ofset_lag).set(labels, offset_lag)
+      end
+
+      def fetch_batch(event)
+        labels = get_labels(event)
+        offset_lag = event.payload.fetch(:offset_lag)
+        messages = event.payload.fetch(:message_count)
+
+        metric(:kafka_consumer_messages_fetched).increment(labels, messages)
+        metric(:kafka_consumer_ofset_lag).set(labels, offset_lag)
       end
 
       def join_group(event)
