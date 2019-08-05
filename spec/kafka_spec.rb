@@ -299,7 +299,7 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "counts the number of errors" do
-          expect(metric(:kafka_connection_errors).get).to eq 11
+          expect(metric(:kafka_connection_errors).get(labels)).to eq 11
         end
       end
     end

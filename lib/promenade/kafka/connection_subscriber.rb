@@ -39,7 +39,7 @@ module Promenade
         metric(:kafka_connection_request_size).observe(labels, event.payload.fetch(:request_size, 0))
         metric(:kafka_connection_response_size).observe(labels, event.payload.fetch(:response_size, 0))
 
-        metric(:kafka_connection_errors).increment if event.payload.key?(:exception)
+        metric(:kafka_connection_errors).increment(labels) if event.payload.key?(:exception)
       end
     end
   end
