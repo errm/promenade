@@ -66,7 +66,7 @@ module Promenade
         message_size = event.payload.fetch(:message_size)
         buffer_size = event.payload.fetch(:buffer_size)
         max_buffer_size = event.payload.fetch(:max_buffer_size)
-        buffer_fill_ratio = buffer_size.to_f / max_buffer_size.to_f
+        buffer_fill_ratio = buffer_size.to_f / max_buffer_size
 
         metric(:kafka_producer_messages).increment(labels)
         metric(:kafka_producer_message_size).observe(labels, message_size)
