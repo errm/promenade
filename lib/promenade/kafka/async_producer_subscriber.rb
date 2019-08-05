@@ -29,7 +29,7 @@ module Promenade
         labels = get_labels(event)
         queue_size = event.payload.fetch(:queue_size)
         max_queue_size = event.payload.fetch(:max_queue_size)
-        queue_fill_ratio = queue_size.to_f / max_queue_size.to_f
+        queue_fill_ratio = queue_size.to_f / max_queue_size
 
         metric(:kafka_async_producer_queue_size).set(labels, queue_size)
         metric(:kafka_async_producer_max_queue_size).set(labels, max_queue_size)
