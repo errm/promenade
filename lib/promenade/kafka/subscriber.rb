@@ -1,5 +1,6 @@
 require "promenade/helper"
 require "active_support/subscriber"
+require "concurrent/utility/monotonic_time"
 
 module Promenade
   module Kafka

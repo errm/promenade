@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "prometheus-client-mmap", "~> 0.9.3"
   spec.add_dependency "rack"
 
-  spec.add_development_dependency "bundler", "~> 1.16"
+  spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "climate_control"
   spec.add_development_dependency "deep-cover"
   spec.add_development_dependency "rake", "~> 10.0"

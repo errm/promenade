@@ -80,7 +80,7 @@ GEM
       unicode-display_width (>= 1.4.0, < 1.7)
     rubocop-performance (1.4.1)
       rubocop (>= 0.71.0)
-    rubocop-rails (2.2.1)
+    rubocop-rails (2.3.0)
       rack (>= 1.1)
       rubocop (>= 0.72.0)
     ruby-progressbar (1.10.1)
@@ -108,7 +108,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.16)
+  bundler (~> 2.0)
   climate_control
   codecov
   deep-cover
@@ -121,4 +121,4 @@ DEPENDENCIES
   simplecov
 
 BUNDLED WITH
-   1.17.3
+   2.0.1
