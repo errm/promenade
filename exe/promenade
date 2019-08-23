@@ -10,7 +10,7 @@ app = Rack::Builder.app do
   use Rack::Deflater
   use ::Prometheus::Client::Rack::Exporter
   map "/health" do
-    run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['OK']] }
+    run lambda { |_env| [200, { "Content-Type" => "text/plain" }, ["OK"]] }
   end
   run ->(_env) { [404, {}, ["visit /metrics for metrics"]] }
 end
