@@ -15,4 +15,4 @@ app = Rack::Builder.app do
   run ->(_env) { [404, {}, ["visit /metrics for metrics"]] }
 end
 
-Rack::Handler::WEBrick.run app, Port: ENV.fetch("PORT", "9394")
+Rack::Handler::WEBrick.run app, Port: ENV.fetch("PORT", "9394"), Host: "0.0.0.0"
