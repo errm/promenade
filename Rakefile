@@ -12,3 +12,5 @@ task :clean do
 end
 
 task spec: :clean
+
+task release: :spec
