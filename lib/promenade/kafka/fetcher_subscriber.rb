@@ -7,6 +7,7 @@ module Promenade
 
       Promenade.gauge :kafka_fetcher_queue_size do
         doc "Fetcher queue size"
+        labels %i(client group)
       end
 
       def loop(event)
@@ -14,7 +15,7 @@ module Promenade
         client = event.payload.fetch(:client_id)
         group_id = event.payload.fetch(:group_id)
 
-        Promenade.metric(:kafka_fetcher_queue_size).set({ client: client, group: group_id }, queue_size)
+        Promenade.metric(:kafka_fetcher_queue_size).set(queue_size, labels: { client: client, group: group_id })
       end
     end
   end

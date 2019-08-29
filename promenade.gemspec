@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "activesupport"
-  spec.add_dependency "prometheus-client-mmap", "~> 0.9.3"
+  spec.add_dependency "prometheus-client", "~> 1.0"
   spec.add_dependency "rack"
 
   spec.add_development_dependency "bundler", "~> 2.0"
