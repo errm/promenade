@@ -5,7 +5,7 @@ module Promenade
     class FetcherSubscriber < Subscriber
       attach_to "fetcher.kafka"
 
-      gauge :kafka_fetcher_queue_size do
+      Promenade.gauge :kafka_fetcher_queue_size do
         doc "Fetcher queue size"
       end
 
@@ -14,7 +14,7 @@ module Promenade
         client = event.payload.fetch(:client_id)
         group_id = event.payload.fetch(:group_id)
 
-        metric(:kafka_fetcher_queue_size).set({ client: client, group: group_id }, queue_size)
+        Promenade.metric(:kafka_fetcher_queue_size).set({ client: client, group: group_id }, queue_size)
       end
     end
   end

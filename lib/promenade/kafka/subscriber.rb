@@ -1,12 +1,9 @@
-require "promenade/helper"
 require "active_support/subscriber"
 require "concurrent/utility/monotonic_time"
 
 module Promenade
   module Kafka
     class Subscriber < ActiveSupport::Subscriber
-      include ::Promenade::Helper
-
       private
 
         def get_labels(event)
