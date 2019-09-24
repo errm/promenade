@@ -18,7 +18,7 @@ module Promenade
 
     def self.define_metric(type, name, &block)
       METRICS_MUTEX.synchronize do
-        fail("Metric: #{name}, is allready defined") if registry.get(name)
+        return if registry.get(name)
 
         options = Options.new
         options.evaluate(&block)

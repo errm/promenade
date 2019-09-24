@@ -33,10 +33,10 @@ RSpec.describe Promenade do
         expect(described_class.metric(:promenade_testing_counter).get).to eq 1
       end
 
-      it "throws an error when trying to redefine a counter" do
+      it "doesn't throw an error when trying to redefine a counter" do
         expect do
           described_class.counter :promenade_testing_counter
-        end.to raise_error "Metric: promenade_testing_counter, is allready defined"
+        end.to_not raise_error
       end
 
       it "throws an error when trying a metric that isn't defined" do
@@ -88,10 +88,10 @@ RSpec.describe Promenade do
         expect(described_class.metric(:promenade_testing_gauge).get).to eq 21
       end
 
-      it "throws an error when trying to redefine a gauge" do
+      it "does not throw an error when trying to redefine a gauge" do
         expect do
           described_class.gauge :promenade_testing_gauge
-        end.to raise_error "Metric: promenade_testing_gauge, is allready defined"
+        end.to_not raise_error
       end
 
       it "has a multiprocess mode of all" do
@@ -143,10 +143,10 @@ RSpec.describe Promenade do
         expect(described_class.metric(:promenade_testing_summary).get).to eq 21
       end
 
-      it "throws an error when trying to redefine a summary" do
+      it "does not throw an error when trying to redefine a summary" do
         expect do
           described_class.gauge :promenade_testing_summary
-        end.to raise_error "Metric: promenade_testing_summary, is allready defined"
+        end.to_not raise_error
       end
     end
 
