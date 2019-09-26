@@ -3,8 +3,11 @@ inherit_from:
 
 AllCops:
   TargetRubyVersion: 2.4
+  Exclude:
+    - vendor/**
 
 Style/TrailingCommaInHashLiteral:
   EnforcedStyleForMultiline: comma
 Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: comma
+
