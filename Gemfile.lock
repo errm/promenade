@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    promenade (0.2.1)
+    promenade (0.3.0)
       activesupport
       prometheus-client (~> 1.0)
       rack
