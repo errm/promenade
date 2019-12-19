@@ -1,6 +1,4 @@
 require "pathname"
-require "prometheus/client"
-require "prometheus/client/data_stores/direct_file_store"
 
 module Promenade
   def self.root_dir
@@ -9,7 +7,7 @@ module Promenade
   end
 
   def self.multiprocess_files_dir
-    ENV.fetch("PROMETHEUS_MULTIPROC_DIR", root_dir.join("tmp", "promenade").to_s)
+    ENV.fetch("PROMETHEUS_MULTIPROC_DIR", root_dir.join("tmp", "promenade"))
   end
 
   def self.setup
@@ -17,8 +15,14 @@ module Promenade
       FileUtils.mkdir_p multiprocess_files_dir
     end
 
-    ::Prometheus::Client.config.data_store = ::Prometheus::Client::DataStores::DirectFileStore.new(
-      dir: multiprocess_files_dir,
-    )
+    ENV["prometheus_multiproc_dir"] = multiprocess_files_dir.to_s
+
+    require "prometheus/client"
+    require "prometheus/client/support/unicorn"
+
+    ::Prometheus::Client.configure do |config|
+      config.multiprocess_files_dir = multiprocess_files_dir
+      config.pid_provider = ::Prometheus::Client::Support::Unicorn.method(:worker_pid_provider)
+    end
   end
 end

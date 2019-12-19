@@ -32,31 +32,29 @@ RSpec.describe Promenade::Kafka do
       end
 
       it "counts the messages" do
-        expect(Promenade.metric(:kafka_producer_messages).get(labels: labels)).to eq 10
+        expect(Promenade.metric(:kafka_producer_messages).get(labels)).to eq 10
       end
 
       it "has a histogram of message size" do
-        expect(Promenade.metric(:kafka_producer_message_size).get(labels: labels)).to eq(
-          "128" => 0.0,
-          "256" => 1.0,
-          "512" => 2.0,
-          "1024" => 3.0,
-          "2048" => 4.0,
-          "4096" => 5.0,
-          "8192" => 6.0,
-          "16384" => 7.0,
-          "32768" => 8.0,
-          "65536" => 9.0,
-          "131072" => 10.0,
-          "+Inf" => 10.0,
-          "sum" => 130944.0,
+        expect(Promenade.metric(:kafka_producer_message_size).get(labels)).to eq(
+          128 => 1.0,
+          256 => 2.0,
+          512 => 3.0,
+          1024 => 4.0,
+          2048 => 5.0,
+          4096 => 6.0,
+          8192 => 7.0,
+          16384 => 8.0,
+          32768 => 9.0,
+          65536 => 10.0,
+          131072 => 10.0,
         )
       end
 
       it "gauges buffer size and fill ratio" do
-        expect(Promenade.metric(:kafka_producer_buffer_size).get(labels: { client: client_id })).to eq 10
-        expect(Promenade.metric(:kafka_producer_max_buffer_size).get(labels: { client: client_id })).to eq 100
-        expect(Promenade.metric(:kafka_producer_buffer_fill_ratio).get(labels: { client: client_id })).to eq 0.1
+        expect(Promenade.metric(:kafka_producer_buffer_size).get(client: client_id)).to eq 10
+        expect(Promenade.metric(:kafka_producer_max_buffer_size).get(client: client_id)).to eq 100
+        expect(Promenade.metric(:kafka_producer_buffer_fill_ratio).get(client: client_id)).to eq 0.1
       end
     end
 
@@ -72,13 +70,11 @@ RSpec.describe Promenade::Kafka do
       end
 
       it "counts the errors" do
-        expect(Promenade.metric(:kafka_producer_buffer_overflows).get(labels: labels)).to eq 5
+        expect(Promenade.metric(:kafka_producer_buffer_overflows).get(labels)).to eq 5
       end
     end
 
     describe "deliver_messages" do
-      let(:labels) { { client: client_id } }
-
       context "happy path" do
         before do
           allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.5)
@@ -93,30 +89,17 @@ RSpec.describe Promenade::Kafka do
           end
         end
 
-
         it "there are no errors" do
-          expect(Promenade.metric(:kafka_producer_delivery_errors).get(labels: labels)).to eq 0
+          expect(Promenade.metric(:kafka_producer_delivery_errors).get(client: client_id)).to eq 0
         end
 
         it "counts the delivered messages" do
-          expect(Promenade.metric(:kafka_producer_delivered_messages).get(labels: labels)).to eq 40
+          expect(Promenade.metric(:kafka_producer_delivered_messages).get(client: client_id)).to eq 40
         end
 
         it "records the delivery latency" do
-          expect(Promenade.metric(:kafka_producer_delivery_latency).get(labels: labels)).to eq(
-            "0.005" => 0.0,
-            "0.01" => 0.0,
-            "0.025" => 0.0,
-            "0.05" => 0.0,
-            "0.1" => 0.0,
-            "0.25" => 0.0,
-            "0.5" => 0.0,
-            "1" => 4.0,
-            "2.5" => 4.0,
-            "5" => 4.0,
-            "10" => 4.0,
-            "+Inf" => 4.0,
-            "sum" => 2.0,
+          expect(Promenade.metric(:kafka_producer_delivery_latency).get(client: client_id)).to eq(
+            0.005 => 0.0, 0.01 => 0.0, 0.025 => 0.0, 0.05 => 0.0, 0.1 => 0.0, 0.25 => 0.0, 0.5 => 4.0, 1 => 4.0, 2.5 => 4.0, 5 => 4.0, 10 => 4.0,
           )
         end
       end
@@ -135,7 +118,7 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "counts the errors" do
-          expect(Promenade.metric(:kafka_producer_delivery_errors).get(labels: labels)).to eq 4
+          expect(Promenade.metric(:kafka_producer_delivery_errors).get(client: client_id)).to eq 4
         end
       end
     end
@@ -153,24 +136,22 @@ RSpec.describe Promenade::Kafka do
       end
 
       it "counts the messages" do
-        expect(Promenade.metric(:kafka_producer_ack_messages).get(labels: labels)).to eq 11
+        expect(Promenade.metric(:kafka_producer_ack_messages).get(labels)).to eq 11
       end
 
       it "has a histogram of the delay" do
-        expect(Promenade.metric(:kafka_producer_ack_latency).get(labels: labels)).to eq(
-          "0.005" => 0.0,
-          "0.01" => 1.0,
-          "0.025" => 2.0,
-          "0.05" => 3.0,
-          "0.1" => 4.0,
-          "0.25" => 5.0,
-          "0.5" => 6.0,
-          "1" => 7.0,
-          "2.5" => 8.0,
-          "5" => 9.0,
-          "10" => 10.0,
-          "+Inf" => 11.0,
-          "sum" => 19.439999999999998,
+        expect(Promenade.metric(:kafka_producer_ack_latency).get(labels)).to eq(
+          0.005 => 1.0,
+          0.01 => 2.0,
+          0.025 => 3.0,
+          0.05 => 4.0,
+          0.1 => 5.0,
+          0.25 => 6.0,
+          0.5 => 7.0,
+          1 => 8.0,
+          2.5 => 9.0,
+          5 => 10.0,
+          10 => 11.0,
         )
       end
     end
@@ -180,14 +161,13 @@ RSpec.describe Promenade::Kafka do
         5.times do
           backend.instrument(
             "topic_error.producer.kafka",
-            client_id: client_id,
-            topic: topic,
+            client_id: "test_client",
+            topic: "ackattack",
           )
         end
       end
-
       it "counts the errors" do
-        expect(Promenade.metric(:kafka_producer_ack_errors).get(labels: labels)).to eq 5
+        expect(Promenade.metric(:kafka_producer_ack_errors).get(client: "test_client", topic: "ackattack")).to eq 5
       end
     end
   end
@@ -205,9 +185,9 @@ RSpec.describe Promenade::Kafka do
       end
 
       it "records the queue size and fill ratio" do
-        expect(Promenade.metric(:kafka_async_producer_queue_size).get(labels: labels)).to eq 10
-        expect(Promenade.metric(:kafka_async_producer_max_queue_size).get(labels: labels)).to eq 20
-        expect(Promenade.metric(:kafka_async_producer_queue_fill_ratio).get(labels: labels)).to eq 0.5
+        expect(Promenade.metric(:kafka_async_producer_queue_size).get(labels)).to eq 10
+        expect(Promenade.metric(:kafka_async_producer_max_queue_size).get(labels)).to eq 20
+        expect(Promenade.metric(:kafka_async_producer_queue_fill_ratio).get(labels)).to eq 0.5
       end
     end
 
@@ -223,7 +203,7 @@ RSpec.describe Promenade::Kafka do
       end
 
       it "counts the errors" do
-        expect(Promenade.metric(:kafka_async_producer_buffer_overflows).get(labels: labels)).to eq 11
+        expect(Promenade.metric(:kafka_async_producer_buffer_overflows).get(labels)).to eq 11
       end
     end
 
@@ -239,7 +219,7 @@ RSpec.describe Promenade::Kafka do
       end
 
       it "counts the errors" do
-        expect(Promenade.metric(:kafka_async_producer_dropped_messages).get(labels: { client: client_id })).to eq 22
+        expect(Promenade.metric(:kafka_async_producer_dropped_messages).get(client: client_id)).to eq 22
       end
     end
   end
@@ -270,29 +250,29 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "counts the calls" do
-          expect(Promenade.metric(:kafka_connection_calls).get(labels: labels)).to eq 11
+          expect(Promenade.metric(:kafka_connection_calls).get(labels)).to eq 11
         end
 
         it "mesures the connection latency" do
-          expect(Promenade.metric(:kafka_connection_latency).get(labels: labels)).to eq(
-            "0.005" => 0.0,
-            "0.01" => 0.0,
-            "0.025" => 0.0,
-            "0.05" => 0.0,
-            "0.1" => 0.0,
-            "0.25" => 0.0,
-            "0.5" => 0.0,
-            "1" => 11.0,
-            "2.5" => 11.0,
-            "5" => 11.0,
-            "10" => 11.0,
-            "+Inf" => 11.0,
-            "sum" => 5.5,
+          expect(Promenade.metric(:kafka_connection_latency).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 0.0,
+            0.5 => 11.0,
+            1 => 11.0,
+            2.5 => 11.0,
+            5 => 11.0,
+            10 => 11.0,
           )
         end
 
         it "records the request and response size" do
-          expect(Promenade.metric(:kafka_connection_response_size).get(labels: labels)).to eq("count" => 11.0, "sum" => 262016.0)
+          # TODO: summary metrics have count + sum, but I can't work out how to access the count
+          expect(Promenade.metric(:kafka_connection_response_size).get(labels)).to eq 262016
+          expect(Promenade.metric(:kafka_connection_response_size).get(labels)).to eq 262016
         end
       end
 
@@ -317,7 +297,7 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "counts the number of errors" do
-          expect(Promenade.metric(:kafka_connection_errors).get(labels: labels)).to eq 11
+          expect(Promenade.metric(:kafka_connection_errors).get(labels)).to eq 11
         end
       end
     end
@@ -335,7 +315,7 @@ RSpec.describe Promenade::Kafka do
       end
 
       it "gauges the queue size" do
-        expect(Promenade.metric(:kafka_fetcher_queue_size).get(labels: { client: client_id, group: "fetcher_group" })).to eq 17
+        expect(Promenade.metric(:kafka_fetcher_queue_size).get(client: client_id, group: "fetcher_group")).to eq 17
       end
     end
   end
@@ -348,7 +328,7 @@ RSpec.describe Promenade::Kafka do
     describe "process_message" do
       describe "happy_path" do
         before do
-          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.4)
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.5)
           backend.instrument(
             "process_message.consumer.kafka",
             client_id: client_id,
@@ -361,33 +341,31 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "exposes the time lag between processing and now" do
-          expect(Promenade.metric(:kafka_consumer_time_lag).get(labels: labels)).to eq 5000
+          expect(Promenade.metric(:kafka_consumer_time_lag).get(labels)).to eq 5000
         end
 
         it "exposes the ofest lag" do
-          expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels: labels)).to eq 5
+          expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels)).to eq 5
         end
 
         it "records a histogram of consumer timing" do
-          expect(Promenade.metric(:kafka_consumer_message_processing_latency).get(labels: labels)).to eq(
-            "0.005" => 0.0,
-            "0.01" => 0.0,
-            "0.025" => 0.0,
-            "0.05" => 0.0,
-            "0.1" => 0.0,
-            "0.25" => 0.0,
-            "0.5" => 1.0,
-            "1" => 1.0,
-            "2.5" => 1.0,
-            "5" => 1.0,
-            "10" => 1.0,
-            "+Inf" => 1.0,
-            "sum" => 0.4,
+          expect(Promenade.metric(:kafka_consumer_message_processing_latency).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 0.0,
+            0.5 => 1.0,
+            1 => 1.0,
+            2.5 => 1.0,
+            5 => 1.0,
+            10 => 1.0,
           )
         end
 
         it "counts the messages processed" do
-          expect(Promenade.metric(:kafka_consumer_messages_processed).get(labels: labels)).to eq 1
+          expect(Promenade.metric(:kafka_consumer_messages_processed).get(labels)).to eq 1
         end
       end
 
@@ -409,17 +387,29 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "counts errors" do
-          expect(Promenade.metric(:kafka_consumer_message_processing_errors).get(labels: labels)).to eq 5
+          expect(Promenade.metric(:kafka_consumer_message_processing_errors).get(labels)).to eq 5
         end
 
         it "does not count processed metrics or record latency" do
-          expect(Promenade.metric(:kafka_consumer_messages_processed).get(labels: labels)).to eq 0
-          expect(Promenade.metric(:kafka_consumer_message_processing_latency).get(labels: labels).values.all? { |value| value == 0.0 }).to be_truthy
+          expect(Promenade.metric(:kafka_consumer_messages_processed).get(labels)).to eq 0
+          expect(Promenade.metric(:kafka_consumer_message_processing_latency).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 0.0,
+            0.5 => 0.0,
+            1 => 0.0,
+            2.5 => 0.0,
+            5 => 0.0,
+            10 => 0.0,
+          )
         end
 
         it "does record other relevent metrics" do
-          expect(Promenade.metric(:kafka_consumer_time_lag).get(labels: labels)).to eq 5000
-          expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels: labels)).to eq 5
+          expect(Promenade.metric(:kafka_consumer_time_lag).get(labels)).to eq 5000
+          expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels)).to eq 5
         end
       end
 
@@ -447,7 +437,7 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "doesn't change the time lag" do
-          expect(Promenade.metric(:kafka_consumer_time_lag).get(labels: labels)).to eq 7000
+          expect(Promenade.metric(:kafka_consumer_time_lag).get(labels)).to eq 7000
         end
       end
     end
@@ -455,7 +445,7 @@ RSpec.describe Promenade::Kafka do
     describe "process_batch" do
       describe "happy_path" do
         before do
-          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.9)
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(1)
           backend.instrument(
             "process_batch.consumer.kafka",
             client_id: client_id,
@@ -468,29 +458,27 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "counts the messages processed" do
-          expect(Promenade.metric(:kafka_consumer_messages_processed).get(labels: labels)).to eq 100
+          expect(Promenade.metric(:kafka_consumer_messages_processed).get(labels)).to eq 100
         end
 
         it "has a histogram of batch latency" do
-          expect(Promenade.metric(:kafka_consumer_batch_processing_latency).get(labels: labels)).to eq(
-            "0.005" => 0.0,
-            "0.01" => 0.0,
-            "0.025" => 0.0,
-            "0.05" => 0.0,
-            "0.1" => 0.0,
-            "0.25" => 0.0,
-            "0.5" => 0.0,
-            "1" => 1.0,
-            "2.5" => 1.0,
-            "5" => 1.0,
-            "10" => 1.0,
-            "+Inf" => 1.0,
-            "sum" => 0.9,
+          expect(Promenade.metric(:kafka_consumer_batch_processing_latency).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 0.0,
+            0.5 => 0.0,
+            1 => 1,
+            2.5 => 1,
+            5 => 1,
+            10 => 1,
           )
         end
 
         it "records the ofset lag" do
-          expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels: labels)).to eq 200
+          expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels)).to eq 200
         end
       end
 
@@ -509,7 +497,7 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "counts the error" do
-          expect(Promenade.metric(:kafka_consumer_batch_processing_errors).get(labels: labels)).to eq 1
+          expect(Promenade.metric(:kafka_consumer_batch_processing_errors).get(labels)).to eq 1
         end
       end
     end
@@ -528,11 +516,11 @@ RSpec.describe Promenade::Kafka do
       end
 
       it "counts the messages processed" do
-        expect(Promenade.metric(:kafka_consumer_messages_fetched).get(labels: labels)).to eq 78
+        expect(Promenade.metric(:kafka_consumer_messages_fetched).get(labels)).to eq 78
       end
 
       it "records the ofset lag" do
-        expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels: labels)).to eq 1997
+        expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels)).to eq 1997
       end
     end
 
@@ -543,7 +531,7 @@ RSpec.describe Promenade::Kafka do
 
       describe "happy_path" do
         before do
-          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.24)
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
           backend.instrument(
             "join_group.consumer.kafka",
             client_id: client_id,
@@ -552,27 +540,25 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "records a histogram for the time taken" do
-          expect(Promenade.metric(:kafka_consumer_join_group).get(labels: labels)).to eq(
-            "0.005" => 0.0,
-            "0.01" => 0.0,
-            "0.025" => 0.0,
-            "0.05" => 0.0,
-            "0.1" => 0.0,
-            "0.25" => 1.0,
-            "0.5" => 1.0,
-            "1" => 1.0,
-            "2.5" => 1.0,
-            "5" => 1.0,
-            "10" => 1.0,
-            "+Inf" => 1.0,
-            "sum" => 0.24,
+          expect(Promenade.metric(:kafka_consumer_join_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 1,
+            0.5 => 1,
+            1 => 1,
+            2.5 => 1,
+            5 => 1,
+            10 => 1,
           )
         end
       end
 
       describe "with error" do
         before do
-          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.24)
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
 
           5.times do
             backend.instrument(
@@ -585,25 +571,23 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "records a histogram for the time taken" do
-          expect(Promenade.metric(:kafka_consumer_join_group).get(labels: labels)).to eq(
-            "0.005" => 0.0,
-            "0.01" => 0.0,
-            "0.025" => 0.0,
-            "0.05" => 0.0,
-            "0.1" => 0.0,
-            "0.25" => 5.0,
-            "0.5" => 5.0,
-            "1" => 5.0,
-            "2.5" => 5.0,
-            "5" => 5.0,
-            "10" => 5.0,
-            "+Inf" => 5.0,
-            "sum" => 1.2,
+          expect(Promenade.metric(:kafka_consumer_join_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 5,
+            0.5 => 5,
+            1 => 5,
+            2.5 => 5,
+            5 => 5,
+            10 => 5,
           )
         end
 
         it "counts the error" do
-          expect(Promenade.metric(:kafka_consumer_join_group_errors).get(labels: labels)).to eq 5
+          expect(Promenade.metric(:kafka_consumer_join_group_errors).get(labels)).to eq 5
         end
       end
     end
@@ -615,7 +599,7 @@ RSpec.describe Promenade::Kafka do
 
       describe "happy_path" do
         before do
-          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.24)
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
           backend.instrument(
             "sync_group.consumer.kafka",
             client_id: client_id,
@@ -624,27 +608,25 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "records a histogram for the time taken" do
-          expect(Promenade.metric(:kafka_consumer_sync_group).get(labels: labels)).to eq(
-            "0.005" => 0.0,
-            "0.01" => 0.0,
-            "0.025" => 0.0,
-            "0.05" => 0.0,
-            "0.1" => 0.0,
-            "0.25" => 1.0,
-            "0.5" => 1.0,
-            "1" => 1.0,
-            "2.5" => 1.0,
-            "5" => 1.0,
-            "10" => 1.0,
-            "+Inf" => 1.0,
-            "sum" => 0.24,
+          expect(Promenade.metric(:kafka_consumer_sync_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 1,
+            0.5 => 1,
+            1 => 1,
+            2.5 => 1,
+            5 => 1,
+            10 => 1,
           )
         end
       end
 
       describe "with error" do
         before do
-          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.22)
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
 
           3.times do
             backend.instrument(
@@ -657,25 +639,23 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "records a histogram for the time taken" do
-          expect(Promenade.metric(:kafka_consumer_sync_group).get(labels: labels)).to eq(
-            "0.005" => 0.0,
-            "0.01" => 0.0,
-            "0.025" => 0.0,
-            "0.05" => 0.0,
-            "0.1" => 0.0,
-            "0.25" => 3.0,
-            "0.5" => 3.0,
-            "1" => 3.0,
-            "2.5" => 3.0,
-            "5" => 3.0,
-            "10" => 3.0,
-            "+Inf" => 3.0,
-            "sum" => 0.66,
+          expect(Promenade.metric(:kafka_consumer_sync_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 3,
+            0.5 => 3,
+            1 => 3,
+            2.5 => 3,
+            5 => 3,
+            10 => 3,
           )
         end
 
         it "counts the error" do
-          expect(Promenade.metric(:kafka_consumer_sync_group_errors).get(labels: labels)).to eq 3
+          expect(Promenade.metric(:kafka_consumer_sync_group_errors).get(labels)).to eq 3
         end
       end
     end
@@ -696,27 +676,25 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "records a histogram for the time taken" do
-          expect(Promenade.metric(:kafka_consumer_leave_group).get(labels: labels)).to eq(
-            "0.005" => 0.0,
-            "0.01" => 0.0,
-            "0.025" => 0.0,
-            "0.05" => 0.0,
-            "0.1" => 0.0,
-            "0.25" => 0.0,
-            "0.5" => 1.0,
-            "1" => 1.0,
-            "2.5" => 1.0,
-            "5" => 1.0,
-            "10" => 1.0,
-            "+Inf" => 1.0,
-            "sum" => 0.25,
+          expect(Promenade.metric(:kafka_consumer_leave_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 1,
+            0.5 => 1,
+            1 => 1,
+            2.5 => 1,
+            5 => 1,
+            10 => 1,
           )
         end
       end
 
       describe "with error" do
         before do
-          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.11)
+          allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:duration).and_return(0.25)
 
           3.times do
             backend.instrument(
@@ -729,25 +707,23 @@ RSpec.describe Promenade::Kafka do
         end
 
         it "records a histogram for the time taken" do
-          expect(Promenade.metric(:kafka_consumer_leave_group).get(labels: labels)).to eq(
-            "0.005" => 0.0,
-            "0.01" => 0.0,
-            "0.025" => 0.0,
-            "0.05" => 0.0,
-            "0.1" => 0.0,
-            "0.25" => 3.0,
-            "0.5" => 3.0,
-            "1" => 3.0,
-            "2.5" => 3.0,
-            "5" => 3.0,
-            "10" => 3.0,
-            "+Inf" => 3.0,
-            "sum" => 0.33,
+          expect(Promenade.metric(:kafka_consumer_leave_group).get(labels)).to eq(
+            0.005 => 0.0,
+            0.01 => 0.0,
+            0.025 => 0.0,
+            0.05 => 0.0,
+            0.1 => 0.0,
+            0.25 => 3,
+            0.5 => 3,
+            1 => 3,
+            2.5 => 3,
+            5 => 3,
+            10 => 3,
           )
         end
 
         it "counts the error" do
-          expect(Promenade.metric(:kafka_consumer_leave_group_errors).get(labels: labels)).to eq 3
+          expect(Promenade.metric(:kafka_consumer_leave_group_errors).get(labels)).to eq 3
         end
       end
     end
@@ -765,20 +741,18 @@ RSpec.describe Promenade::Kafka do
       end
 
       it "records the pause time" do
-        expect(Promenade.metric(:kafka_consumer_pause_duration).get(labels: labels)).to eq(
-          "0.005" => 0.0,
-          "0.01" => 0.0,
-          "0.025" => 0.0,
-          "0.05" => 0.0,
-          "0.1" => 0.0,
-          "0.25" => 0.0,
-          "0.5" => 1.0,
-          "1" => 1.0,
-          "2.5" => 1.0,
-          "5" => 1.0,
-          "10" => 1.0,
-          "+Inf" => 1.0,
-          "sum" => 0.25,
+        expect(Promenade.metric(:kafka_consumer_pause_duration).get(labels)).to eq(
+          0.005 => 0.0,
+          0.01 => 0.0,
+          0.025 => 0.0,
+          0.05 => 0.0,
+          0.1 => 0.0,
+          0.25 => 1,
+          0.5 => 1,
+          1 => 1,
+          2.5 => 1,
+          5 => 1,
+          10 => 1,
         )
       end
     end

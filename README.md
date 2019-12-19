@@ -41,21 +41,19 @@ A counter is a metric that exposes a sum or tally of things.
 class WidgetService
   Promenade.counter :widgets_created do
     doc "Records how many widgets are created"
-    labels [:type]
-    preset_labels type: "guinness"
   end
 
   def create
     # Widget creation code :)
     Promenade.metric(:widgets_created).increment
 
-    # You can also overide preset labels as you increment counters
-    Promenade.metric(:widgets_created).increment(labels: { type: "john_smiths" })
+    # You can also add extra labels as you set increment counters
+    Promenade.metric(:widgets_created).increment({ type: "guinness" })
   end
 
   def batch_create
     You can increment by more than 1 at a time if you need
-    Promenade.metric(:widgets_created).increment(by: 100)
+    Promenade.metric(:widgets_created).increment({ type: "guinness" }, 100)
   end
 end
 ```
@@ -68,13 +66,12 @@ A gauge is a metric that exposes an instantaneous value or some snapshot of a ch
 class Thermometer
   Promenade.gauge :room_temperature_celsius do
     doc "Records room temprature"
-    labels [:room]
   end
 
   def take_mesurements
-    Promenade.metric(:room_temperature_celsius).set(22.3, labels: { room: "lounge" })
-    Promenade.metric(:room_temperature_celsius).set(25.45, labels: { room: "kitchen" })
-    Promenade.metric(:room_temperature_celsius).set(15.37, labels: { room: "broom_cupboard" })
+    Promenade.metric(:room_temperature_celsius).set({ room: "lounge" }, 22.3)
+    Promenade.metric(:room_temperature_celsius).set({ room: "kitchen" }, 25.45)
+    Promenade.metric(:room_temperature_celsius).set({ room: "broom_cupboard" }, 15.37)
   end
 end
 ```
@@ -91,7 +88,6 @@ class Calculator
     doc "Records how long it takes to do the adding"
     # promenade also has some bucket presets like :network and :memory for common usecases
     buckets [0.25, 0.5, 1, 2, 4]
-    labels [:operation]
   end
 
   def add_up
@@ -99,7 +95,7 @@ class Calculator
       # Some time consuming addition
     end
 
-    Promenade.metric(:calculator_time_taken).observe(timing, labels: { operation: "addition"})
+    Promenade.metric(:calculator_time_taken).observe({ operation: "addition"}, timing)
   end
 end
 ```
@@ -112,7 +108,6 @@ Summary is similar to a histogram, but for when you just care about percentile v
 class ApiClient
   Promenade.summary :api_client_http_timing do
     doc "record how long requests to the api are taking"
-    labels [:method, :path]
   end
 
   def get_users
@@ -120,14 +115,14 @@ class ApiClient
       # Makes a network call
     end
 
-    Promenade.metric(:api_client_http_timing).observe(timing, labels: { method: "get", path: "/api/v1/users" })
+    Promenade.metric(:api_client_http_timing).observe({ method: "get", path: "/api/v1/users" }, timing)
   end
 end
 ```
 
 ### Exporter
 
-Because promenade is based on prometheus-client you can add the `Prometheus::Middleware::Exporter` middleware to your rack middleware stack to expose metrics.
+Because promenade is based on prometheus-client you can add the `Prometheus::Client::Rack::Exporter` middleware to your rack middleware stack to expose metrics.
 
 There is also a stand alone exporter that can be run with the `promenade` command.
 
@@ -143,7 +138,7 @@ If are not using rails you should call `Promenade.setup` after your environment 
 
 In a typical development environment there should be nothing for you to do. Promenade stores its state files in `tmp/promenade` and will create that directory if it does not exist.
 
-In a production environment you could try to store the state files on tmpfs for performance, but in practice anywhere is ok, you can configure the path that promenade will write to by setting the `PROMETHEUS_MULTIPROC_DIR` environment variable.
+In a production environment you should try to store the state files on tmpfs for performance, you can configure the path that promenade will write to by setting the `PROMETHEUS_MULTIPROC_DIR` environment variable.
 
 If you are running the stand-alone exporter, you may also set the `PORT` environment variable to bind to a port other than the default (`9394`).
 

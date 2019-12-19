@@ -21,7 +21,7 @@ RSpec.configure do |config|
 
   config.before(:each) do |_example|
     ::Prometheus::Client.registry.reset!
-    # allow(Prometheus::Client.configuration).to receive(:value_class).and_return(Prometheus::Client::SimpleValue)
+    allow(Prometheus::Client.configuration).to receive(:value_class).and_return(Prometheus::Client::SimpleValue)
   end
 
   config.expect_with :rspec do |c|
@@ -44,11 +44,7 @@ module Prometheus
 
     class Metric
       def reset!
-        @store = Prometheus::Client.config.data_store.for_metric(
-          name,
-          metric_type: type,
-          metric_settings: @store_settings,
-        )
+        @values = Hash.new { |hash, key| hash[key] = default(key) }
       end
     end
   end
