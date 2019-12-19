@@ -20,7 +20,9 @@ module Promenade
       METRICS_MUTEX.synchronize do
         return if registry.get(name)
 
-        registry.register(DSL.new(type, name).evaluate(&block).metric)
+        options = Options.new
+        options.evaluate(&block)
+        registry.method(type).call(name, *options.args(type))
       end
     end
 
@@ -30,31 +32,29 @@ module Promenade
       end
     end
 
-    class DSL
+    class Options
       BUCKET_PRESETS = {
         network: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10].freeze,
         memory: (0..10).map { |i| 128 * 2**i },
       }.freeze
 
-      def initialize(type, name)
-        @type = type
-        @name = name
+      def initialize
         @buckets = BUCKET_PRESETS[:network]
-        @labels = []
-        @preset_labels = {}
+        @base_labels = {}
         @doc = nil
+        @multiprocess_mode = :all
       end
 
       def doc(str)
         @doc = str
       end
 
-      def labels(labels)
-        @labels = labels
+      def base_labels(labels)
+        @base_labels = labels
       end
 
-      def preset_labels(labels)
-        @preset_labels = labels
+      def multiprocess_mode(mode)
+        @multiprocess_mode = mode
       end
 
       def buckets(buckets)
@@ -66,26 +66,23 @@ module Promenade
         end
       end
 
-      def metric
-        ::Prometheus::Client.const_get(@type.to_s.capitalize).new(
-          @name,
-          args,
-        )
-      rescue NameError
-        fail "Unsupported metric type: #{@type}"
+      def args(type)
+        case type
+        when :gauge
+          [@doc, @base_labels, @multiprocess_mode]
+        when :histogram
+          [@doc, @base_labels, @buckets]
+        when :counter, :summary
+          [@doc, @base_labels]
+        else
+          fail "Unsupported metric type: #{type}"
+        end
       end
 
       def evaluate(&block)
         instance_eval(&block)
         self
       end
-
-      private
-
-        def args
-          metric_args = { docstring: @doc, labels: @labels, preset_labels: @preset_labels }
-          @type == :histogram ? metric_args.merge(buckets: @buckets) : metric_args
-        end
     end
   end
 end

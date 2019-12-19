@@ -2,10 +2,6 @@ require "tmpdir"
 
 RSpec.describe Promenade do
   describe ".setup" do
-    def prometheus_store_dir
-      ::Prometheus::Client.config.data_store.instance_variable_get(:@store_settings)[:dir]
-    end
-
     context "without rails" do
       context "environment variable set" do
         let(:multiproc_root) { Pathname.new(Dir.mktmpdir) }
@@ -24,7 +20,7 @@ RSpec.describe Promenade do
         end
 
         it "configures the prometheus client" do
-          expect(prometheus_store_dir).to eq multiproc_dir.to_s
+          expect(::Prometheus::Client.configuration.multiprocess_files_dir.to_s).to eq multiproc_dir.to_s
         end
       end
 
@@ -45,7 +41,7 @@ RSpec.describe Promenade do
         end
 
         it "configures the prometheus client" do
-          expect(prometheus_store_dir).to eq pwd_dir.to_s
+          expect(::Prometheus::Client.configuration.multiprocess_files_dir).to eq pwd_dir
         end
       end
     end
@@ -69,7 +65,7 @@ RSpec.describe Promenade do
       end
 
       it "configures the prometheus client" do
-        expect(prometheus_store_dir).to eq rails_dir.to_s
+        expect(::Prometheus::Client.configuration.multiprocess_files_dir.to_s).to eq rails_dir.to_s
       end
 
       context "environment variable set" do
@@ -89,7 +85,7 @@ RSpec.describe Promenade do
         end
 
         it "configures the prometheus client" do
-          expect(prometheus_store_dir).to eq multiproc_dir.to_s
+          expect(::Prometheus::Client.configuration.multiprocess_files_dir.to_s).to eq multiproc_dir.to_s
         end
       end
     end
