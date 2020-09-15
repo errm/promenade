@@ -90,7 +90,7 @@ module Promenade
         Promenade.metric(:kafka_consumer_time_lag).set(labels, time_lag) if time_lag
       end
 
-      def process_batch(event) # rubocop:disable Metrics/AbcSize
+      def process_batch(event)
         labels = get_labels(event)
         offset_lag = event.payload.fetch(:offset_lag)
         messages = event.payload.fetch(:message_count)

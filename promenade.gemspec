@@ -2,7 +2,7 @@ lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "promenade/version"
 
-Gem::Specification.new do |spec|
+Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
   spec.name          = "promenade"
   spec.version       = Promenade::VERSION
   spec.authors       = ["Ed Robinson"]
@@ -21,6 +21,8 @@ Gem::Specification.new do |spec|
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
+
+  spec.required_ruby_version = "~> 2.5"
 
   spec.add_dependency "activesupport"
   spec.add_dependency "prometheus-client-mmap", "~> 0.9.3"
