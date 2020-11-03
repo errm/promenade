@@ -9,7 +9,7 @@ module Promenade
         doc "Lag between message create and consume time"
       end
 
-      Promenade.gauge :kafka_consumer_ofset_lag do
+      Promenade.gauge :kafka_consumer_offset_lag do
         doc "Lag between message create and consume time"
       end
 
