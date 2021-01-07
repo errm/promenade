@@ -5,12 +5,16 @@ require "rubocop/rake_task"
 RSpec::Core::RakeTask.new(:spec)
 RuboCop::RakeTask.new
 
-task default: %i(spec rubocop)
+task default: %i(spec rubocop integration)
 
 task :clean do
   sh "rm -rf tmp/promenade"
 end
 
+task integration: :clean do
+  sh "bin/integration_test"
+end
+
 task spec: :clean
 
-task release: :spec
+task release: :default
