@@ -25,7 +25,7 @@ Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
   spec.required_ruby_version = "~> 2.5"
 
   spec.add_dependency "activesupport"
-  spec.add_dependency "prometheus-client-mmap", "~> 0.9.3"
+  spec.add_dependency "prometheus-client-mmap", "~> 0.12.0"
   spec.add_dependency "rack"
 
   spec.add_development_dependency "bundler", "~> 2.0"

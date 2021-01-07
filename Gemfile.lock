@@ -3,7 +3,7 @@ PATH
   specs:
     promenade (0.3.0)
       activesupport
-      prometheus-client-mmap (~> 0.9.3)
+      prometheus-client-mmap (~> 0.12.0)
       rack
 
 GEM
@@ -49,7 +49,7 @@ GEM
     parallel (1.19.2)
     parser (2.7.1.4)
       ast (~> 2.4.1)
-    prometheus-client-mmap (0.9.10)
+    prometheus-client-mmap (0.12.0)
     pry (0.13.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -126,4 +126,4 @@ DEPENDENCIES
   simplecov
 
 BUNDLED WITH
-   2.1.4
+   2.2.14
