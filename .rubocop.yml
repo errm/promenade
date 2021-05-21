@@ -14,3 +14,5 @@ Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: comma
 Rails/RakeEnvironment:
   Enabled: false
+Rails/EnvironmentVariableAccess:
+  Enabled: false

@@ -22,10 +22,10 @@ Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = "~> 2.5"
+  spec.required_ruby_version = ">= 2.5", "< 4"
 
   spec.add_dependency "activesupport"
-  spec.add_dependency "prometheus-client-mmap", "~> 0.9.3"
+  spec.add_dependency "prometheus-client-mmap", "~> 0.12.0"
   spec.add_dependency "rack"
 
   spec.add_development_dependency "bundler", "~> 2.0"
