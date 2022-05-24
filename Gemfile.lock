@@ -3,7 +3,7 @@ PATH
   specs:
     promenade (0.2.2)
       activesupport
-      prometheus-client-mmap (~> 0.12.0)
+      prometheus-client-mmap (~> 0)
       rack
 
 GEM
@@ -47,7 +47,7 @@ GEM
     parallel (1.20.1)
     parser (3.0.1.1)
       ast (~> 2.4.1)
-    prometheus-client-mmap (0.12.0)
+    prometheus-client-mmap (0.16.0)
     pry (0.14.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -128,4 +128,4 @@ DEPENDENCIES
   webrick
 
 BUNDLED WITH
-   2.1.4
+   2.2.32
