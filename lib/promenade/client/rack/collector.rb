@@ -77,9 +77,10 @@ module Promenade
             :exceptions_counter
 
           def trace(env)
-            start = Time.now
+            start = current_time
             yield.tap do |response|
-              duration = (Time.now - start).to_f
+              finish = current_time
+              duration = (finish - start).to_f
               record(labels(env, response), duration)
             end
           rescue StandardError => e
@@ -96,6 +97,10 @@ module Promenade
             durations_histogram.observe(labels, duration)
           rescue StandardError => e
             exception_handler.call(e, exceptions_counter)
+          end
+
+          def current_time
+            Process.clock_gettime(Process::CLOCK_MONOTONIC)
           end
       end
     end
