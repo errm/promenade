@@ -10,62 +10,71 @@ module Promenade
       # a HTTP tracer. The default label builder can be modified to export a
       # different set of labels per recorded metric.
       class Collector
-        attr_reader :app, :registry, :label_builder, :exception_handler
+        REQUEST_METHOD = "REQUEST_METHOD".freeze
+        private_constant :REQUEST_METHOD
+
+        HTTP_HOST = "HTTP_HOST".freeze
+        private_constant :HTTP_HOST
+
+        PATH_INFO = "PATH_INFO".freeze
+        private_constant :PATH_INFO
 
         DEFAULT_LABEL_BUILDER = proc do |env|
           {
-            method: env["REQUEST_METHOD"].downcase,
-            host:   env["HTTP_HOST"].to_s,
-            path:   env["PATH_INFO"].to_s,
+            method: env[REQUEST_METHOD].downcase,
+            host:   env[HTTP_HOST].to_s,
+            path:   env[PATH_INFO].to_s,
           }
         end
         private_constant :DEFAULT_LABEL_BUILDER
 
-        DEFAULT_EXCEPTION_HANDLER = proc do |exception|
-          @exceptions.increment(exception: exception.class.name)
+        DEFAULT_EXCEPTION_HANDLER = proc do |exception, counter|
+          counter.increment(exception: exception.class.name)
+          raise exception
         end
         private_constant :DEFAULT_EXCEPTION_HANDLER
 
         def initialize(app,
-                       options: {},
+                       registry: ::Prometheus::Client.registry,
                        label_builder: DEFAULT_LABEL_BUILDER,
                        exception_handler: DEFAULT_EXCEPTION_HANDLER)
           @app = app
-          @registry = options[:registry] || ::Prometheus::Client.registry
+          @registry = registry
           @label_builder = label_builder
           @exception_handler = exception_handler
 
-          init_request_metrics
+          @requests_counter = registry.counter(
+            :http_requests_total,
+            "A counter of the total number of HTTP requests made.",
+          )
+          @durations_summary = registry.summary(
+            :http_request_duration_seconds,
+            "A summary of the response latency.",
+          )
+          @durations_histogram = registry.histogram(
+            :http_req_duration_seconds,
+            "A histogram of the response latency.",
+          )
+          @exceptions_counter = registry.counter(
+            :http_exceptions_total,
+            "A counter of the total number of exceptions raised.",
+          )
         end
 
-        def call(env) # :nodoc:
-          trace(env) { @app.call(env) }
+        def call(env)
+          trace(env) { app.call(env) }
         end
 
-        protected
+        private
 
-          def init_request_metrics
-            @registry.reset!
-            @requests = @registry.counter(
-              :http_requests_total,
-              "A counter of the total number of HTTP requests made.",
-            )
-            @durations = @registry.summary(
-              :http_request_duration_seconds,
-              "A summary of the response latency.",
-            )
-            @durations_hist = @registry.histogram(
-              :http_req_duration_seconds,
-              "A histogram of the response latency.",
-            )
-          end
-
-          def exceptions
-            @_exceptions ||= @registry.counter(
-              :http_exceptions_total,
-              "A counter of the total number of exceptions raised.",
-            )
-          end
+          attr_reader :app,
+            :registry,
+            :label_builder,
+            :exception_handler,
+            :durations_histogram,
+            :durations_summary,
+            :requests_counter,
+            :exceptions_counter
 
           def trace(env)
             start = Time.now
@@ -74,22 +83,19 @@ module Promenade
               record(labels(env, response), duration)
             end
           rescue StandardError => e
-            DEFAULT_EXCEPTION_HANDLER.call(e, exception_handler)
+            exception_handler.call(e, exceptions_counter)
           end
 
           def labels(env, response)
-            @label_builder.call(env).tap do |labels|
-              labels[:code] = response.first.to_s
-            end
+            label_builder.call(env).merge!(code: response.first.to_s)
           end
 
           def record(labels, duration)
-            @requests.increment(labels)
-            @durations.observe(labels, duration)
-            @durations_hist.observe(labels, duration)
-
+            requests_counter.increment(labels)
+            durations_summary.observe(labels, duration)
+            durations_histogram.observe(labels, duration)
           rescue StandardError => e
-            DEFAULT_EXCEPTION_HANDLER.call(e, exception_handler)
+            exception_handler.call(e, exceptions_counter)
           end
       end
     end

@@ -91,7 +91,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
     it "accepts a custom block for Histogram labels" do
       env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
       app = TestRackApp.new
-      custom_label_builder = proc { |env| { foo: "bar", fizz: env["fizz"] } }
+      custom_label_builder = proc { |_env| { foo: "bar", fizz: _env["fizz"] } }
       middleware = Promenade::Client::Rack::Collector.new(app, label_builder: custom_label_builder)
 
       expected_duration = 1.0
@@ -107,7 +107,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
     it "accepts a custom block for Summary labels" do
       env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
       app = TestRackApp.new
-      custom_label_builder = proc { |env| { foo: "bar", fizz: env["fizz"] } }
+      custom_label_builder = proc { |_env| { foo: "bar", fizz: _env["fizz"] } }
       middleware = Promenade::Client::Rack::Collector.new(app, label_builder: custom_label_builder)
 
       expected_duration = 1.0
@@ -123,7 +123,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
     it "accepts a custom block for Counter labels" do
       env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
       app = TestRackApp.new
-      custom_label_builder = proc { |env| { foo: "bar", fizz: env["fizz"] } }
+      custom_label_builder = proc { |_env| { foo: "bar", fizz: _env["fizz"] } }
       middleware = Promenade::Client::Rack::Collector.new(app, label_builder: custom_label_builder)
 
       expected_duration = 1.0
@@ -138,11 +138,23 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
 
     it "increments the exceptions counter if status code is an error" do
       env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
-      app = proc { |env| raise(StandardError, "Status code 500") }
+      app = proc { raise(StandardError, "Status code 500") }
       middleware = Promenade::Client::Rack::Collector.new(app)
       counter = fetch_metric(:http_exceptions_total)
 
       expect(counter).to receive(:increment).with(exception: "StandardError")
+
+      expect { middleware.call(env) }.to raise_error(StandardError)
+    end
+
+    it "calls the custom exception block if provided" do
+      test_handler = double("handler")
+      env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
+      app = proc { |_| raise(StandardError, "Status code 500") }
+      exception_handler = proc { |exception| test_handler.received_exception(exception.message) }
+      middleware = Promenade::Client::Rack::Collector.new(app, exception_handler: exception_handler)
+
+      expect(test_handler).to receive(:received_exception).with("Status code 500")
 
       middleware.call(env)
     end
