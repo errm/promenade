@@ -146,23 +146,11 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
 
       middleware.call(env)
     end
-
-    xit "calls the custom exception block if provided" do
-      test_handler = double("handler")
-      env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
-      app = proc { |_| raise(StandardError, "Status code 500") }
-      exception_handler = proc { |exception| test_double.received_exception(exception.message) }
-      middleware = Promenade::Client::Rack::Collector.new(app)
-
-      expect(test_handler).to receive(:received_exception).with("Status code 500")
-
-      middleware.call(env)
-    end
   end
 
   private
 
     def fetch_metric(metric_name)
-      ::Prometheus::Client.registry.metrics.find { |metric| metric.name == metric_name.to_sym }
+      ::Prometheus::Client.registry.get(metric_name.to_sym)
     end
 end
