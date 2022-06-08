@@ -76,6 +76,7 @@ module Promenade
             :requests_counter,
             :exceptions_counter
 
+          # rubocop:disable Rails/TimeZone
           def trace(env)
             start = Time.now
             yield.tap do |response|
@@ -85,6 +86,7 @@ module Promenade
           rescue StandardError => e
             exception_handler.call(e, exceptions_counter)
           end
+          # rubocop:enable Rails/TimeZone
 
           def labels(env, response)
             label_builder.call(env).merge!(code: response.first.to_s)
