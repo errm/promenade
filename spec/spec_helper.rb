@@ -24,6 +24,15 @@ RSpec.configure do |config|
     allow(Prometheus::Client.configuration).to receive(:value_class).and_return(Prometheus::Client::SimpleValue)
   end
 
+  # Some specs require the same prometheus client between examples, others expect a fresh start.
+  # This allows support for both with the tag :reset_prometheus_client => true
+  config.around(:each, reset_prometheus_client: true) do |example|
+    main_registry = ::Prometheus::Client.registry
+    ::Prometheus::Client.instance_variable_set("@registry", nil)
+    example.run
+    ::Prometheus::Client.instance_variable_set("@registry", main_registry)
+  end
+
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
