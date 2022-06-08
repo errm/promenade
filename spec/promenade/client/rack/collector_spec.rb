@@ -52,7 +52,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
       histogram = fetch_metric(:http_req_duration_seconds)
       expected_labels = { code: "201", path: "/test-path", host: "test.host", method: "post" }
 
-      expect(middleware).to receive(:current_time).and_return(1, 2)
+      expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
       expect(histogram).to receive(:observe).with(expected_labels, expected_duration)
 
       middleware.call(env)
@@ -67,7 +67,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
       summary = fetch_metric(:http_request_duration_seconds)
       expected_labels = { code: "201", path: "/test-path", host: "test.host", method: "post" }
 
-      expect(middleware).to receive(:current_time).and_return(1, 2)
+      expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
       expect(summary).to receive(:observe).with(expected_labels, expected_duration)
 
       middleware.call(env)
@@ -96,7 +96,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
       histogram = fetch_metric(:http_req_duration_seconds)
       expected_labels = { foo: "bar", fizz: "buzz", code: "200" }
 
-      expect(middleware).to receive(:current_time).and_return(1, 2)
+      expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
       expect(histogram).to receive(:observe).with(expected_labels, expected_duration)
 
       middleware.call(env)
@@ -113,7 +113,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
       summary = fetch_metric(:http_request_duration_seconds)
       expected_labels = { foo: "bar", fizz: "buzz", code: "200" }
 
-      expect(middleware).to receive(:current_time).and_return(1, 2)
+      expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
       expect(summary).to receive(:observe).with(expected_labels, expected_duration)
 
       middleware.call(env)
