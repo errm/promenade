@@ -80,7 +80,7 @@ module Promenade
             start = current_time
             yield.tap do |response|
               finish = current_time
-              duration = (finish - start).to_f
+              duration = finish - start
               record(labels(env, response), duration)
             end
           rescue StandardError => e
