@@ -76,13 +76,10 @@ module Promenade
             :requests_counter,
             :exceptions_counter
 
-          def trace(env)
-            start = current_time
-            yield.tap do |response|
-              finish = current_time
-              duration = finish - start
-              record(labels(env, response), duration)
-            end
+          def trace(env, &block)
+            response, duration = yield_with_duration(&block)
+            record(labels(env, response), duration)
+            response
           rescue StandardError => e
             exception_handler.call(e, exceptions_counter)
           end
@@ -101,6 +98,14 @@ module Promenade
 
           def current_time
             Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          end
+
+          def yield_with_duration(&block)
+            start = current_time
+            return_value = yield
+            finish = current_time
+            duration = finish - start
+            [return_value, duration]
           end
       end
     end
