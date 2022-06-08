@@ -78,11 +78,11 @@ module Promenade
 
           def trace(env)
             start = current_time
-            yield.tap do |response|
-              finish = current_time
-              duration = finish - start
-              record(labels(env, response), duration)
-            end
+            response = yield
+            finish = current_time
+            duration = finish - start
+            record(labels(env, response), duration)
+            response
           rescue StandardError => e
             exception_handler.call(e, exceptions_counter)
           end
