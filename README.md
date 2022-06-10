@@ -163,8 +163,8 @@ The default implementation will capture exceptions, count the execption class na
 If you would like to customise this behaviour, you may do so by customising the middleware installation:
 
 ``` ruby
-exception_handler = Proc.new do |exception, exception_counter|
-  # Just re-raise without counting
+exception_handler = Proc.new do |exception, exception_counter, env_hash, request_duration_seconds|
+  # This simple example just re-raises the execption
   raise exception
 end
 Rails.application.config.middleware.insert_before 0, Promenade::Client::Rack::Collector, exception_handler: exception_handler
