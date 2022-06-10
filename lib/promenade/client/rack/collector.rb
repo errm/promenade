@@ -29,7 +29,7 @@ module Promenade
         private_constant :DEFAULT_LABEL_BUILDER
 
         # rubocop:disable Lint/UnusedBlockArgument
-        DEFAULT_EXCEPTION_HANDLER = proc do |exception, counter, env|
+        DEFAULT_EXCEPTION_HANDLER = proc do |exception, counter, env, duration|
           counter.increment(exception: exception.class.name)
           raise exception
         end
@@ -86,7 +86,7 @@ module Promenade
             record(labels(env, response), duration)
             response
           rescue StandardError => e
-            exception_handler.call(e, exceptions_counter, env)
+            exception_handler.call(e, exceptions_counter, env, duration)
           end
 
           def labels(env, response)
@@ -97,8 +97,6 @@ module Promenade
             requests_counter.increment(labels)
             durations_summary.observe(labels, duration)
             durations_histogram.observe(labels, duration)
-          rescue StandardError => e
-            exception_handler.call(e, exceptions_counter, env)
           end
 
           def current_time
