@@ -18,10 +18,9 @@ module Promenade
 
         def call(exception, env_hash, duration)
           labels = RequestLabeler.call(env_hash)
-          histogram.observe(labels, duration)
+          histogram.observe(labels, duration.to_f)
           requests_counter.increment(labels)
           exceptions_counter.increment(exception: exception.class.name)
-
           raise exception
         end
 

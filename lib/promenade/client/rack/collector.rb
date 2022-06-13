@@ -24,40 +24,24 @@ module Promenade
 
         EXCEPTIONS_COUNTER_NAME = :http_exceptions_total
 
-        DEFAULT_LABEL_BUILDER = RequestLabeler.singleton
-
-        DEFAULT_EXCEPTION_HANDLER = ExceptionHandler.initialize_singleton(
-          histogram_name: HISTOGRAM_NAME,
-          requests_counter_name: COUNTER_NAME,
-          exceptions_counter_name: EXCEPTIONS_COUNTER_NAME,
-          registry: ::Prometheus::Client.registry,
-        )
-
         private_constant *%i(
           REQUEST_METHOD
           HTTP_HOST
           PATH_INFO
-          DEFAULT_LABEL_BUILDER
           HISTOGRAM_NAME
           REQUESTS_COUNTER_NAME
           EXCEPTIONS_COUNTER_NAME
-          DEFAULT_EXCEPTION_HANDLER
         )
 
         def initialize(app,
                        registry: ::Prometheus::Client.registry,
-                       label_builder: DEFAULT_LABEL_BUILDER,
-                       exception_handler: DEFAULT_EXCEPTION_HANDLER)
+                       label_builder: RequestLabeler,
+                       exception_handler: nil)
           @app = app
           @registry = registry
           @label_builder = label_builder
           @exception_handler = exception_handler
-
-          @requests_counter = registry.counter(REQUESTS_COUNTER_NAME,
-            "A counter of the total number of HTTP requests made.")
-          @durations_histogram = registry.histogram(HISTOGRAM_NAME, "A histogram of the response latency.")
-          @exceptions_counter = registry.counter(EXCEPTIONS_COUNTER_NAME,
-            "A counter of the total number of exceptions raised.")
+          register_metrics!
         end
 
         def call(env)
@@ -68,11 +52,7 @@ module Promenade
 
           attr_reader :app,
             :registry,
-            :label_builder,
-            :exception_handler,
-            :durations_histogram,
-            :requests_counter,
-            :exceptions_counter
+            :label_builder
 
           def trace(env)
             start = current_time
@@ -82,7 +62,7 @@ module Promenade
             record(labels(env, response), duration)
             response
           rescue StandardError => e
-            exception_handler.call(e, exceptions_counter, env, duration)
+            exception_handler.call(e, env, duration)
           end
 
           def labels(env, response)
@@ -96,6 +76,35 @@ module Promenade
 
           def current_time
             Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          end
+
+          def durations_histogram
+            registry.get(HISTOGRAM_NAME)
+          end
+
+          def requests_counter
+            registry.get(REQUESTS_COUNTER_NAME)
+          end
+
+          def register_metrics!
+            registry.counter(REQUESTS_COUNTER_NAME, "A counter of the total number of HTTP requests made.")
+            registry.histogram(HISTOGRAM_NAME, "A histogram of the response latency.")
+            registry.counter(EXCEPTIONS_COUNTER_NAME, "A counter of the total number of exceptions raised.")
+          end
+
+          # rubocop:disable Naming/MemoizedInstanceVariableName
+          def exception_handler
+            @exception_handler ||= default_exception_handler
+          end
+          # rubocop:enable Naming/MemoizedInstanceVariableName
+
+          def default_exception_handler
+            ExceptionHandler.initialize_singleton(
+              histogram_name: HISTOGRAM_NAME,
+              requests_counter_name: REQUESTS_COUNTER_NAME,
+              exceptions_counter_name: EXCEPTIONS_COUNTER_NAME,
+              registry: registry,
+            )
           end
       end
     end
