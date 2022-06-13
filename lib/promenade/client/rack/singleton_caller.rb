@@ -2,12 +2,12 @@ module Promenade
   module Client
     module Rack
       module SingletonCaller
-        def initialize_singleton(*args, **keyword_args, &block)
-          @singleton = new(*args, **keyword_args, &block)
+        def initialize_singleton(*args)
+          @singleton = new(*args)
         end
 
-        def call(*args, **keyword_args, &block)
-          singleton.call(*args, **keyword_args, &block)
+        def call(*args)
+          singleton.call(*args)
         end
 
         def singleton
