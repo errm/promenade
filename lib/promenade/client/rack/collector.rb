@@ -1,4 +1,6 @@
 require "prometheus/client"
+require_relative "request_labeler"
+require_relative "exception_handler"
 
 module Promenade
   module Client
@@ -11,30 +13,36 @@ module Promenade
       # different set of labels per recorded metric.
       class Collector
         REQUEST_METHOD = "REQUEST_METHOD".freeze
-        private_constant :REQUEST_METHOD
 
         HTTP_HOST = "HTTP_HOST".freeze
-        private_constant :HTTP_HOST
 
         PATH_INFO = "PATH_INFO".freeze
-        private_constant :PATH_INFO
 
-        DEFAULT_LABEL_BUILDER = proc do |env|
-          {
-            method: env[REQUEST_METHOD].downcase,
-            host:   env[HTTP_HOST].to_s,
-            path:   env[PATH_INFO].to_s,
-          }
-        end
-        private_constant :DEFAULT_LABEL_BUILDER
+        HISTOGRAM_NAME = :http_req_duration_seconds
 
-        # rubocop:disable Lint/UnusedBlockArgument
-        DEFAULT_EXCEPTION_HANDLER = proc do |exception, counter, env, duration|
-          counter.increment(exception: exception.class.name)
-          raise exception
-        end
-        private_constant :DEFAULT_EXCEPTION_HANDLER
-        # rubocop:enable Lint/UnusedBlockArgument
+        REQUESTS_COUNTER_NAME = :http_requests_total
+
+        EXCEPTIONS_COUNTER_NAME = :http_exceptions_total
+
+        DEFAULT_LABEL_BUILDER = RequestLabeler.singleton
+
+        DEFAULT_EXCEPTION_HANDLER = ExceptionHandler.initialize_singleton(
+          histogram_name: HISTOGRAM_NAME,
+          requests_counter_name: COUNTER_NAME,
+          exceptions_counter_name: EXCEPTIONS_COUNTER_NAME,
+          registry: ::Prometheus::Client.registry,
+        )
+
+        private_constant *%i(
+          REQUEST_METHOD
+          HTTP_HOST
+          PATH_INFO
+          DEFAULT_LABEL_BUILDER
+          HISTOGRAM_NAME
+          REQUESTS_COUNTER_NAME
+          EXCEPTIONS_COUNTER_NAME
+          DEFAULT_EXCEPTION_HANDLER
+        )
 
         def initialize(app,
                        registry: ::Prometheus::Client.registry,
@@ -45,22 +53,11 @@ module Promenade
           @label_builder = label_builder
           @exception_handler = exception_handler
 
-          @requests_counter = registry.counter(
-            :http_requests_total,
-            "A counter of the total number of HTTP requests made.",
-          )
-          @durations_summary = registry.summary(
-            :http_request_duration_seconds,
-            "A summary of the response latency.",
-          )
-          @durations_histogram = registry.histogram(
-            :http_req_duration_seconds,
-            "A histogram of the response latency.",
-          )
-          @exceptions_counter = registry.counter(
-            :http_exceptions_total,
-            "A counter of the total number of exceptions raised.",
-          )
+          @requests_counter = registry.counter(REQUESTS_COUNTER_NAME,
+            "A counter of the total number of HTTP requests made.")
+          @durations_histogram = registry.histogram(HISTOGRAM_NAME, "A histogram of the response latency.")
+          @exceptions_counter = registry.counter(EXCEPTIONS_COUNTER_NAME,
+            "A counter of the total number of exceptions raised.")
         end
 
         def call(env)
@@ -74,7 +71,6 @@ module Promenade
             :label_builder,
             :exception_handler,
             :durations_histogram,
-            :durations_summary,
             :requests_counter,
             :exceptions_counter
 
@@ -95,7 +91,6 @@ module Promenade
 
           def record(labels, duration)
             requests_counter.increment(labels)
-            durations_summary.observe(labels, duration)
             durations_histogram.observe(labels, duration)
           end
 
