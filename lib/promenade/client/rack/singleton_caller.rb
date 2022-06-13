@@ -1,4 +1,3 @@
-# rubocop:disable Lint/Syntax
 module Promenade
   module Client
     module Rack
@@ -12,12 +11,12 @@ module Promenade
             singleton.call(*args)
           end
         else
-          def initialize_singleton(...)
-            @singleton = new(...)
+          def initialize_singleton(*args, **keyword_args, &block)
+            @singleton = new(*args, **keyword_args, &block)
           end
 
-          def call(...)
-            singleton.call(...)
+          def call(*args, **keyword_args, &block)
+            singleton.call(*args, **keyword_args, &block)
           end
         end
 
@@ -28,4 +27,3 @@ module Promenade
     end
   end
 end
-# rubocop:enable Lint/Syntax
