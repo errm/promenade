@@ -17,7 +17,9 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
   end
 
   after do
-    Promenade::Client::Rack::ExceptionHandler.remove_instance_variable("@singleton")
+    if Promenade::Client::Rack::ExceptionHandler.instance_variables.include?(:@singleton)
+      Promenade::Client::Rack::ExceptionHandler.remove_instance_variable(:@singleton)
+    end
     ::Prometheus::Client.reset!
   end
 
