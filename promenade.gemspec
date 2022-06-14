@@ -24,17 +24,18 @@ Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
 
   spec.required_ruby_version = ">= 2.7", "< 3.2"
 
-  spec.add_dependency "activesupport"
-  spec.add_dependency "prometheus-client-mmap", "~> 0.12.0"
+  spec.add_dependency "activesupport", "> 6.0", "< 8.0"
+  spec.add_dependency "prometheus-client-mmap", "~> 0.16.0"
   spec.add_dependency "rack"
 
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "climate_control"
   spec.add_development_dependency "deep-cover"
-  spec.add_development_dependency "rake", "~> 13.0"
-  spec.add_development_dependency "rspec", "~> 3.0"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec", "~> 3.11"
   spec.add_development_dependency "rubocop"
   spec.add_development_dependency "rubocop-performance"
   spec.add_development_dependency "rubocop-rails"
   spec.add_development_dependency "simplecov"
+  spec.metadata["rubygems_mfa_required"] = "true"
 end
