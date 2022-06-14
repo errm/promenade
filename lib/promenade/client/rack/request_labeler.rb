@@ -35,12 +35,12 @@ module Promenade
 
           def controller_action_from_env(env)
             controller = env.dig(PARAMS_KEY, CONTROLLER) ||
-              env.dig(PATH_PARAMS_KEY, CONTROLLER.to_sym) ||
-              UNKNOWN
+                         env.dig(PATH_PARAMS_KEY, CONTROLLER.to_sym) ||
+                         UNKNOWN
 
             action = env.dig(PARAMS_KEY, ACTION) ||
-              env.dig(PATH_PARAMS_KEY, ACTION.to_sym) ||
-              UNKNOWN
+                     env.dig(PATH_PARAMS_KEY, ACTION.to_sym) ||
+                     UNKNOWN
 
             [controller, action].join(SEPARATOR)
           end
