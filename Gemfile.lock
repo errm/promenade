@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     promenade (0.2.2)
+      actionpack
       activesupport
       prometheus-client-mmap (~> 0.12.0)
       rack
