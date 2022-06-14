@@ -1,0 +1,559 @@
+Started GET "/success-endpoint" for 127.0.0.1 at 2022-06-14 13:30:25 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.3ms | Allocations: 2171)
+Started GET "/success-endpoint" for 127.0.0.1 at 2022-06-14 13:31:48 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.3ms | Allocations: 2171)
+Started GET "/success-endpoint" for 127.0.0.1 at 2022-06-14 13:45:15 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 1.0ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.7ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.9ms | Allocations: 2170)
+Started GET "/success-endpoint" for 127.0.0.1 at 2022-06-14 13:47:47 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 3.0ms | Allocations: 2170)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 13:53:31 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 196)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 13:59:15 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 196)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:00:46 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 196)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:01:43 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 196)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:04:37 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 196)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:05:10 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 203)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 14:06:04 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 0.9ms | Allocations: 505)
+Completed 401 Unauthorized in 4ms (Views: 4.0ms | Allocations: 2143)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:06:26 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 203)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 14:07:12 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.6ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.3ms | Allocations: 2170)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:07:12 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 14:07:12 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 71)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 172)
+Completed 401 Unauthorized in 1ms (Views: 1.0ms | Allocations: 480)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 14:07:40 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.6ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.2ms | Allocations: 2170)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:07:40 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 14:07:40 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 71)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 172)
+Completed 401 Unauthorized in 1ms (Views: 1.0ms | Allocations: 480)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 14:09:35 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.1ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 3.3ms | Allocations: 2170)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:09:35 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 14:09:35 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 71)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 172)
+Completed 401 Unauthorized in 1ms (Views: 1.0ms | Allocations: 480)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:10:06 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 203)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 14:10:10 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.4ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 0.8ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 2.6ms | Allocations: 2170)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:10:10 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 14:10:10 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.1ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.3ms | Allocations: 168)
+Completed 401 Unauthorized in 1ms (Views: 0.7ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 14:11:19 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 1.0ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.7ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.9ms | Allocations: 2170)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:11:19 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 14:11:19 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.3ms | Allocations: 168)
+Completed 418  in 1ms (Views: 0.8ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 14:12:06 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 0.9ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.2ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:12:06 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 14:12:06 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.0ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 14:54:26 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 3.2ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 14:54:26 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 153)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 14:54:26 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.0ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:01:36 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 0.9ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 3.1ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:01:36 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 153)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:01:36 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 0.9ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:02:10 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.4ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:02:10 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 153)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:02:10 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.5ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.0ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:03:03 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.3ms | Allocations: 2170)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:03:03 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 159)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:03:03 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 0.9ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:03:54 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 0.9ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 2.7ms | Allocations: 2170)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:03:54 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 159)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:03:54 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 0.9ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:12:04 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 0.9ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.2ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:12:04 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 159)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:12:04 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.0ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:13:11 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.3ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:13:11 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 159)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:13:11 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 0.9ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:14:24 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.6ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.3ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:14:24 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 159)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:14:24 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.0ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:17:29 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 0.9ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 2.9ms | Allocations: 2170)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:17:29 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 153)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:17:29 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 0.9ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:22:12 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.6ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.7ms | Allocations: 2171)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:22:26 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 0.9ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 3.1ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:22:26 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 157)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:22:26 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 0.8ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:22:31 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.6ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.4ms | Allocations: 2172)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:22:31 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 157)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:22:31 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.2ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:24:10 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 0.9ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 3.1ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:24:10 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:24:10 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 2ms (Views: 1.5ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:26:15 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 3.2ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:26:15 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 1ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:26:15 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.4ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.6ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.2ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:29:26 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.6ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.9ms | Allocations: 505)
+Completed 200 OK in 6ms (Views: 4.2ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:29:26 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:29:26 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 1.4ms | Allocations: 168)
+Completed 418  in 2ms (Views: 2.0ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:30:51 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.2ms | Allocations: 505)
+Completed 200 OK in 7ms (Views: 5.0ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:30:51 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:30:51 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 2ms (Views: 1.6ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:30:55 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.6ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.1ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.5ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:30:55 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:30:55 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.3ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:32:01 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 4ms (Views: 3.2ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:32:01 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:32:01 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.4ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:32:15 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.5ms | Allocations: 505)
+Completed 200 OK in 7ms (Views: 5.3ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:32:15 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:32:15 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.7ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 168)
+Completed 418  in 2ms (Views: 1.5ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:32:19 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | Allocations: 505)
+Completed 200 OK in 5ms (Views: 3.2ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:32:19 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:32:19 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 1.1ms | Allocations: 168)
+Completed 418  in 2ms (Views: 1.7ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:32:21 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.7ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.8ms | Allocations: 505)
+Completed 200 OK in 7ms (Views: 5.9ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:32:21 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 1ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:32:21 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.4ms | Allocations: 168)
+Completed 418  in 2ms (Views: 1.5ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:34:20 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.6ms | Allocations: 505)
+Completed 200 OK in 7ms (Views: 5.3ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:34:20 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:34:20 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.2ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.8ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.4ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:36:30 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.5ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 2.1ms | Allocations: 505)
+Completed 200 OK in 7ms (Views: 5.3ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:36:30 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:36:30 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.7ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.9ms | Allocations: 168)
+Completed 418  in 2ms (Views: 1.5ms | Allocations: 472)
+Started GET "/success" for 127.0.0.1 at 2022-06-14 15:36:35 +0100
+Processing by TestResponsesController#success as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/success.html.erb within layouts/application
+  Rendered test_responses/success.html.erb within layouts/application (Duration: 0.4ms | Allocations: 227)
+  Rendered layout layouts/application.html.erb (Duration: 1.3ms | Allocations: 505)
+Completed 200 OK in 6ms (Views: 4.5ms | Allocations: 2171)
+Started GET "/server-error" for 127.0.0.1 at 2022-06-14 15:36:35 +0100
+Processing by TestResponsesController#server_error as HTML
+Completed 500 Internal Server Error in 0ms (Allocations: 156)
+Started GET "/client-error" for 127.0.0.1 at 2022-06-14 15:36:35 +0100
+Processing by TestResponsesController#client_error as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering test_responses/client_error.html.erb within layouts/application
+  Rendered test_responses/client_error.html.erb within layouts/application (Duration: 0.7ms | Allocations: 70)
+  Rendered layout layouts/application.html.erb (Duration: 0.8ms | Allocations: 168)
+Completed 418  in 1ms (Views: 1.4ms | Allocations: 472)

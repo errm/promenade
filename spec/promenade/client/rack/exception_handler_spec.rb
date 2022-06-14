@@ -24,7 +24,7 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
   end
 
   describe "#call" do
-    it "adds the request to the :http_req_duration_seconds histogram" do
+    it "adds the desired labels and values to the :http_req_duration_seconds histogram" do
       env_hash = {
         "action_dispatch.request.parameters" => {
           "controller" => "test-controller",
@@ -42,15 +42,14 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
         controller_action: "test-controller#test-action",
         method: "post",
         host: "test.host",
+        code: "500",
       }, request_duration_seconds)
-      begin
+      expect {
         Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
-      rescue exception_klass
-        # noop
-      end
+      }.to raise_error(exception_klass)
     end
 
-    it "adds the request to the :http_requests_total counter" do
+    it "adds the desired labels and values to the :http_requests_total counter" do
       env_hash = {
         "action_dispatch.request.parameters" => {
           "controller" => "test-controller",
@@ -68,12 +67,11 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
         controller_action: "test-controller#test-action",
         method: "post",
         host: "test.host",
+        code: "500",
       })
-      begin
+      expect {
         Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
-      rescue exception_klass
-        # noop
-      end
+      }.to raise_error(exception_klass)
     end
 
     it "adds the exception to the http_exceptions_total counter" do
@@ -91,11 +89,9 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
       request_duration_seconds = 1.0
 
       expect(exceptions_counter).to receive(:increment).with(exception: "ExceptionKlass")
-      begin
+      expect {
         Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
-      rescue exception_klass
-        # noop
-      end
+      }.to raise_error(exception_klass)
     end
 
     it "re-raises the exception" do

@@ -28,11 +28,14 @@ RSpec.describe Promenade do
         let(:pwd_root) { Pathname.new(Dir.mktmpdir) }
         let(:pwd_dir) { pwd_root.join("tmp", "promenade").realpath }
 
-        around do |example|
+        before do
           Dir.chdir(pwd_root) do
+            allow(Promenade).to receive(:rails_defined?).and_return(false)
             Promenade.setup
-            example.run
           end
+        end
+
+        after do
           FileUtils.rm_rf pwd_root
         end
 

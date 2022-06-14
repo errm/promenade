@@ -1,3 +1,4 @@
+require "action_dispatch/middleware/exception_wrapper.rb"
 require_relative "singleton_caller"
 require_relative "request_labeler"
 
@@ -18,9 +19,12 @@ module Promenade
 
         def call(exception, env_hash, duration)
           labels = RequestLabeler.call(env_hash)
+          labels.merge!(code: status_code_for_exception(exception))
+
           histogram.observe(labels, duration.to_f)
           requests_counter.increment(labels)
           exceptions_counter.increment(exception: exception.class.name)
+
           raise exception
         end
 
@@ -36,6 +40,10 @@ module Promenade
 
           def exceptions_counter
             registry.get(exceptions_counter_name)
+          end
+
+          def status_code_for_exception(exception)
+            ActionDispatch::ExceptionWrapper.new(nil, exception).status_code.to_s
           end
       end
     end

@@ -56,13 +56,13 @@ module Promenade
 
           def trace(env)
             start = current_time
-            response = yield
-            finish = current_time
-            duration = finish - start
-            record(labels(env, response), duration)
-            response
-          rescue StandardError => e
-            exception_handler.call(e, env, duration)
+            begin
+              response = yield
+              record(labels(env, response), duration_since(start))
+              response
+            rescue StandardError => e
+              exception_handler.call(e, env, duration_since(start))
+            end
           end
 
           def labels(env, response)
@@ -72,6 +72,10 @@ module Promenade
           def record(labels, duration)
             requests_counter.increment(labels)
             durations_histogram.observe(labels, duration)
+          end
+
+          def duration_since(start_time)
+            current_time - start_time
           end
 
           def current_time

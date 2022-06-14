@@ -1,16 +1,25 @@
 require "pathname"
 
 module Promenade
-  def self.root_dir
-    rails_root = defined?(Rails) && Rails.root
-    rails_root || Pathname.new(ENV.fetch("RAILS_ROOT", Dir.pwd))
+  module_function
+
+  def root_dir
+    if rails_defined?
+      Rails.root
+    else
+      Pathname.new(ENV.fetch("RAILS_ROOT", Dir.pwd))
+    end
   end
 
-  def self.multiprocess_files_dir
+  def rails_defined?
+    defined?(Rails)
+  end
+
+  def multiprocess_files_dir
     ENV.fetch("PROMETHEUS_MULTIPROC_DIR", root_dir.join("tmp", "promenade"))
   end
 
-  def self.setup
+  def setup
     unless File.directory? multiprocess_files_dir
       FileUtils.mkdir_p multiprocess_files_dir
     end
