@@ -11,6 +11,6 @@ class TestResponsesController < ApplicationController
 
   def not_found
     raise ActionController::RoutingError,
-          "No route matches [#{request.env['REQUEST_METHOD']}] #{request.env['PATH_INFO'].inspect}"
+      "No route matches [#{request.env['REQUEST_METHOD']}] #{request.env['PATH_INFO'].inspect}"
   end
 end
