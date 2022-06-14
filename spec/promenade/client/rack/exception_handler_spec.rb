@@ -44,9 +44,9 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
         host: "test.host",
         code: "500",
       }, request_duration_seconds)
-      expect {
+      expect do
         Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
-      }.to raise_error(exception_klass)
+      end.to raise_error(exception_klass)
     end
 
     it "adds the desired labels and values to the :http_requests_total counter" do
@@ -69,9 +69,9 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
         host: "test.host",
         code: "500",
       })
-      expect {
+      expect do
         Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
-      }.to raise_error(exception_klass)
+      end.to raise_error(exception_klass)
     end
 
     it "adds the exception to the http_exceptions_total counter" do
@@ -89,9 +89,9 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
       request_duration_seconds = 1.0
 
       expect(exceptions_counter).to receive(:increment).with(exception: "ExceptionKlass")
-      expect {
+      expect do
         Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
-      }.to raise_error(exception_klass)
+      end.to raise_error(exception_klass)
     end
 
     it "re-raises the exception" do

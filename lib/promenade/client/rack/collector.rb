@@ -40,7 +40,7 @@ module Promenade
           @app = app
           @registry = registry
           @label_builder = label_builder
-          @exception_handler = exception_handler
+          @exception_handler = exception_handler || default_exception_handler
           register_metrics!
         end
 
@@ -52,7 +52,8 @@ module Promenade
 
           attr_reader :app,
             :registry,
-            :label_builder
+            :label_builder,
+            :exception_handler
 
           def trace(env)
             start = current_time
@@ -95,12 +96,6 @@ module Promenade
             registry.histogram(HISTOGRAM_NAME, "A histogram of the response latency.")
             registry.counter(EXCEPTIONS_COUNTER_NAME, "A counter of the total number of exceptions raised.")
           end
-
-          # rubocop:disable Naming/MemoizedInstanceVariableName
-          def exception_handler
-            @exception_handler ||= default_exception_handler
-          end
-          # rubocop:enable Naming/MemoizedInstanceVariableName
 
           def default_exception_handler
             ExceptionHandler.initialize_singleton(

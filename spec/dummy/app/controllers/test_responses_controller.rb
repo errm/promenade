@@ -1,6 +1,5 @@
 class TestResponsesController < ApplicationController
-  def success
-  end
+  def success; end
 
   def server_error
     raise StandardError, "Server error 500"

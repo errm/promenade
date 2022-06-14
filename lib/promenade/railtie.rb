@@ -7,7 +7,7 @@ module Promenade
     initializer "promenade.configure_rails_initialization" do
       Promenade.setup
       Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
-                                                       Promenade::Client::Rack::Collector
+        Promenade::Client::Rack::Collector
     end
   end
 end

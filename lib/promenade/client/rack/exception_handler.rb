@@ -1,4 +1,4 @@
-require "action_dispatch/middleware/exception_wrapper.rb"
+require "action_dispatch/middleware/exception_wrapper"
 require_relative "singleton_caller"
 require_relative "request_labeler"
 
