@@ -48,4 +48,20 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
 
     get "/client-error"
   end
+
+  it "counts the expected labels for 404 error requests" do
+    histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+    response_duration = 1.0
+    expected_labels = {
+      code: "404",
+      controller_action: "test_responses#not_found",
+      host: "www.example.com",
+      method: "get",
+    }
+
+    expect_any_instance_of(Promenade::Client::Rack::Collector).to receive(:current_time).and_return(1.0, 2.0)
+    expect(histogram).to receive(:observe).with(expected_labels, response_duration)
+
+    expect { get "/not-found" }.to raise_error(ActionController::RoutingError)
+  end
 end
