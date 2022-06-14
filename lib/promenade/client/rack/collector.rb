@@ -22,8 +22,8 @@ module Promenade
         DEFAULT_LABEL_BUILDER = proc do |env|
           {
             method: env[REQUEST_METHOD].downcase,
-            host:   env[HTTP_HOST].to_s,
-            path:   env[PATH_INFO].to_s,
+            host: env[HTTP_HOST].to_s,
+            path: env[PATH_INFO].to_s,
           }
         end
         private_constant :DEFAULT_LABEL_BUILDER
