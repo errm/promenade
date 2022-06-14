@@ -4,10 +4,6 @@ require "rack/mock"
 require "support/test_rack_app"
 
 RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true do
-  before do
-    ::Prometheus::Client.reset!
-  end
-
   describe "#call" do
     it "preserves the status code" do
       env = Rack::MockRequest.env_for
