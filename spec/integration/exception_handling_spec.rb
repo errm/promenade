@@ -64,4 +64,20 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
 
     expect { get "/not-found" }.to raise_error(ActionController::RoutingError)
   end
+
+  it "uses the correct labels for error requests that are redirected" do
+    histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+    response_duration = 1.0
+    expected_labels = {
+      code: "404",
+      controller_action: "errors#not_found",
+      host: "www.example.com",
+      method: "get",
+    }
+
+    expect_any_instance_of(Promenade::Client::Rack::Collector).to receive(:current_time).and_return(1.0, 2.0)
+    expect(histogram).to receive(:observe).with(expected_labels, response_duration)
+
+    expect { get "/404" }.to raise_error(ActionController::RoutingError)
+  end
 end
