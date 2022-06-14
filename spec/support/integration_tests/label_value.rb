@@ -1,6 +1,7 @@
-LabelValue = Struct.new(:label, :value) do
+LabelValue = Struct.new(:label, :value, keyword_init: true) do
   def initialize(string)
-    super(*string.split("="))
+    label, value = string.split("=")
+    super(label: label, value: value)
   end
 
   def <=>(other)
