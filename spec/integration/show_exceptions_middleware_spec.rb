@@ -4,6 +4,9 @@ RSpec.describe "Show exceptions integration", type: :request do
   before do
     enable_show_exceptions
   end
+  after do
+    reset_rails_config
+  end
 
   it "counts the expected labels for 400 error requests" do
     histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
@@ -43,14 +46,19 @@ RSpec.describe "Show exceptions integration", type: :request do
     expect(response.body).to eq("500 Internal Server Error Page\n")
   end
 
-  def enable_show_exceptions
-    method = Rails.application.method(:env_config)
-    expect(Rails.application).to receive(:env_config).with(no_args) do
-      method.call.merge(
-        'action_dispatch.show_exceptions' => true,
-        'action_dispatch.show_detailed_exceptions' => false,
-        'consider_all_requests_local' => false
+  private
+    attr_accessor :initial_env_config
+
+    def enable_show_exceptions
+      self.initial_env_config = Rails.application.env_config
+      Rails.application.env_config.merge!(
+        "action_dispatch.show_exceptions" => true,
+        "action_dispatch.show_detailed_exceptions" => false,
+        "consider_all_requests_local" => false,
       )
     end
-  end
+
+    def reset_rails_config
+      Rails.application.env_config.merge!(initial_env_config)
+    end
 end
