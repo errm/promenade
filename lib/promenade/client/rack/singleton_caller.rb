@@ -11,12 +11,12 @@ module Promenade
             singleton.call(*args)
           end
         else
-          def initialize_singleton(*args, **keyword_args, &block)
-            @singleton = new(*args, **keyword_args, &block)
+          def initialize_singleton(...)
+            @singleton = new(...)
           end
 
-          def call(*args, **keyword_args, &block)
-            singleton.call(*args, **keyword_args, &block)
+          def call(...)
+            singleton.call(...)
           end
         end
 
