@@ -28,9 +28,9 @@ RSpec.configure do |config|
   # This allows support for both with the tag :reset_prometheus_client => true
   config.around(:each, reset_prometheus_client: true) do |example|
     main_registry = ::Prometheus::Client.registry
-    ::Prometheus::Client.instance_variable_set("@registry", nil)
+    ::Prometheus::Client.instance_variable_set(:@registry, nil)
     example.run
-    ::Prometheus::Client.instance_variable_set("@registry", main_registry)
+    ::Prometheus::Client.instance_variable_set(:@registry, main_registry)
   end
 
   config.expect_with :rspec do |c|

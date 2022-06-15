@@ -1,4 +1,6 @@
 require "promenade/kafka"
+require "active_support/notifications"
+require "active_support/isolated_execution_state"
 
 RSpec.describe Promenade::Kafka do
   let(:backend) { ActiveSupport::Notifications }

@@ -4,14 +4,23 @@ require "bundler/setup"
 require "promenade"
 require "fileutils"
 require "net/http"
+require "./spec/support/integration_tests/metrics_line"
+require "./spec/support/integration_tests/label_value"
 
 def test_http_body(expected)
+  expectation = MetricsLine.new(expected)
   uri = URI("http://localhost:9394/metrics")
 
   Net::HTTP.start(uri.host, uri.port) do |http|
     request = Net::HTTP::Get.new uri
     response = http.request request
-    fail "#{response.body} didn't include #{expected}" unless response.body.split("\n").any?(expected)
+    unless response.body.each_line.detect do |string|
+      next if string.start_with?("#")
+
+      MetricsLine.new(string) == expectation
+    end
+      fail "#{response.body} didn't include #{expected}"
+    end
   end
 end
 
