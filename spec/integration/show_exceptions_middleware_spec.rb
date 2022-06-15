@@ -50,7 +50,7 @@ RSpec.describe "Show exceptions integration", type: :request do
     attr_accessor :initial_env_config
 
     def enable_show_exceptions
-      self.initial_env_config = Rails.application.env_config
+      self.initial_env_config = Rails.application.env_config.dup
       Rails.application.env_config.merge!(
         "action_dispatch.show_exceptions" => true,
         "action_dispatch.show_detailed_exceptions" => false,
