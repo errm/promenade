@@ -6,7 +6,7 @@ module Promenade
   class Railtie < ::Rails::Railtie
     initializer "promenade.configure_rails_initialization" do
       Promenade.setup
-      Rails.application.config.middleware.insert_before ActionDispatch::ShowExceptions,
+      Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
         Promenade::Client::Rack::Collector
     end
   end
