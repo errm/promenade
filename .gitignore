@@ -1,14 +1,16 @@
+.rspec_status
+.byebug_history
+.rubocop-https*yml
 /.bundle/
-/.yardoc
-/_yardoc/
 /coverage/
 /doc/
+/log/
 /pkg/
+/.sass-cache/
 /spec/reports/
+/spec/dummy/log
+/spec/dummy/tmp
 /tmp/
-.rubocop-https*yml
-.sass-cache/
-vendor
-
-# rspec failure tracking
-.rspec_status
+/vendor/
+/.yardoc
+/_yardoc/

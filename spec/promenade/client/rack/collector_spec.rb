@@ -43,14 +43,25 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
       middleware.call(env)
     end
 
-    it "records a histogram with code, path, host, and method labels" do
-      env = Rack::MockRequest.env_for("/test-path", "HTTP_HOST" => "test.host", method: :post)
+    it "records a histogram with code, controller_action, host, and method labels" do
+      env = Rack::MockRequest.env_for("/test-path",
+        "HTTP_HOST" => "test.host",
+        "action_dispatch.request.parameters" => {
+          "controller" => "test_controller",
+          "action" => "test_action",
+        },
+        method: :post)
       app = TestRackApp.new(status: 201)
       middleware = Promenade::Client::Rack::Collector.new(app)
 
       expected_duration = 1.0
       histogram = fetch_metric(:http_req_duration_seconds)
-      expected_labels = { code: "201", path: "/test-path", host: "test.host", method: "post" }
+      expected_labels = {
+        code: "201",
+        controller_action: "test_controller#test_action",
+        host: "test.host",
+        method: "post",
+      }
 
       expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
       expect(histogram).to receive(:observe).with(expected_labels, expected_duration)
@@ -58,28 +69,24 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
       middleware.call(env)
     end
 
-    it "records a summary with code, path, host, and method labels" do
-      env = Rack::MockRequest.env_for("/test-path", "HTTP_HOST" => "test.host", method: :post)
-      app = TestRackApp.new(status: 201)
-      middleware = Promenade::Client::Rack::Collector.new(app)
-
-      expected_duration = 1.0
-      summary = fetch_metric(:http_request_duration_seconds)
-      expected_labels = { code: "201", path: "/test-path", host: "test.host", method: "post" }
-
-      expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
-      expect(summary).to receive(:observe).with(expected_labels, expected_duration)
-
-      middleware.call(env)
-    end
-
-    it "records a counter with code, path, host, and method labels" do
-      env = Rack::MockRequest.env_for("/test-path", "HTTP_HOST" => "test.host", method: :post)
+    it "records a counter with code, controller_action, host, and method labels" do
+      env = Rack::MockRequest.env_for("/test-path",
+        "HTTP_HOST" => "test.host",
+        "action_dispatch.request.parameters" => {
+          "controller" => "test_controller",
+          "action" => "test_action",
+        },
+        method: :post)
       app = TestRackApp.new(status: 201)
       middleware = Promenade::Client::Rack::Collector.new(app)
 
       counter = fetch_metric(:http_requests_total)
-      expected_labels = { code: "201", path: "/test-path", host: "test.host", method: "post" }
+      expected_labels = {
+        code: "201",
+        controller_action: "test_controller#test_action",
+        host: "test.host",
+        method: "post",
+      }
 
       expect(counter).to receive(:increment).with(expected_labels)
 
@@ -98,23 +105,6 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
 
       expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
       expect(histogram).to receive(:observe).with(expected_labels, expected_duration)
-
-      middleware.call(env)
-    end
-
-    it "accepts a custom block for Summary labels" do
-      env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
-      app = TestRackApp.new
-      custom_label_builder = proc { |_env| { foo: "bar", fizz: _env["fizz"] } }
-      middleware = Promenade::Client::Rack::Collector.new(app, label_builder: custom_label_builder)
-
-      expected_duration = 1.0
-
-      summary = fetch_metric(:http_request_duration_seconds)
-      expected_labels = { foo: "bar", fizz: "buzz", code: "200" }
-
-      expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
-      expect(summary).to receive(:observe).with(expected_labels, expected_duration)
 
       middleware.call(env)
     end
