@@ -130,7 +130,7 @@ This is ideal if you are worried about accidentally exposing your metrics, are c
 The exporter runs by default on port `9394` and the metrics are available at the standard path of `/metrics`, the stand-alone exporter is configured to use gzip.
 
 
-### Rack Middleware
+### Rails Middleware
 
 Promenade provides custom Rack middleware to track HTTP response times for requests in your Rack application.
 
