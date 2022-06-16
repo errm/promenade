@@ -11,6 +11,8 @@ module Promenade
 
         PARAMS_KEY = "action_dispatch.request.parameters".freeze
 
+        PATH_PARAMS_KEY = "action_dispatch.request.path_parameters".freeze
+
         CONTROLLER = "controller".freeze
 
         ACTION = "action".freeze
@@ -32,8 +34,14 @@ module Promenade
         private
 
           def controller_action_from_env(env)
-            controller = env.dig(PARAMS_KEY, CONTROLLER) || UNKNOWN
-            action = env.dig(PARAMS_KEY, ACTION) || UNKNOWN
+            controller = env.dig(PARAMS_KEY, CONTROLLER) ||
+                         env.dig(PATH_PARAMS_KEY, CONTROLLER.to_sym) ||
+                         UNKNOWN
+
+            action = env.dig(PARAMS_KEY, ACTION) ||
+                     env.dig(PATH_PARAMS_KEY, ACTION.to_sym) ||
+                     UNKNOWN
+
             [controller, action].join(SEPARATOR)
           end
       end
