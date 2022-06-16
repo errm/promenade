@@ -133,6 +133,17 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
       expect { middleware.call(env) }.to raise_error(StandardError)
     end
 
+    it "increments the exceptions counter if status code is an error but app handles exception" do
+      env = Rack::MockRequest.env_for
+      app = proc { [500, {}, "Error body"] }
+      middleware = Promenade::Client::Rack::Collector.new(app)
+      counter = fetch_metric(:http_exceptions_total)
+
+      expect(counter).to receive(:increment)
+
+      middleware.call(env)
+    end
+
     it "calls the custom exception block if provided" do
       test_handler = double("handler")
       env = Rack::MockRequest.env_for("/", "fizz" => "buzz")

@@ -73,6 +73,9 @@ module Promenade
           def record(labels, duration)
             requests_counter.increment(labels)
             durations_histogram.observe(labels, duration)
+            if (500..600).include?(labels[:code].to_i)
+              exceptions_counter.increment(exception: "unknown")
+            end
           end
 
           def duration_since(start_time)
@@ -89,6 +92,10 @@ module Promenade
 
           def requests_counter
             registry.get(REQUESTS_COUNTER_NAME)
+          end
+
+          def exceptions_counter
+            registry.get(EXCEPTIONS_COUNTER_NAME)
           end
 
           def register_metrics!
