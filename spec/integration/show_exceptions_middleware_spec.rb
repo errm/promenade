@@ -47,6 +47,7 @@ RSpec.describe "Show exceptions integration", type: :request do
   end
 
   private
+
     attr_accessor :initial_env_config
 
     def enable_show_exceptions
