@@ -129,6 +129,58 @@ This is ideal if you are worried about accidentally exposing your metrics, are c
 
 The exporter runs by default on port `9394` and the metrics are available at the standard path of `/metrics`, the stand-alone exporter is configured to use gzip.
 
+
+### Rails Middleware
+
+Promenade provides custom Rack middleware to track HTTP response times for requests in your Rails application.
+
+This was originally inspired by [prometheus-client-mmap](https://gitlab.com/gitlab-org/prometheus-client-mmap/-/blob/master/lib/prometheus/client/rack/collector.rb).
+
+**This middleware is automatically added to your Rack stack if your application is a Ruby on Rails app.**
+
+We recommend you add the middleware after `ActionDispatch::ShowExceptions` in your stack, so you can accurately record the controller and action where an exception was raised.
+
+If you want to change the position, or customise the labels and exception handling behaviour, simply remove the middleware from the stack and re-insert it with your own preferences.
+
+``` ruby
+Rails.application.middleware.delete(Promenade::Client::Rack::Collector)
+Rails.application.middleware.insert_after(Rails::Rack::Logger, Promenade::Client::Rack::Collector)
+```
+
+#### Customising the labels recorded for each request
+
+If you would like to collect different labels with each request, you may do so by customising the middleware installation:
+
+``` ruby
+label_builder = Proc.new do |env|
+  {
+    method: env["REQUEST_METHOD"].to_s.downcase,
+    host: env["HTTP_HOST"].to_s,
+    controller: env.dig("action_dispatch.request.parameters", "controller") || "unknown",
+    action: env.dig("action_dispatch.request.parameters", "action") || "unknown"
+  }
+end
+Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
+        Promenade::Client::Rack::Collector
+        label_builder: label_builder
+```
+
+#### Customising how the middleware handles exceptions
+
+The default implementation will capture exceptions, count the execption class name (e.g. `"StandardError"`), and then re-raise the exception.
+
+If you would like to customise this behaviour, you may do so by customising the middleware installation:
+
+``` ruby
+exception_handler = Proc.new do |exception, exception_counter, env_hash, request_duration_seconds|
+  # This simple example just re-raises the execption
+  raise exception
+end
+Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
+        Promenade::Client::Rack::Collector
+        exception_handler: exception_handler
+```
+
 ### Configuration
 
 If you are using rails it should load a railtie and configure promenade.
