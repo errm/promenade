@@ -134,7 +134,9 @@ The exporter runs by default on port `9394` and the metrics are available at the
 
 Promenade provides custom Rack middleware to track HTTP response times for requests in your Rack application. This was originally inspired by [prometheus-client-mmap](https://gitlab.com/gitlab-org/prometheus-client-mmap/-/blob/master/lib/prometheus/client/rack/collector.rb).
 
-You can opt to add this middleware to track the duration, path, host, and method for requests.
+**This middleware is automatically added to your Rack stack if your application is a Ruby on Rails app.**
+
+We recommend you add the middleware after `ActionDispatch::ShowExceptions` in your stack, so you can accurately record the controller and action where an exception was raised.
 
 ``` ruby
 Rails.application.config.middleware.insert_before 0, Promenade::Client::Rack::Collector
