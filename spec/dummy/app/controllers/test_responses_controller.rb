@@ -13,4 +13,8 @@ class TestResponsesController < ApplicationController
     raise ActionController::RoutingError,
       "No route matches [#{request.env['REQUEST_METHOD']}] #{request.env['PATH_INFO'].inspect}"
   end
+
+  def bad_request
+    params.require(:person)
+  end
 end
