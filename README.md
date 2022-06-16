@@ -132,14 +132,19 @@ The exporter runs by default on port `9394` and the metrics are available at the
 
 ### Rack Middleware
 
-Promenade provides custom Rack middleware to track HTTP response times for requests in your Rack application. This was originally inspired by [prometheus-client-mmap](https://gitlab.com/gitlab-org/prometheus-client-mmap/-/blob/master/lib/prometheus/client/rack/collector.rb).
+Promenade provides custom Rack middleware to track HTTP response times for requests in your Rack application.
+
+This was originally inspired by [prometheus-client-mmap](https://gitlab.com/gitlab-org/prometheus-client-mmap/-/blob/master/lib/prometheus/client/rack/collector.rb).
 
 **This middleware is automatically added to your Rack stack if your application is a Ruby on Rails app.**
 
 We recommend you add the middleware after `ActionDispatch::ShowExceptions` in your stack, so you can accurately record the controller and action where an exception was raised.
 
+If you want to change the position, or customise the labels and exception handling behaviour, simply remove the middleware from the stack and re-insert it with your own preferences.
+
 ``` ruby
-Rails.application.config.middleware.insert_before 0, Promenade::Client::Rack::Collector
+Rails.application.middleware.delete(Promenade::Client::Rack::Collector)
+Rails.application.middleware.insert_after(Rails::Rack::Logger, Promenade::Client::Rack::Collector)
 ```
 
 #### Customising the labels recorded for each request
@@ -155,7 +160,9 @@ label_builder = Proc.new do |env|
     action: env.dig("action_dispatch.request.parameters", "action") || "unknown"
   }
 end
-Rails.application.config.middleware.insert_before 0, Promenade::Client::Rack::Collector, label_builder: label_builder
+Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
+        Promenade::Client::Rack::Collector
+        label_builder: label_builder
 ```
 
 #### Customising how the middleware handles exceptions
@@ -169,7 +176,9 @@ exception_handler = Proc.new do |exception, exception_counter, env_hash, request
   # This simple example just re-raises the execption
   raise exception
 end
-Rails.application.config.middleware.insert_before 0, Promenade::Client::Rack::Collector, exception_handler: exception_handler
+Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
+        Promenade::Client::Rack::Collector
+        exception_handler: exception_handler
 ```
 
 ### Configuration
