@@ -24,6 +24,8 @@ module Promenade
 
         EXCEPTIONS_COUNTER_NAME = :http_exceptions_total
 
+        DEFAULT_LATENCY_BUCKETS = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10].freeze
+
         private_constant *%i(
           REQUEST_METHOD
           HTTP_HOST
@@ -36,10 +38,12 @@ module Promenade
         def initialize(app,
                        registry: ::Prometheus::Client.registry,
                        label_builder: RequestLabeler,
+                       latency_buckets: DEFAULT_LATENCY_BUCKETS,
                        exception_handler: nil)
           @app = app
           @registry = registry
           @label_builder = label_builder
+          @latency_buckets = latency_buckets
           @exception_handler = exception_handler || default_exception_handler
           register_metrics!
         end
@@ -53,6 +57,7 @@ module Promenade
           attr_reader :app,
             :registry,
             :label_builder,
+            :latency_buckets,
             :exception_handler
 
           def trace(env)
@@ -93,7 +98,7 @@ module Promenade
 
           def register_metrics!
             registry.counter(REQUESTS_COUNTER_NAME, "A counter of the total number of HTTP requests made.")
-            registry.histogram(HISTOGRAM_NAME, "A histogram of the response latency.")
+            registry.histogram(HISTOGRAM_NAME, "A histogram of the response latency.", {}, latency_buckets)
             registry.counter(EXCEPTIONS_COUNTER_NAME, "A counter of the total number of exceptions raised.")
           end
 
