@@ -144,11 +144,35 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
 
       middleware.call(env)
     end
+
+    it "accepts a custom set of histogram buckets" do
+      Promenade.configure do |config|
+        config.rack_latency_buckets = [1.0, 1.5, 2.0]
+      end
+
+      env = Rack::MockRequest.env_for
+      app = TestRackApp.new
+      middleware = Promenade::Client::Rack::Collector.new(app)
+      expected_labels = { code: "200", controller_action: "unknown#unknown", host: "", method: "get" }
+      histogram = fetch_metric(:http_req_duration_seconds)
+
+      expect(middleware).to receive(:duration_since).and_return(1.5)
+
+      middleware.call(env)
+
+      normalized_histogram_values = histogram_values_to_h(histogram, expected_labels)
+      expect(normalized_histogram_values).to eq({ 1.0 => 0.0, 1.5 => 1.0, 2.0 => 1.0 })
+    end
   end
 
   private
 
     def fetch_metric(metric_name)
       ::Prometheus::Client.registry.get(metric_name.to_sym)
+    end
+
+    def histogram_values_to_h(histogram, expected_labels)
+      histogram_values = histogram.values[expected_labels]
+      histogram_values.transform_values(&:get)
     end
 end

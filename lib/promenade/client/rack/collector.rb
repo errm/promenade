@@ -40,6 +40,7 @@ module Promenade
           @app = app
           @registry = registry
           @label_builder = label_builder
+          @latency_buckets = Promenade.configuration.rack_latency_buckets
           @exception_handler = exception_handler || default_exception_handler
           register_metrics!
         end
@@ -53,6 +54,7 @@ module Promenade
           attr_reader :app,
             :registry,
             :label_builder,
+            :latency_buckets,
             :exception_handler
 
           def trace(env)
@@ -93,7 +95,7 @@ module Promenade
 
           def register_metrics!
             registry.counter(REQUESTS_COUNTER_NAME, "A counter of the total number of HTTP requests made.")
-            registry.histogram(HISTOGRAM_NAME, "A histogram of the response latency.")
+            registry.histogram(HISTOGRAM_NAME, "A histogram of the response latency.", {}, latency_buckets)
             registry.counter(EXCEPTIONS_COUNTER_NAME, "A counter of the total number of exceptions raised.")
           end
 
