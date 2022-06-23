@@ -181,6 +181,20 @@ Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
         exception_handler: exception_handler
 ```
 
+#### Customising the histogram buckets
+
+The default buckets cover a range of latencies from 5 ms to 10s see [Promenade::Configuration::DEFAULT_RACK_LATENCY_BUCKETS](https://github.com/errm/promenade/blob/ea7eb54c04257770a601b7e28b3e13db5d2430bb/lib/promenade/configuration.rb#L5), this is intended to capture the typical range of latencies for a web application. However this might not be suitable for your Service-Level Agreements (SLAs) and would be better to have a way to setup a more convenient buckets(see [histogram bins](https://en.wikipedia.org/wiki/Histogram#Number_of_bins_and_width)).
+
+if you would like to customise the histogram buckets you can create an initializer changing the default values:
+
+```ruby
+# config/initializers/promenade.rb
+
+Promenade.configure do |config|
+  config.rack_latency_buckets = [0.25, 0.350, 0.5, 1, 1.5, 2.5, 5, 10, 15, 19]
+end
+```
+
 ### Configuration
 
 If you are using rails it should load a railtie and configure promenade.
