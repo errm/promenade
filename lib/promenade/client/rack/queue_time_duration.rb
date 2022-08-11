@@ -8,7 +8,6 @@ module Promenade
 
         HEADER_VALUE_MATCHER = /^(?:t=)(?<timestamp>\d{10}(?:\.\d+))$/.freeze
 
-        MILLISECONDS_PER_SECOND = 1_000
 
         def initialize(env:, request_received_time:)
           @env = env
