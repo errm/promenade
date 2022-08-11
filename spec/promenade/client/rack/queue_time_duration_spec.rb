@@ -97,7 +97,7 @@ RSpec.describe Promenade::Client::Rack::QueueTimeDuration do
 
     it "returns nil when the header is present but has invalid timestamp" do
       duration = Promenade::Client::Rack::QueueTimeDuration.new(
-        env: { "HTTP_X_REQUEST_START" => Time.now.to_i.to_s[0..-2] },
+        env: { "HTTP_X_REQUEST_START" => "invalid-value" },
         request_received_time: Time.now.utc,
       )
 
