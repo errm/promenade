@@ -32,6 +32,7 @@ module Promenade
           HTTP_HOST
           PATH_INFO
           REQUEST_DURATION_HISTOGRAM_NAME
+          REQUEST_QUEUE_TIME_HISTOGRAM_NAME
           REQUESTS_COUNTER_NAME
           EXCEPTIONS_COUNTER_NAME
         )
