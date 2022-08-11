@@ -1,6 +1,7 @@
 require "prometheus/client"
 require_relative "request_labeler"
 require_relative "exception_handler"
+require_relative "queue_time_duration"
 
 module Promenade
   module Client
@@ -18,7 +19,9 @@ module Promenade
 
         PATH_INFO = "PATH_INFO".freeze
 
-        HISTOGRAM_NAME = :http_req_duration_seconds
+        REQUEST_DURATION_HISTOGRAM_NAME = :http_req_duration_seconds
+
+        REQUEST_QUEUE_TIME_HISTOGRAM_NAME = :http_req_queue_time_seconds
 
         REQUESTS_COUNTER_NAME = :http_requests_total
 
@@ -28,7 +31,7 @@ module Promenade
           REQUEST_METHOD
           HTTP_HOST
           PATH_INFO
-          HISTOGRAM_NAME
+          REQUEST_DURATION_HISTOGRAM_NAME
           REQUESTS_COUNTER_NAME
           EXCEPTIONS_COUNTER_NAME
         )
@@ -41,6 +44,7 @@ module Promenade
           @registry = registry
           @label_builder = label_builder
           @latency_buckets = Promenade.configuration.rack_latency_buckets
+          @queue_time_buckets = Promenade.configuration.queue_time_buckets
           @exception_handler = exception_handler || default_exception_handler
           register_metrics!
         end
@@ -52,16 +56,19 @@ module Promenade
         private
 
           attr_reader :app,
-            :registry,
+            :exception_handler,
             :label_builder,
             :latency_buckets,
-            :exception_handler
+            :registry,
+            :queue_time_buckets
 
           def trace(env)
             start = current_time
+            start_timestamp = Time.now.utc
             begin
               response = yield
-              record(labels(env, response), duration_since(start))
+              record_request_duration(labels(env, response), duration_since(start))
+              record_request_queue_time(labels: labels(env, response), env: env, request_received_time: start_timestamp)
               response
             rescue StandardError => e
               exception_handler.call(e, env, duration_since(start))
@@ -72,9 +79,17 @@ module Promenade
             label_builder.call(env).merge!(code: response.first.to_s)
           end
 
-          def record(labels, duration)
+          def record_request_duration(labels, duration)
             requests_counter.increment(labels)
             durations_histogram.observe(labels, duration)
+          end
+
+          def record_request_queue_time(labels:, env:, request_received_time:)
+            request_queue_duration = QueueTimeDuration.new(env: env,
+              request_received_time: request_received_time)
+            return unless request_queue_duration.valid_header_present?
+
+            queue_time_histogram.observe(labels, request_queue_duration.queue_time_seconds)
           end
 
           def duration_since(start_time)
@@ -86,7 +101,11 @@ module Promenade
           end
 
           def durations_histogram
-            registry.get(HISTOGRAM_NAME)
+            registry.get(REQUEST_DURATION_HISTOGRAM_NAME)
+          end
+
+          def queue_time_histogram
+            registry.get(REQUEST_QUEUE_TIME_HISTOGRAM_NAME)
           end
 
           def requests_counter
@@ -94,14 +113,19 @@ module Promenade
           end
 
           def register_metrics!
-            registry.counter(REQUESTS_COUNTER_NAME, "A counter of the total number of HTTP requests made.")
-            registry.histogram(HISTOGRAM_NAME, "A histogram of the response latency.", {}, latency_buckets)
-            registry.counter(EXCEPTIONS_COUNTER_NAME, "A counter of the total number of exceptions raised.")
+            registry.counter(REQUESTS_COUNTER_NAME,
+              "A counter of the total number of HTTP requests made.")
+            registry.histogram(REQUEST_DURATION_HISTOGRAM_NAME,
+              "A histogram of the response latency.", {}, latency_buckets)
+            registry.counter(EXCEPTIONS_COUNTER_NAME,
+              "A counter of the total number of exceptions raised.")
+            registry.histogram(REQUEST_QUEUE_TIME_HISTOGRAM_NAME,
+              "A histogram of request queue time", {}, queue_time_buckets)
           end
 
           def default_exception_handler
             ExceptionHandler.initialize_singleton(
-              histogram_name: HISTOGRAM_NAME,
+              histogram_name: REQUEST_DURATION_HISTOGRAM_NAME,
               requests_counter_name: REQUESTS_COUNTER_NAME,
               exceptions_counter_name: EXCEPTIONS_COUNTER_NAME,
               registry: registry,
