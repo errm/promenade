@@ -23,7 +23,6 @@ RSpec.describe Promenade::Client::Rack::QueueTimeDuration do
         request_received_time: Time.now.utc,
       )
 
-
       expect(duration.valid_header_present?).to be(false)
     end
 
