@@ -20,11 +20,9 @@ module Promenade
 
         EXCEPTIONS_COUNTER_NAME = :http_exceptions_total
 
-        private_constant *%i(
-          REQUEST_DURATION_HISTOGRAM_NAME
-          REQUESTS_COUNTER_NAME
-          EXCEPTIONS_COUNTER_NAME
-        )
+        private_constant :REQUEST_DURATION_HISTOGRAM_NAME,
+          :REQUESTS_COUNTER_NAME,
+          :EXCEPTIONS_COUNTER_NAME
 
         def initialize(app,
                        registry: ::Prometheus::Client.registry,
