@@ -72,8 +72,6 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
     it "re-raises the exception" do
       env_hash = {}
 
-      exception_counter = ::Prometheus::Client.registry.get(:http_exceptions_total)
-
       expect do
         Promenade::Client::Rack::ExceptionHandler.call(exception,
           env_hash,
