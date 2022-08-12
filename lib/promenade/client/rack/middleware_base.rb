@@ -1,6 +1,3 @@
-require "prometheus/client"
-require_relative "request_labeler"
-
 module Promenade
   module Client
     module Rack
