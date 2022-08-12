@@ -8,7 +8,6 @@ module Promenade
 
         HEADER_VALUE_MATCHER = /^(?:t=)(?<timestamp>\d{10}(?:\.\d+))$/.freeze
 
-
         def initialize(env:, request_received_time:)
           @env = env
           @request_queued_time_ms = extract_request_queued_time_from_env(env)
@@ -19,7 +18,7 @@ module Promenade
         end
 
         def valid_header_present?
-          !!@valid_header_present
+          @valid_header_present
         end
 
         def queue_time_seconds
