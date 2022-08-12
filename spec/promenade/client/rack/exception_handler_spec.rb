@@ -24,8 +24,8 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
   end
 
   describe "#call" do
-    it "adds the desired labels and values to the :http_req_duration_seconds histogram" do
-      env_hash = {
+    let(:env_hash) do
+      {
         "action_dispatch.request.parameters" => {
           "controller" => "test-controller",
           "action" => "test-action",
@@ -33,78 +33,52 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
         "REQUEST_METHOD" => "post",
         "HTTP_HOST" => "test.host",
       }
-
-      exception = exception_klass.new("Test error")
-      histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
-      request_duration_seconds = 1.0
-
-      expect(histogram).to receive(:observe).with({
-        controller_action: "test-controller#test-action",
-        method: "post",
-        host: "test.host",
-        code: "500",
-      }, request_duration_seconds)
-      expect do
-        Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
-      end.to raise_error(exception_klass)
     end
 
-    it "adds the desired labels and values to the :http_requests_total counter" do
-      env_hash = {
-        "action_dispatch.request.parameters" => {
-          "controller" => "test-controller",
-          "action" => "test-action",
-        },
-        "REQUEST_METHOD" => "post",
-        "HTTP_HOST" => "test.host",
-      }
+    let(:exception) { exception_klass.new("Test error") }
 
-      exception = exception_klass.new("Test error")
-      requests_counter = ::Prometheus::Client.registry.get(:http_requests_total)
-      request_duration_seconds = 1.0
 
-      expect(requests_counter).to receive(:increment).with({
+    let(:request_duration_seconds) { 1.0 }
+
+
+    it "adds the desired labels and values to the :http_req_duration_seconds histogram" do
+      histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+      expected_labels = {
         controller_action: "test-controller#test-action",
         method: "post",
         host: "test.host",
         code: "500",
-      })
+      }
+
       expect do
         Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
       end.to raise_error(exception_klass)
+
+      expect(histogram).to have_time_series_value(1.0).
+        for_buckets_greater_than_or_equal_to(request_duration_seconds).
+        with_labels(expected_labels)
     end
 
     it "adds the exception to the http_exceptions_total counter" do
-      env_hash = {
-        "action_dispatch.request.parameters" => {
-          "controller" => "test-controller",
-          "action" => "test-action",
-        },
-        "REQUEST_METHOD" => "post",
-        "HTTP_HOST" => "test.host",
-      }
-
-      exception = exception_klass.new("Test error")
       exceptions_counter = ::Prometheus::Client.registry.get(:http_exceptions_total)
-      request_duration_seconds = 1.0
 
-      expect(exceptions_counter).to receive(:increment).with(exception: "ExceptionKlass")
       expect do
         Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
       end.to raise_error(exception_klass)
+
+      expect(exceptions_counter).to have_time_series_count(1.0).with_labels(exception: "ExceptionKlass")
     end
 
     it "re-raises the exception" do
       env_hash = {}
-      exception = exception_klass.new("Test error")
-      exception_counter = ::Prometheus::Client.registry.get(:http_exceptions_total)
-      request_duration_seconds = 1.0
 
-      expect(Proc.new do
+      exception_counter = ::Prometheus::Client.registry.get(:http_exceptions_total)
+
+      expect do
         Promenade::Client::Rack::ExceptionHandler.call(exception,
           env_hash,
           request_duration_seconds)
-      end).to raise_error(exception_klass)
+      end.to raise_error(exception_klass)
     end
   end
 
