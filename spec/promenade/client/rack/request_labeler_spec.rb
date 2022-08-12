@@ -11,7 +11,7 @@ RSpec.describe Promenade::Client::Rack::RequestLabeler, reset_prometheus_client:
         },
       }
 
-      labels = described_class.call(env_hash)
+      labels = Promenade::Client::Rack::RequestLabeler.call(env_hash)
 
       expect(labels).to include(controller_action: "test-controller#test-action")
     end
@@ -20,7 +20,7 @@ RSpec.describe Promenade::Client::Rack::RequestLabeler, reset_prometheus_client:
         "HTTP_HOST" => "test-host",
       }
 
-      labels = described_class.call(env_hash)
+      labels = Promenade::Client::Rack::RequestLabeler.call(env_hash)
 
       expect(labels).to include(host: "test-host")
     end
@@ -29,7 +29,7 @@ RSpec.describe Promenade::Client::Rack::RequestLabeler, reset_prometheus_client:
         "REQUEST_METHOD" => "test-method",
       }
 
-      labels = described_class.call(env_hash)
+      labels = Promenade::Client::Rack::RequestLabeler.call(env_hash)
 
       expect(labels).to include(method: "test-method")
     end
@@ -38,7 +38,7 @@ RSpec.describe Promenade::Client::Rack::RequestLabeler, reset_prometheus_client:
         "REQUEST_METHOD" => "TEST-METHOD",
       }
 
-      labels = described_class.call(env_hash)
+      labels = Promenade::Client::Rack::RequestLabeler.call(env_hash)
 
       expect(labels).to include(method: "test-method")
     end
@@ -50,7 +50,7 @@ RSpec.describe Promenade::Client::Rack::RequestLabeler, reset_prometheus_client:
         },
       }
 
-      labels = described_class.call(env_hash)
+      labels = Promenade::Client::Rack::RequestLabeler.call(env_hash)
 
       expect(labels).to include(controller_action: "unknown#test-action")
     end
@@ -61,7 +61,7 @@ RSpec.describe Promenade::Client::Rack::RequestLabeler, reset_prometheus_client:
         },
       }
 
-      labels = described_class.call(env_hash)
+      labels = Promenade::Client::Rack::RequestLabeler.call(env_hash)
 
       expect(labels).to include(controller_action: "test-controller#unknown")
     end
@@ -70,7 +70,7 @@ RSpec.describe Promenade::Client::Rack::RequestLabeler, reset_prometheus_client:
         "action_dispatch.request.parameters" => Hash.new,
       }
 
-      labels = described_class.call(env_hash)
+      labels = Promenade::Client::Rack::RequestLabeler.call(env_hash)
 
       expect(labels).to include(controller_action: "unknown#unknown")
     end
