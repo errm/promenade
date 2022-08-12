@@ -14,12 +14,6 @@ module Promenade
       # a HTTP tracer. The default label builder can be modified to export a
       # different set of labels per recorded metric.
       class HTTPRequestDurationCollector < MiddlwareBase
-        REQUEST_METHOD = "REQUEST_METHOD".freeze
-
-        HTTP_HOST = "HTTP_HOST".freeze
-
-        PATH_INFO = "PATH_INFO".freeze
-
         REQUEST_DURATION_HISTOGRAM_NAME = :http_req_duration_seconds
 
         REQUESTS_COUNTER_NAME = :http_requests_total
@@ -27,9 +21,6 @@ module Promenade
         EXCEPTIONS_COUNTER_NAME = :http_exceptions_total
 
         private_constant *%i(
-          REQUEST_METHOD
-          HTTP_HOST
-          PATH_INFO
           REQUEST_DURATION_HISTOGRAM_NAME
           REQUESTS_COUNTER_NAME
           EXCEPTIONS_COUNTER_NAME
