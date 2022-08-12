@@ -6,6 +6,9 @@ require "support/test_rack_app"
 RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector,
   reset_prometheus_client: true,
   time_helpers: true do
+
+  let(:histogram) { fetch_metric(:http_req_duration_seconds) }
+
   it "accepts a custom set of histogram buckets" do
     Promenade.configure do |config|
       config.rack_latency_buckets = [1.0, 1.5, 2.0]
@@ -15,7 +18,6 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector,
     app = TestRackApp.new
     middleware = described_class.new(app)
     expected_labels = { code: "200", controller_action: "unknown#unknown", host: "", method: "get" }
-    histogram = fetch_metric(:http_req_duration_seconds)
 
     expect(middleware).to receive(:duration_since).and_return(1.5)
 
@@ -54,7 +56,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector,
         expect(body).to eql("test-body")
       end
 
-      it "records a histogram with code, controller_action, host, and method labels" do
+      it "records in histogram with code, controller_action, host, and method labels" do
         env = Rack::MockRequest.env_for("/test-path",
           "HTTP_HOST" => "test.host",
           "action_dispatch.request.parameters" => {
@@ -66,7 +68,6 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector,
         middleware = described_class.new(app)
         expected_duration_secs = 2.2
 
-        histogram = fetch_metric(:http_req_duration_seconds)
         expected_labels = {
           code: "201",
           controller_action: "test_controller#test_action",
@@ -86,6 +87,17 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector,
           with_labels(expected_labels).
           for_buckets_less_than(expected_duration_secs)
       end
+
+      it "increments the exceptions counter if status code is an error" do
+        env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
+        app = proc { raise(StandardError, "Status code 500") }
+        middleware = described_class.new(app)
+        counter = fetch_metric(:http_exceptions_total)
+
+        expect { middleware.call(env) }.to raise_error(StandardError)
+
+        expect(counter).to have_time_series_count(1).with_labels(exception: "StandardError")
+      end
     end
 
     context "with custom label builder" do
@@ -94,28 +106,16 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector,
         app = TestRackApp.new
         custom_label_builder = proc { |_env| { foo: "bar", fizz: _env["fizz"] } }
         middleware = described_class.new(app, label_builder: custom_label_builder)
-
-        expected_duration = 1.0
-        histogram = fetch_metric(:http_req_duration_seconds)
+        expected_duration_secs = 1.0
         expected_labels = { foo: "bar", fizz: "buzz", code: "200" }
 
         allow(middleware).to receive(:current_time).and_return(1.0, 2.0)
 
         middleware.call(env)
 
-        expect(histogram).to have_time_series_value(1.0).with_labels(expected_labels).
-          for_buckets_greater_than_or_equal_to(1.0)
-      end
-
-      it "increments the exceptions counter if status code is an error" do
-        env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
-        app = proc { raise(StandardError, "Status code 500") }
-        middleware = described_class.new(app)
-        counter = fetch_metric(:http_exceptions_total)
-
-        expect(counter).to receive(:increment).with(exception: "StandardError")
-
-        expect { middleware.call(env) }.to raise_error(StandardError)
+        expect(histogram).to have_time_series_value(1.0).
+          for_buckets_greater_than_or_equal_to(expected_duration_secs).
+          with_labels(expected_labels)
       end
     end
   end
@@ -135,7 +135,6 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector,
   end
 
   private
-
 
     def fetch_metric(metric_name)
       ::Prometheus::Client.registry.get(metric_name.to_sym)
