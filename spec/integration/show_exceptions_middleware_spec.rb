@@ -18,8 +18,11 @@ RSpec.describe "Show exceptions integration", type: :request do
       method: "get",
     }
 
-    expect_any_instance_of(Promenade::Client::Rack::Collector).to receive(:current_time).and_return(1.0, 2.0)
-    expect(histogram).to receive(:observe).with(expected_labels, response_duration)
+    expect_any_instance_of(
+      Promenade::Client::Rack::HTTPRequestDurationCollector,
+    ).to receive(:current_time).and_return(1.0, 2.0)
+    expect(histogram).to receive(:observe).
+      with(expected_labels, response_duration)
 
     get "/bad-request"
 
@@ -37,8 +40,11 @@ RSpec.describe "Show exceptions integration", type: :request do
       method: "get",
     }
 
-    expect_any_instance_of(Promenade::Client::Rack::Collector).to receive(:current_time).and_return(1.0, 2.0)
-    expect(histogram).to receive(:observe).with(expected_labels, response_duration)
+    expect_any_instance_of(
+      Promenade::Client::Rack::HTTPRequestDurationCollector,
+    ).to receive(:current_time).and_return(1.0, 2.0)
+    expect(histogram).to receive(:observe).
+      with(expected_labels, response_duration)
 
     get "/server-error"
 

@@ -1,4 +1,5 @@
 require "prometheus/client"
+require_relative "middleware_base"
 require_relative "request_labeler"
 require_relative "exception_handler"
 require_relative "queue_time_duration"
@@ -12,7 +13,7 @@ module Promenade
       # Collector is a Rack middleware that provides a sample implementation of
       # a HTTP tracer. The default label builder can be modified to export a
       # different set of labels per recorded metric.
-      class Collector
+      class HTTPRequestDurationCollector < MiddlwareBase
         REQUEST_METHOD = "REQUEST_METHOD".freeze
 
         HTTP_HOST = "HTTP_HOST".freeze
@@ -20,8 +21,6 @@ module Promenade
         PATH_INFO = "PATH_INFO".freeze
 
         REQUEST_DURATION_HISTOGRAM_NAME = :http_req_duration_seconds
-
-        REQUEST_QUEUE_TIME_HISTOGRAM_NAME = :http_req_queue_time_seconds
 
         REQUESTS_COUNTER_NAME = :http_requests_total
 
@@ -32,7 +31,6 @@ module Promenade
           HTTP_HOST
           PATH_INFO
           REQUEST_DURATION_HISTOGRAM_NAME
-          REQUEST_QUEUE_TIME_HISTOGRAM_NAME
           REQUESTS_COUNTER_NAME
           EXCEPTIONS_COUNTER_NAME
         )
@@ -41,56 +39,31 @@ module Promenade
                        registry: ::Prometheus::Client.registry,
                        label_builder: RequestLabeler,
                        exception_handler: nil)
-          @app = app
-          @registry = registry
-          @label_builder = label_builder
-          @latency_buckets = Promenade.configuration.rack_latency_buckets
-          @queue_time_buckets = Promenade.configuration.queue_time_buckets
-          @exception_handler = exception_handler || default_exception_handler
-          register_metrics!
-        end
 
-        def call(env)
-          trace(env) { app.call(env) }
+          @latency_buckets = Promenade.configuration.rack_latency_buckets
+          @_exception_handler = exception_handler
+
+          super(app, registry: registry, label_builder: label_builder)
         end
 
         private
 
-          attr_reader :app,
-            :exception_handler,
-            :label_builder,
-            :latency_buckets,
-            :registry,
-            :queue_time_buckets
+          attr_reader :latency_buckets, :queue_time_buckets
 
           def trace(env)
             start = current_time
-            start_timestamp = Time.now.utc
             begin
               response = yield
               record_request_duration(labels(env, response), duration_since(start))
-              record_request_queue_time(labels: labels(env, response), env: env, request_received_time: start_timestamp)
               response
             rescue StandardError => e
               exception_handler.call(e, env, duration_since(start))
             end
           end
 
-          def labels(env, response)
-            label_builder.call(env).merge!(code: response.first.to_s)
-          end
-
           def record_request_duration(labels, duration)
             requests_counter.increment(labels)
             durations_histogram.observe(labels, duration)
-          end
-
-          def record_request_queue_time(labels:, env:, request_received_time:)
-            request_queue_duration = QueueTimeDuration.new(env: env,
-              request_received_time: request_received_time)
-            return unless request_queue_duration.valid_header_present?
-
-            queue_time_histogram.observe(labels, request_queue_duration.queue_time_seconds)
           end
 
           def duration_since(start_time)
@@ -105,10 +78,6 @@ module Promenade
             registry.get(REQUEST_DURATION_HISTOGRAM_NAME)
           end
 
-          def queue_time_histogram
-            registry.get(REQUEST_QUEUE_TIME_HISTOGRAM_NAME)
-          end
-
           def requests_counter
             registry.get(REQUESTS_COUNTER_NAME)
           end
@@ -120,8 +89,10 @@ module Promenade
               "A histogram of the response latency.", {}, latency_buckets)
             registry.counter(EXCEPTIONS_COUNTER_NAME,
               "A counter of the total number of exceptions raised.")
-            registry.histogram(REQUEST_QUEUE_TIME_HISTOGRAM_NAME,
-              "A histogram of request queue time", {}, queue_time_buckets)
+          end
+
+          def exception_handler
+            @_exception_handler ||= default_exception_handler
           end
 
           def default_exception_handler

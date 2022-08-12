@@ -11,8 +11,11 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
       method: "get",
     }
 
-    expect_any_instance_of(Promenade::Client::Rack::Collector).to receive(:current_time).and_return(1.0, 2.0)
-    expect(histogram).to receive(:observe).with(expected_labels, response_duration)
+    expect_any_instance_of(
+      Promenade::Client::Rack::HTTPRequestDurationCollector,
+    ).to receive(:current_time).and_return(1.0, 2.0)
+    expect(histogram).to receive(:observe).
+      with(expected_labels, response_duration)
 
     get "/success"
   end
@@ -27,8 +30,11 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
       method: "get",
     }
 
-    expect_any_instance_of(Promenade::Client::Rack::Collector).to receive(:current_time).and_return(1.0, 2.0)
-    expect(histogram).to receive(:observe).with(expected_labels, response_duration)
+    expect_any_instance_of(
+      Promenade::Client::Rack::HTTPRequestDurationCollector,
+    ).to receive(:current_time).and_return(1.0, 2.0)
+    expect(histogram).to receive(:observe).
+      with(expected_labels, response_duration)
 
     expect { get "/server-error" }.to raise_error(StandardError)
   end
@@ -43,8 +49,11 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
       method: "get",
     }
 
-    expect_any_instance_of(Promenade::Client::Rack::Collector).to receive(:current_time).and_return(1.0, 2.0)
-    expect(histogram).to receive(:observe).with(expected_labels, response_duration)
+    expect_any_instance_of(
+      Promenade::Client::Rack::HTTPRequestDurationCollector,
+    ).to receive(:current_time).and_return(1.0, 2.0)
+    expect(histogram).to receive(:observe).
+      with(expected_labels, response_duration)
 
     get "/client-error"
   end
@@ -59,8 +68,11 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
       method: "get",
     }
 
-    expect_any_instance_of(Promenade::Client::Rack::Collector).to receive(:current_time).and_return(1.0, 2.0)
-    expect(histogram).to receive(:observe).with(expected_labels, response_duration)
+    expect_any_instance_of(
+      Promenade::Client::Rack::HTTPRequestDurationCollector,
+    ).to receive(:current_time).and_return(1.0, 2.0)
+    expect(histogram).to receive(:observe).
+      with(expected_labels, response_duration)
 
     expect { get "/not-found" }.to raise_error(ActionController::RoutingError)
   end
@@ -75,8 +87,11 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
       method: "get",
     }
 
-    expect_any_instance_of(Promenade::Client::Rack::Collector).to receive(:current_time).and_return(1.0, 2.0)
-    expect(histogram).to receive(:observe).with(expected_labels, response_duration)
+    expect_any_instance_of(
+      Promenade::Client::Rack::HTTPRequestDurationCollector,
+    ).to receive(:current_time).and_return(1.0, 2.0)
+    expect(histogram).to receive(:observe).
+      with(expected_labels, response_duration)
 
     expect { get "/404" }.to raise_error(ActionController::RoutingError)
   end
