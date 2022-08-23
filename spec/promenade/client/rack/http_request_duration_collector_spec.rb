@@ -1,14 +1,14 @@
 require "spec_helper"
-require "promenade/client/rack/collector"
+require "promenade/client/rack/http_request_duration_collector"
 require "rack/mock"
 require "support/test_rack_app"
 
-RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true do
+RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prometheus_client: true do
   describe "#call" do
     it "preserves the status code" do
       env = Rack::MockRequest.env_for
       app = TestRackApp.new(status: 418)
-      middleware = Promenade::Client::Rack::Collector.new(app)
+      middleware = described_class.new(app)
       status, = middleware.call(env)
 
       expect(status).to eql(418)
@@ -17,7 +17,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
     it "preserves the headers" do
       env = Rack::MockRequest.env_for
       app = TestRackApp.new(headers: { "HTTP_FIZZ" => "buzz" })
-      middleware = Promenade::Client::Rack::Collector.new(app)
+      middleware = described_class.new(app)
       _, headers, = middleware.call(env)
 
       expect(headers).to eql("HTTP_FIZZ" => "buzz")
@@ -26,7 +26,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
     it "preserves the body" do
       env = Rack::MockRequest.env_for
       app = TestRackApp.new(body: "test-body")
-      middleware = Promenade::Client::Rack::Collector.new(app)
+      middleware = described_class.new(app)
       _, _, body = middleware.call(env)
 
       expect(body).to eql("test-body")
@@ -35,7 +35,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
     it "records a histogram for the response time" do
       env = Rack::MockRequest.env_for
       app = TestRackApp.new
-      middleware = Promenade::Client::Rack::Collector.new(app)
+      middleware = described_class.new(app)
 
       histogram = fetch_metric(:http_req_duration_seconds)
       expect(histogram).to receive(:observe)
@@ -52,7 +52,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
         },
         method: :post)
       app = TestRackApp.new(status: 201)
-      middleware = Promenade::Client::Rack::Collector.new(app)
+      middleware = described_class.new(app)
 
       expected_duration = 1.0
       histogram = fetch_metric(:http_req_duration_seconds)
@@ -78,7 +78,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
         },
         method: :post)
       app = TestRackApp.new(status: 201)
-      middleware = Promenade::Client::Rack::Collector.new(app)
+      middleware = described_class.new(app)
 
       counter = fetch_metric(:http_requests_total)
       expected_labels = {
@@ -97,7 +97,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
       env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
       app = TestRackApp.new
       custom_label_builder = proc { |_env| { foo: "bar", fizz: _env["fizz"] } }
-      middleware = Promenade::Client::Rack::Collector.new(app, label_builder: custom_label_builder)
+      middleware = described_class.new(app, label_builder: custom_label_builder)
 
       expected_duration = 1.0
       histogram = fetch_metric(:http_req_duration_seconds)
@@ -113,7 +113,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
       env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
       app = TestRackApp.new
       custom_label_builder = proc { |_env| { foo: "bar", fizz: _env["fizz"] } }
-      middleware = Promenade::Client::Rack::Collector.new(app, label_builder: custom_label_builder)
+      middleware = described_class.new(app, label_builder: custom_label_builder)
       counter = fetch_metric(:http_requests_total)
       expected_labels = { foo: "bar", fizz: "buzz", code: "200" }
 
@@ -125,7 +125,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
     it "increments the exceptions counter if status code is an error" do
       env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
       app = proc { raise(StandardError, "Status code 500") }
-      middleware = Promenade::Client::Rack::Collector.new(app)
+      middleware = described_class.new(app)
       counter = fetch_metric(:http_exceptions_total)
 
       expect(counter).to receive(:increment).with(exception: "StandardError")
@@ -138,7 +138,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
       env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
       app = proc { |_| raise(StandardError, "Status code 500") }
       exception_handler = proc { |exception| test_handler.received_exception(exception.message) }
-      middleware = Promenade::Client::Rack::Collector.new(app, exception_handler: exception_handler)
+      middleware = described_class.new(app, exception_handler: exception_handler)
 
       expect(test_handler).to receive(:received_exception).with("Status code 500")
 
@@ -152,7 +152,7 @@ RSpec.describe Promenade::Client::Rack::Collector, reset_prometheus_client: true
 
       env = Rack::MockRequest.env_for
       app = TestRackApp.new
-      middleware = Promenade::Client::Rack::Collector.new(app)
+      middleware = described_class.new(app)
       expected_labels = { code: "200", controller_action: "unknown#unknown", host: "", method: "get" }
       histogram = fetch_metric(:http_req_duration_seconds)
 
