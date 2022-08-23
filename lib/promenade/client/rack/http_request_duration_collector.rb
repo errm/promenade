@@ -7,12 +7,6 @@ require_relative "queue_time_duration"
 module Promenade
   module Client
     module Rack
-      # Original code taken from Prometheus Client MMap
-      # https://gitlab.com/gitlab-org/prometheus-client-mmap/-/blob/master/lib/prometheus/client/rack/collector.rb
-      #
-      # Collector is a Rack middleware that provides a sample implementation of
-      # a HTTP tracer. The default label builder can be modified to export a
-      # different set of labels per recorded metric.
       class HTTPRequestDurationCollector < MiddlwareBase
         REQUEST_DURATION_HISTOGRAM_NAME = :http_req_duration_seconds
 
