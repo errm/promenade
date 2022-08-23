@@ -5,12 +5,10 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
   before do
     ::Prometheus::Client.registry.tap do |register|
       register.histogram(:http_req_duration_seconds, "A histogram of the response latency.")
-      register.counter(:http_requests_total, "A counter of the total number of HTTP requests made.")
       register.counter(:http_exceptions_total, "A counter of the total number of exceptions raised.")
     end
     Promenade::Client::Rack::ExceptionHandler.initialize_singleton(
       histogram_name: :http_req_duration_seconds,
-      requests_counter_name: :http_requests_total,
       exceptions_counter_name: :http_exceptions_total,
       registry: ::Prometheus::Client.registry,
     )
@@ -44,31 +42,6 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
         host: "test.host",
         code: "500",
       }, request_duration_seconds)
-      expect do
-        Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
-      end.to raise_error(exception_klass)
-    end
-
-    it "adds the desired labels and values to the :http_requests_total counter" do
-      env_hash = {
-        "action_dispatch.request.parameters" => {
-          "controller" => "test-controller",
-          "action" => "test-action",
-        },
-        "REQUEST_METHOD" => "post",
-        "HTTP_HOST" => "test.host",
-      }
-
-      exception = exception_klass.new("Test error")
-      requests_counter = ::Prometheus::Client.registry.get(:http_requests_total)
-      request_duration_seconds = 1.0
-
-      expect(requests_counter).to receive(:increment).with({
-        controller_action: "test-controller#test-action",
-        method: "post",
-        host: "test.host",
-        code: "500",
-      })
       expect do
         Promenade::Client::Rack::ExceptionHandler.call(exception, env_hash, request_duration_seconds)
       end.to raise_error(exception_klass)
