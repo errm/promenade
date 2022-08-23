@@ -104,6 +104,7 @@ module PrometheusMatchers
   end
 
   private_constant :HistogramValuesMatcher
+  private_constant :CounterValuesMatcher
 
   def have_time_series_value(expected_count)
     HistogramValuesMatcher.new(expected_count)
