@@ -7,21 +7,12 @@ require_relative "queue_time_duration"
 module Promenade
   module Client
     module Rack
-      # Original code taken from Prometheus Client MMap
-      # https://gitlab.com/gitlab-org/prometheus-client-mmap/-/blob/master/lib/prometheus/client/rack/collector.rb
-      #
-      # Collector is a Rack middleware that provides a sample implementation of
-      # a HTTP tracer. The default label builder can be modified to export a
-      # different set of labels per recorded metric.
       class HTTPRequestDurationCollector < MiddlwareBase
         REQUEST_DURATION_HISTOGRAM_NAME = :http_req_duration_seconds
-
-        REQUESTS_COUNTER_NAME = :http_requests_total
 
         EXCEPTIONS_COUNTER_NAME = :http_exceptions_total
 
         private_constant :REQUEST_DURATION_HISTOGRAM_NAME,
-          :REQUESTS_COUNTER_NAME,
           :EXCEPTIONS_COUNTER_NAME
 
         def initialize(app,
@@ -51,7 +42,6 @@ module Promenade
           end
 
           def record_request_duration(labels, duration)
-            requests_counter.increment(labels)
             durations_histogram.observe(labels, duration)
           end
 
@@ -67,13 +57,7 @@ module Promenade
             registry.get(REQUEST_DURATION_HISTOGRAM_NAME)
           end
 
-          def requests_counter
-            registry.get(REQUESTS_COUNTER_NAME)
-          end
-
           def register_metrics!
-            registry.counter(REQUESTS_COUNTER_NAME,
-              "A counter of the total number of HTTP requests made.")
             registry.histogram(REQUEST_DURATION_HISTOGRAM_NAME,
               "A histogram of the response latency.", {}, latency_buckets)
             registry.counter(EXCEPTIONS_COUNTER_NAME,
@@ -87,7 +71,6 @@ module Promenade
           def default_exception_handler
             ExceptionHandler.initialize_singleton(
               histogram_name: REQUEST_DURATION_HISTOGRAM_NAME,
-              requests_counter_name: REQUESTS_COUNTER_NAME,
               exceptions_counter_name: EXCEPTIONS_COUNTER_NAME,
               registry: registry,
             )

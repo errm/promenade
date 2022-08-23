@@ -219,6 +219,10 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/errm/p
 
 This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
+## Acknowledgements
+
+The original code for the Rack middleware collector class was copied from [Prometheus Client MMap](https://gitlab.com/gitlab-org/prometheus-client-mmap/-/blob/master/lib/prometheus/client/rack/collector.rb).
+
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
