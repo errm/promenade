@@ -6,7 +6,6 @@ require "support/test_rack_app"
 RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector,
   reset_prometheus_client: true,
   time_helpers: true do
-
   let(:histogram) { fetch_metric(:http_req_duration_seconds) }
 
   it "accepts a custom set of histogram buckets" do
