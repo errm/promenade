@@ -9,7 +9,7 @@ module Promenade
       Promenade.setup
       Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
         Promenade::Client::Rack::HTTPRequestDurationCollector
-      Rails.application.config.middleware.insert 0,
+      Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
         Promenade::Client::Rack::HTTPRequestQueueTimeCollector
     end
   end
