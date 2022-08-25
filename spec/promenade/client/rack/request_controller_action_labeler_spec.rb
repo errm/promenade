@@ -1,7 +1,7 @@
 require "spec_helper"
-require "promenade/client/rack/request_labeler"
+require "promenade/client/rack/request_controller_action_labeler"
 
-RSpec.describe Promenade::Client::Rack::RequestLabeler, reset_prometheus_client: true do
+RSpec.describe Promenade::Client::Rack::RequestControllerActionLabeler, reset_prometheus_client: true do
   describe "#call" do
     it "sets the controller_action from action_dispatch.request.parameters" do
       env_hash = {
