@@ -1,6 +1,6 @@
 require "action_dispatch/middleware/exception_wrapper"
 require_relative "singleton_caller"
-require_relative "request_labeler"
+require_relative "request_controller_action_labeler"
 
 module Promenade
   module Client
@@ -17,7 +17,7 @@ module Promenade
         end
 
         def call(exception, env_hash, duration)
-          labels = RequestLabeler.call(env_hash)
+          labels = RequestControllerActionLabeler.call(env_hash)
           labels.merge!(code: status_code_for_exception(exception))
 
           histogram.observe(labels, duration.to_f)

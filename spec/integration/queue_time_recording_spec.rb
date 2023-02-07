@@ -17,7 +17,6 @@ RSpec.describe "Queue time recording", type: :request do
     expected_queue_time = 0.01
     expected_labels = {
       code: "200",
-      controller_action: "test_responses#success",
       host: "www.example.com",
       method: "get",
     }
@@ -35,7 +34,6 @@ RSpec.describe "Queue time recording", type: :request do
     expected_queue_time = 0.01
     expected_labels = {
       code: "200",
-      controller_action: "test_responses#success",
       host: "www.example.com",
       method: "get",
     }

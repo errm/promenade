@@ -1,6 +1,6 @@
 require "prometheus/client"
 require_relative "middleware_base"
-require_relative "request_labeler"
+require_relative "request_controller_action_labeler"
 require_relative "exception_handler"
 require_relative "queue_time_duration"
 
@@ -17,7 +17,7 @@ module Promenade
 
         def initialize(app,
                        registry: ::Prometheus::Client.registry,
-                       label_builder: RequestLabeler,
+                       label_builder: RequestControllerActionLabeler,
                        exception_handler: nil)
 
           @latency_buckets = Promenade.configuration.rack_latency_buckets
