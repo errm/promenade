@@ -12,11 +12,12 @@ require "bundler/setup"
 require "climate_control"
 require "promenade"
 require "byebug"
+require "support/time_helpers"
+require "support/prometheus_matchers"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = ".rspec_status"
-
   # Disable RSpec exposing methods globally on `Module` and `main`
   config.disable_monkey_patching!
 
@@ -31,6 +32,9 @@ RSpec.configure do |config|
     main_registry = ::Prometheus::Client.registry
     ::Prometheus::Client.instance_variable_set(:@registry, nil)
     example.run
+    ::Promenade.configure do |c|
+      c.rack_latency_buckets = Promenade::Configuration::DEFAULT_RACK_LATENCY_BUCKETS
+    end
     ::Prometheus::Client.instance_variable_set(:@registry, main_registry)
   end
 

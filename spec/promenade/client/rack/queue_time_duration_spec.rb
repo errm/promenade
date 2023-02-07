@@ -1,10 +1,8 @@
 require "spec_helper"
 require "promenade/client/rack/queue_time_duration"
-require "active_support/testing/time_helpers"
 require "support/queue_time_header_helpers"
 
-RSpec.describe Promenade::Client::Rack::QueueTimeDuration do
-  include ActiveSupport::Testing::TimeHelpers
+RSpec.describe Promenade::Client::Rack::QueueTimeDuration, time_helpers: true do
   include QueueTimeHeaderHelpers
 
   describe "#valid_header_present?" do
