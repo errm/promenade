@@ -4,7 +4,7 @@ require "promenade/karafka/processors/consumer_processor"
 module Promenade
   module Karafka
     class ConsumerSubscriber < Subscriber
-      attach_to "consumer.kafka"
+      attach_to "consumer.karafka"
 
       def consumed(event)
         messages = event.payload[:caller].messages.map do |m|
@@ -12,7 +12,7 @@ module Promenade
             id: m.payload.dig("body", "id") || "missing id for #{m.payload.inspect}" }
         end
 
-        Logger.new($stdout).info "[kafka] consumed : #{messages.inspect}"
+        Logger.new($stdout).info "[karafka] consumed : #{messages.inspect}"
 
         # Processors::ConsumerProcessor.call(event)
       end
