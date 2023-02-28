@@ -3,7 +3,7 @@ require "promenade/karafka/subscriber"
 module Promenade
   module Karafka
     class StatisticsSubscriber < Subscriber
-      attach_to "statistics.kafka"
+      attach_to "statistics.karafka"
 
       def emitted(event)
         log_topics_data(event)
@@ -41,7 +41,7 @@ module Promenade
           received_messages: sum,
           messages_from_last_statistics: diff
         }
-        Logger.new($stdout).info "[Statistics] #{stat.inspect}"
+        Logger.new($stdout).info "[Statistics][karafka] #{stat.inspect}"
       end
     end
   end
