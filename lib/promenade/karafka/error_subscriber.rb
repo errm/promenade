@@ -7,8 +7,7 @@ module Promenade
 
       def occurred(event)
         error = {
-          error: event.payload[:error],
-          client: Karafka::App.config.client_id
+          error: event.payload[:error]
         }
 
         Rails.logger.error "[Error] error occurred: #{error.inspect}"
