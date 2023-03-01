@@ -11,7 +11,6 @@ module Promenade
         }
 
         Rails.logger.error "[Error][karafka] error occurred: #{error.inspect}"
-        Rails.logger.error "[Error][karafka] error inspected: #{event.payload.inspect}"
       end
     end
   end
