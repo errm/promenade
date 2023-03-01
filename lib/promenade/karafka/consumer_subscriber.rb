@@ -1,5 +1,4 @@
 require "promenade/karafka/subscriber"
-require "promenade/karafka/processors/consumer_processor"
 
 module Promenade
   module Karafka
