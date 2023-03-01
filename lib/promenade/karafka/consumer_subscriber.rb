@@ -6,16 +6,37 @@ module Promenade
     class ConsumerSubscriber < Subscriber
       attach_to "consumer.karafka"
 
-      def consumed(event)
-        messages = event.payload[:caller].messages.map do |m|
-          { type: m.payload["type"], event_time: m.payload["event_time"],
-            id: m.payload.dig("body", "id") || "missing id for #{m.payload.inspect}" }
-        end
-
-        Logger.new($stdout).info "[karafka] consumed : #{messages.inspect}"
-
-        # Processors::ConsumerProcessor.call(event)
+      Promenade.histogram :kafka_consumer_message_processing_latency do
+        doc "Consumer message processing latency"
+        buckets :network
       end
+
+      Promenade.counter :kafka_consumer_messages_processed do
+        doc "Messages processed by this consumer"
+      end
+
+      def consumed(event)
+        consumer = event.payload[:caller].with_indifferent_access
+        messages = consumer.messages
+        metadata = messages.metadata
+
+        labels = get_labels(consumer)
+
+        Promenade.metric(:kafka_consumer_messages_processed).increment(labels, messages)
+        Promenade.metric(:kafka_consumer_message_processing_latency).observe(labels, event[:time])
+      end
+
+      private
+
+        def get_labels(consumer)
+          metadata = consumer.metadata
+
+          {
+            group: consumer.topic.consumer_group.id,
+            topic: metadata.topic,
+            partition: metadata.partition,
+          }
+        end
     end
   end
 end
