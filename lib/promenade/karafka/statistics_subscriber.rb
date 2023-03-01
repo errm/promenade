@@ -62,15 +62,16 @@ module Promenade
             api: "unknown"
           }
 
-          statistics[:brokers].map do |broker_name, broker_values|
+          statistics[:brokers].map do |_broker_name, broker_values|
             rtt = broker_values[:rtt][:avg]
             connection_calls = broker_values[:connects]
+            broker_id = broker_values[:name]
 
-            Logger.new($stdout).info "[Statistics][karafka Broker RTT] #{broker_name}: #{rtt}"
-            Logger.new($stdout).info "[Statistics][karafka Broker Conn Calls] #{broker_name}: #{connection_calls}"
+            Logger.new($stdout).info "[Statistics][karafka Broker RTT] #{broker_id}: #{rtt}"
+            Logger.new($stdout).info "[Statistics][karafka Broker Conn Calls] #{broker_id}: #{connection_calls}"
 
-            Promenade.metric(:kafka_connection_calls).increment(labels.merge(broker: broker_name), connection_calls)
-            Promenade.metric(:kafka_connection_latency).observe(labels.merge(broker: broker_name), rtt)
+            Promenade.metric(:kafka_connection_calls).increment(labels.merge(broker: broker_id), connection_calls)
+            Promenade.metric(:kafka_connection_latency).observe(labels.merge(broker: broker_id), rtt)
           end
         end
     end
