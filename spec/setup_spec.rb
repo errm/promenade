@@ -20,7 +20,7 @@ RSpec.describe Promenade do
         end
 
         it "configures the prometheus client" do
-          expect(::Prometheus::Client.configuration.multiprocess_files_dir.to_s).to eq multiproc_dir.to_s
+          expect(Prometheus::Client.configuration.multiprocess_files_dir.to_s).to eq multiproc_dir.to_s
         end
       end
 
@@ -44,7 +44,7 @@ RSpec.describe Promenade do
         end
 
         it "configures the prometheus client" do
-          expect(::Prometheus::Client.configuration.multiprocess_files_dir).to eq pwd_dir
+          expect(Prometheus::Client.configuration.multiprocess_files_dir).to eq pwd_dir
         end
       end
     end
@@ -68,7 +68,7 @@ RSpec.describe Promenade do
       end
 
       it "configures the prometheus client" do
-        expect(::Prometheus::Client.configuration.multiprocess_files_dir.to_s).to eq rails_dir.to_s
+        expect(Prometheus::Client.configuration.multiprocess_files_dir.to_s).to eq rails_dir.to_s
       end
 
       context "environment variable set" do
@@ -88,7 +88,7 @@ RSpec.describe Promenade do
         end
 
         it "configures the prometheus client" do
-          expect(::Prometheus::Client.configuration.multiprocess_files_dir.to_s).to eq multiproc_dir.to_s
+          expect(Prometheus::Client.configuration.multiprocess_files_dir.to_s).to eq multiproc_dir.to_s
         end
       end
     end

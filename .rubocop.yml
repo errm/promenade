@@ -16,3 +16,7 @@ Rails/RakeEnvironment:
   Enabled: false
 Rails/EnvironmentVariableAccess:
   Enabled: false
+RSpec/DescribedClass:
+  Enabled: false
+Gemspec/DevelopmentDependencies:
+  Enabled: false

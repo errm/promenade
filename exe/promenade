@@ -8,7 +8,7 @@ Promenade.setup
 
 app = Rack::Builder.app do
   use Rack::Deflater
-  use ::Prometheus::Client::Rack::Exporter
+  use Prometheus::Client::Rack::Exporter
   map "/health" do
     run lambda { |_env| [200, { "Content-Type" => "text/plain" }, ["OK"]] }
   end

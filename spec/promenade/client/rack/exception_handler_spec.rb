@@ -3,14 +3,14 @@ require "promenade/client/rack/exception_handler"
 
 RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_client: true do
   before do
-    ::Prometheus::Client.registry.tap do |register|
+    Prometheus::Client.registry.tap do |register|
       register.histogram(:http_req_duration_seconds, "A histogram of the response latency.")
       register.counter(:http_exceptions_total, "A counter of the total number of exceptions raised.")
     end
     Promenade::Client::Rack::ExceptionHandler.initialize_singleton(
       histogram_name: :http_req_duration_seconds,
       exceptions_counter_name: :http_exceptions_total,
-      registry: ::Prometheus::Client.registry,
+      registry: Prometheus::Client.registry,
     )
   end
 
@@ -18,7 +18,7 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
     if Promenade::Client::Rack::ExceptionHandler.instance_variables.include?(:@singleton)
       Promenade::Client::Rack::ExceptionHandler.remove_instance_variable(:@singleton)
     end
-    ::Prometheus::Client.reset!
+    Prometheus::Client.reset!
   end
 
   describe "#call" do
@@ -33,7 +33,7 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
       }
 
       exception = exception_klass.new("Test error")
-      histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+      histogram = Prometheus::Client.registry.get(:http_req_duration_seconds)
       request_duration_seconds = 1.0
 
       expect(histogram).to receive(:observe).with({
@@ -58,7 +58,7 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
       }
 
       exception = exception_klass.new("Test error")
-      exceptions_counter = ::Prometheus::Client.registry.get(:http_exceptions_total)
+      exceptions_counter = Prometheus::Client.registry.get(:http_exceptions_total)
       request_duration_seconds = 1.0
 
       expect(exceptions_counter).to receive(:increment).with(exception: "ExceptionKlass")
@@ -70,7 +70,7 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
     it "re-raises the exception" do
       env_hash = {}
       exception = exception_klass.new("Test error")
-      exception_counter = ::Prometheus::Client.registry.get(:http_exceptions_total)
+      exception_counter = Prometheus::Client.registry.get(:http_exceptions_total)
       request_duration_seconds = 1.0
 
       expect(Proc.new do

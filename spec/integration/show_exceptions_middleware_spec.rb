@@ -9,7 +9,7 @@ RSpec.describe "Show exceptions integration", type: :request do
   end
 
   it "counts the expected labels for 400 error requests" do
-    histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_duration_seconds)
     response_duration = 1.0
     expected_labels = {
       code: "400",
@@ -31,7 +31,7 @@ RSpec.describe "Show exceptions integration", type: :request do
   end
 
   it "counts the expected labels for 5XX error requests" do
-    histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_duration_seconds)
     response_duration = 1.0
     expected_labels = {
       code: "500",
