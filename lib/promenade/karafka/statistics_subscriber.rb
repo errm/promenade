@@ -63,8 +63,8 @@ module Promenade
           }
 
           statistics[:brokers].map do |broker_name, broker_values|
-            rtt = broker_values[:network][:latency][:avg][:rtt]
-            connection_calls = broker_values[:network][:latency][:avg][:rtt]
+            rtt = broker_values[:rtt][:avg]
+            connection_calls = broker_values[:connects]
 
             Logger.new($stdout).info "[Statistics][karafka Broker RTT] #{broker_name}: #{rtt}"
             Logger.new($stdout).info "[Statistics][karafka Broker Conn Calls] #{broker_name}: #{connection_calls}"
