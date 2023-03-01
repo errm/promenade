@@ -6,7 +6,7 @@ module Promenade
       attach_to "statistics.karafka"
 
       Promenade.histogram :kafka_connection_latency do
-        doc "Request latency"
+        doc "Request latency (rtt)"
         buckets :network
       end
 
@@ -14,10 +14,16 @@ module Promenade
         doc "Count of calls made to Kafka broker"
       end
 
+      Promenade.gauge :kafka_consumer_ofset_lag do
+        doc "Lag between message create and consume time"
+      end
+
       def emitted(event)
+        statistics = event.payload[:statistics].with_indifferent_access
         log_topics_data(event)
         log_consumers_data(event.payload)
-        log_connection_data(event.payload[:statistics].with_indifferent_access)
+        report_topic_metrics(statistics)
+        report_connection_metrics(statistics)
       end
 
       private
@@ -56,7 +62,29 @@ module Promenade
           Logger.new($stdout).info "[Statistics][karafka] #{stat.inspect}"
         end
 
-        def log_connection_data(statistics)
+        def report_topic_metrics(statistics)
+          statistics[:topics].map do |topic_name, topic_values|
+            labels = {
+              client: statistics[:client_id],
+              topic: topic_name
+            }
+
+            topic_values.map do |partition_name, partition_values|
+              labels = labels.merge(
+                partition: partition_name
+              )
+
+              offset_lag = partition_values[:consumer_lag_stored]
+
+              Logger.new($stdout).info "[Statistics][karafka Topics] #{labels}: #{offset_lag}"
+
+              Promenade.metric(:kafka_consumer_ofset_lag).set(labels, offset_lag)
+            end
+
+          end
+        end
+
+        def report_connection_data(statistics)
           labels = {
             client: statistics[:client_id],
             api: "unknown"
