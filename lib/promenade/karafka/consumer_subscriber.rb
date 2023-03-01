@@ -29,7 +29,7 @@ module Promenade
       private
 
         def get_labels(consumer)
-          metadata = consumer.metadata
+          metadata = consumer.messages.metadata
 
           {
             group: consumer.topic.consumer_group.id,
