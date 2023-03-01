@@ -74,11 +74,11 @@ module Promenade
                 partition: partition_name
               )
 
-              offset_lag = partition_values[:consumer_lag_stored]
+              # offset_lag = partition_values[:consumer_lag_stored]
 
-              Logger.new($stdout).info "[Statistics][karafka Topics] #{labels}: #{offset_lag}"
+              Logger.new($stdout).info "[Statistics][karafka Topics] #{labels}: #{partition_values}"
 
-              Promenade.metric(:kafka_consumer_ofset_lag).set(labels, offset_lag)
+              # Promenade.metric(:kafka_consumer_ofset_lag).set(labels, offset_lag)
             end
           end
         end
