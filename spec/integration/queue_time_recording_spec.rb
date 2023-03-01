@@ -13,7 +13,7 @@ RSpec.describe "Queue time recording", type: :request do
     freeze_time
     start_time = Time.now.utc - 0.01
 
-    histogram = ::Prometheus::Client.registry.get(:http_req_queue_time_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_queue_time_seconds)
     expected_queue_time = 0.01
     expected_labels = {
       code: "200",
@@ -30,7 +30,7 @@ RSpec.describe "Queue time recording", type: :request do
     freeze_time
     start_time = Time.now.utc - 0.01
 
-    histogram = ::Prometheus::Client.registry.get(:http_req_queue_time_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_queue_time_seconds)
     expected_queue_time = 0.01
     expected_labels = {
       code: "200",
@@ -45,7 +45,7 @@ RSpec.describe "Queue time recording", type: :request do
 
   it "doesn't attempt to record if no header is present" do
     freeze_time
-    histogram = ::Prometheus::Client.registry.get(:http_req_queue_time_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_queue_time_seconds)
 
     expect(histogram).not_to receive(:observe)
 
@@ -55,7 +55,7 @@ RSpec.describe "Queue time recording", type: :request do
   it "doesn't attempt to record if header is not valid format" do
     freeze_time
     start_time = Time.now.utc - 0.01
-    histogram = ::Prometheus::Client.registry.get(:http_req_queue_time_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_queue_time_seconds)
 
     expect(histogram).to_not receive(:observe)
 

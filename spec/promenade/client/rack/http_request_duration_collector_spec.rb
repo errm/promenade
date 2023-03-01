@@ -131,7 +131,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
   private
 
     def fetch_metric(metric_name)
-      ::Prometheus::Client.registry.get(metric_name.to_sym)
+      Prometheus::Client.registry.get(metric_name.to_sym)
     end
 
     def histogram_values_to_h(histogram, expected_labels)

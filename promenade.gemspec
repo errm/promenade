@@ -2,7 +2,7 @@ lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "promenade/version"
 
-Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
+Gem::Specification.new do |spec|
   spec.name          = "promenade"
   spec.version       = Promenade::VERSION
   spec.authors       = ["Ed Robinson"]

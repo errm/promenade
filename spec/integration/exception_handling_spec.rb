@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Prometheus request tracking middleware", type: :request do
   it "counts the desired labels for successful requests" do
-    histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_duration_seconds)
     response_duration = 1.0
     expected_labels = {
       code: "200",
@@ -21,7 +21,7 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
   end
 
   it "counts the expected labels for 5XX error requests" do
-    histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_duration_seconds)
     response_duration = 1.0
     expected_labels = {
       code: "500",
@@ -40,7 +40,7 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
   end
 
   it "counts the expected labels for 4XX error requests" do
-    histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_duration_seconds)
     response_duration = 1.0
     expected_labels = {
       code: "418",
@@ -59,7 +59,7 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
   end
 
   it "counts the expected labels for 404 error requests" do
-    histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_duration_seconds)
     response_duration = 1.0
     expected_labels = {
       code: "404",
@@ -78,7 +78,7 @@ RSpec.describe "Prometheus request tracking middleware", type: :request do
   end
 
   it "uses the correct labels for error requests that are redirected" do
-    histogram = ::Prometheus::Client.registry.get(:http_req_duration_seconds)
+    histogram = Prometheus::Client.registry.get(:http_req_duration_seconds)
     response_duration = 1.0
     expected_labels = {
       code: "404",

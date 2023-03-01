@@ -21,17 +21,17 @@ RSpec.configure do |config|
   config.disable_monkey_patching!
 
   config.before(:each) do |_example|
-    ::Prometheus::Client.registry.reset!
+    Prometheus::Client.registry.reset!
     allow(Prometheus::Client.configuration).to receive(:value_class).and_return(Prometheus::Client::SimpleValue)
   end
 
   # Some specs require the same prometheus client between examples, others expect a fresh start.
   # This allows support for both with the tag :reset_prometheus_client => true
   config.around(:each, reset_prometheus_client: true) do |example|
-    main_registry = ::Prometheus::Client.registry
-    ::Prometheus::Client.instance_variable_set(:@registry, nil)
+    main_registry = Prometheus::Client.registry
+    Prometheus::Client.instance_variable_set(:@registry, nil)
     example.run
-    ::Prometheus::Client.instance_variable_set(:@registry, main_registry)
+    Prometheus::Client.instance_variable_set(:@registry, main_registry)
   end
 
   config.expect_with :rspec do |c|
