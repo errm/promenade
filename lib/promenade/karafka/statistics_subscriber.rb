@@ -17,7 +17,7 @@ module Promenade
       def emitted(event)
         log_topics_data(event)
         log_consumers_data(event.payload)
-        log_connection_data(event.payload.with_indifferent_access)
+        log_connection_data(event.payload[:statistics].with_indifferent_access)
       end
 
       private
@@ -56,13 +56,13 @@ module Promenade
           Logger.new($stdout).info "[Statistics][karafka] #{stat.inspect}"
         end
 
-        def log_connection_data(payload)
+        def log_connection_data(statistics)
           labels = {
-            client: payload.fetch(:client_id),
+            client: statistics[:client_id],
             api: "unknown"
           }
 
-          payload[:statistics][:brokers].map do |broker_name, broker_values|
+          statistics[:brokers].map do |broker_name, broker_values|
             rtt = broker_values[:network][:latency][:avg][:rtt]
             connection_calls = broker_values[:network][:latency][:avg][:rtt]
 
