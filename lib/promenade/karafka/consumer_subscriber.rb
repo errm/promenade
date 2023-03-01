@@ -16,7 +16,7 @@ module Promenade
       end
 
       def consumed(event)
-        consumer = event.payload[:caller].with_indifferent_access
+        consumer = event.payload[:caller]
         messages = consumer.messages
         metadata = messages.metadata
 
