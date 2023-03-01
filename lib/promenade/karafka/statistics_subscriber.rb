@@ -80,11 +80,10 @@ module Promenade
 
               Promenade.metric(:kafka_consumer_ofset_lag).set(labels, offset_lag)
             end
-
           end
         end
 
-        def report_connection_data(statistics)
+        def report_connection_metrics(statistics)
           labels = {
             client: statistics[:client_id],
             api: "unknown"
