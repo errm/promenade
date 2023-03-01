@@ -22,8 +22,8 @@ module Promenade
 
         labels = get_labels(consumer)
 
-        Promenade.metric(:kafka_consumer_messages_processed).increment(labels, messages)
-        Promenade.metric(:kafka_consumer_message_processing_latency).observe(labels, event[:time])
+        Promenade.metric(:kafka_consumer_messages_processed).increment(labels, messages.size)
+        Promenade.metric(:kafka_consumer_message_processing_latency).observe(labels, event.time)
       end
 
       private
