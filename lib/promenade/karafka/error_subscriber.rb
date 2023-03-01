@@ -5,12 +5,17 @@ module Promenade
     class ErrorSubscriber < Subscriber
       attach_to "error.karafka"
 
+      Promenade.counter :kafka_errors do
+        doc "Count of Kafka connection errors"
+      end
+
       def occurred(event)
-        error = {
-          error: event.payload[:error]
+        label = {
+          error_type: event[:type]
         }
 
-        Rails.logger.error "[Error][karafka] error occurred: #{error.inspect}"
+        Promenade.metric(:kafka_errors).increment(label)
+        Rails.logger.error "[Error][karafka] error occurred: #{label}"
       end
     end
   end
