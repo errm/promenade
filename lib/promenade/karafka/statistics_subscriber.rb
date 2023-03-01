@@ -69,12 +69,12 @@ module Promenade
               topic: topic_name
             }
 
-            topic_values.map do |partition_name, partition_values|
+            topic_values[:partitions].map do |partition_name, partition_values|
               labels = labels.merge(
                 partition: partition_name
               )
 
-              # offset_lag = partition_values[:consumer_lag_stored]
+              offset_lag = partition_values[:consumer_lag_stored]
 
               Logger.new($stdout).info "[Statistics][karafka Topics] #{labels}: #{partition_values}"
 
