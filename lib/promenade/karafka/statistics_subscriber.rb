@@ -58,7 +58,7 @@ module Promenade
 
         def log_connection_data(payload)
           labels = {
-            client: event.payload.fetch(:client_id),
+            client: payload.fetch(:client_id),
             api: "unknown"
           }
 
