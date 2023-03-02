@@ -115,9 +115,10 @@ module Promenade
           statistics[:brokers].map do |_broker_name, broker_values|
             next if broker_values[:nodeid] == -1
 
+            broker_id = broker_values[:name]
             delivery_attempts = broker_values[:txretries]
             broker_labels = {
-              broker_id: broker_values[:name],
+              broker_id: broker_id,
               topic: broker_values[:toppars].values[0][:topic]
             }
 
