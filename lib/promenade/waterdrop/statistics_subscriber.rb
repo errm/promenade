@@ -106,7 +106,7 @@ module Promenade
           # Promenade.metric(:kafka_producer_ack_latency).observe(labels, ack_latency)
           # Rails.logger.info "[Statistics][Producer ack_latency] #{ack_latency}"
           Promenade.metric(:kafka_producer_delivered_messages).increment(labels, delivered_messages)
-          Rails.logger.info "[Statistics][karafka Producer Delivered Messages] #{broker_id}: #{delivered_messages}"
+          Rails.logger.info "[Statistics][karafka Producer Delivered Messages] #{delivered_messages}"
         end
 
         def report_broker_metrics(statistics)
