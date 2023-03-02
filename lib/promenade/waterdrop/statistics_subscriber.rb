@@ -121,7 +121,7 @@ module Promenade
               topic: broker_values[:toppars].values[0][:topic]
             }
 
-            Promenade.metric(:kafka_producer_delivery_attempts).observe(labels.merge(broker_labels), attempts)
+            Promenade.metric(:kafka_producer_delivery_attempts).observe(labels.merge(broker_labels), delivery_attempts)
 
             Rails.logger.info "[Statistics][Producer Broker Delivery Attempts] #{broker_id}: #{delivery_attempts}"
           end
