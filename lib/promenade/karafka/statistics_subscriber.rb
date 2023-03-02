@@ -39,6 +39,9 @@ module Promenade
 
         def report_partition_metrics(topic_values, labels)
           topic_values[:partitions].map do |partition_name, partition_values|
+            next if partition_name == "-1"
+            next if partition_values[:consumer_lag_stored] == -1
+
             labels = labels.merge(
               partition: partition_name
             )
@@ -58,6 +61,8 @@ module Promenade
           }
 
           statistics[:brokers].map do |_broker_name, broker_values|
+            next if broker_values[:nodeid] == -1
+
             rtt = broker_values[:rtt][:avg]
             connection_calls = broker_values[:connects]
             broker_id = broker_values[:name]
