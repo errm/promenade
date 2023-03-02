@@ -57,6 +57,26 @@ module Promenade
         doc "Count of the number of Kafka Ack errors"
       end
 
+      Promenade.gauge :kafka_async_producer_queue_size do
+        doc "Size of Kafka async producer queue"
+      end
+
+      Promenade.gauge :kafka_async_producer_max_queue_size do
+        doc "Max size of Kafka async producer queue"
+      end
+
+      Promenade.gauge :kafka_async_producer_queue_fill_ratio do
+        doc "Size of Kafka async producer queue"
+      end
+
+      Promenade.counter :kafka_async_producer_buffer_overflows do
+        doc "Count of buffer overflows"
+      end
+
+      Promenade.counter :kafka_async_producer_dropped_messages do
+        doc "Count of dropped messages"
+      end
+
       def emitted(event)
         statistics = event.payload[:statistics].with_indifferent_access
 
