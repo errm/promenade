@@ -24,8 +24,8 @@ module Promenade
         Promenade.metric(:kafka_consumer_messages_processed).increment(labels, messages.size)
         Rails.logger.info "[Consumer][karafka] messages processed: #{messages.size}"
 
-        Promenade.metric(:kafka_consumer_batch_processing_latency).observe(labels, event.time)
-        Rails.logger.info "[Consumer][karafka] batch processing latency: #{event.time}"
+        Promenade.metric(:kafka_consumer_batch_processing_latency).observe(labels, event.payload[:time])
+        Rails.logger.info "[Consumer][karafka] batch processing latency: #{event.payload[:time]}"
       end
 
       private
