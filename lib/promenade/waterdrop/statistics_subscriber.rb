@@ -72,7 +72,7 @@ module Promenade
           max_queue_size = statistics[:msg_max]
           message_size = statistics[:msg_size]
           delivered_messages = statistics[:txmsgs]
-          ack_latency = statistics[:rtt][:avg]
+          # ack_latency = statistics[:rtt][:avg]
           queue_fill_ratio = queue_size.to_f / max_queue_size.to_f
 
           Promenade.metric(:kafka_async_producer_queue_size).set(labels, queue_size)
@@ -83,8 +83,8 @@ module Promenade
           Rails.logger.info "[Statistics][Producer queue_fill_ratio] #{queue_fill_ratio}"
           Promenade.metric(:kafka_producer_message_size).observe(labels, message_size)
           Rails.logger.info "[Statistics][Producer message_size] #{message_size}"
-          Promenade.metric(:kafka_producer_ack_latency).observe(labels, ack_latency)
-          Rails.logger.info "[Statistics][Producer ack_latency] #{ack_latency}"
+          # Promenade.metric(:kafka_producer_ack_latency).observe(labels, ack_latency)
+          # Rails.logger.info "[Statistics][Producer ack_latency] #{ack_latency}"
           Promenade.metric(:kafka_producer_delivered_messages).increment(labels, delivered_messages)
           Rails.logger.info "[Statistics][karafka Producer Delivered Messages] #{broker_id}: #{delivered_messages}"
         end
