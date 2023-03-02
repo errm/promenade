@@ -10,6 +10,11 @@ module Promenade
       class HTTPRequestDurationCollector < MiddlwareBase
         REQUEST_DURATION_HISTOGRAM_NAME = :http_req_duration_seconds
 
+        # We specifically want to record a separate metric `http_requests_total` even
+        # though we know it is a duplicate of http_req_duration_seconds_count.
+        # This is a very commonly used prometheus metric name, and is very useful
+        # e.g. for autoscaling.  Using the http_req_duration_seconds_count in such
+        # queries can be confusing
         REQUESTS_COUNTER_NAME = :http_requests_total
 
         EXCEPTIONS_COUNTER_NAME = :http_exceptions_total
