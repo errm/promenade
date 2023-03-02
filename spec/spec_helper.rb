@@ -1,4 +1,3 @@
-require "deep_cover/builtin_takeover"
 require "simplecov"
 SimpleCov.minimum_coverage 99
 SimpleCov.start

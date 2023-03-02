@@ -31,7 +31,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "climate_control"
-  spec.add_development_dependency "deep-cover"
   spec.add_development_dependency "rails", "> 3.0", "< 8.0"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec", "~> 3.11"
