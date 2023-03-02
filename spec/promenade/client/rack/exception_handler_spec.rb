@@ -60,7 +60,7 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
       }
 
       exception = exception_klass.new("Test error")
-      requests_counter = ::Prometheus::Client.registry.get(:http_requests_total)
+      requests_counter = Prometheus::Client.registry.get(:http_requests_total)
       request_duration_seconds = 1.0
 
       expect(requests_counter).to receive(:increment).with({
