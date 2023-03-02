@@ -48,7 +48,7 @@ module Promenade
 
             offset_lag = partition_values[:consumer_lag_stored]
 
-            Logger.new($stdout).info "[Statistics][karafka Topics] #{labels}: #{offset_lag}"
+            Rails.logger.info "[Statistics][karafka Topics] #{labels} - Offset Lag: #{offset_lag}"
 
             Promenade.metric(:kafka_consumer_ofset_lag).set(labels, offset_lag)
           end
@@ -67,8 +67,8 @@ module Promenade
             connection_calls = broker_values[:connects]
             broker_id = broker_values[:name]
 
-            Logger.new($stdout).info "[Statistics][karafka Broker RTT] #{broker_id}: #{rtt}"
-            Logger.new($stdout).info "[Statistics][karafka Broker Conn Calls] #{broker_id}: #{connection_calls}"
+            Rails.logger.info "[Statistics][karafka Broker RTT] #{broker_id}: #{rtt}"
+            Rails.logger.info "[Statistics][karafka Broker Conn Calls] #{broker_id}: #{connection_calls}"
 
             Promenade.metric(:kafka_connection_calls).increment(labels.merge(broker: broker_id), connection_calls)
             Promenade.metric(:kafka_connection_latency).observe(labels.merge(broker: broker_id), rtt)
