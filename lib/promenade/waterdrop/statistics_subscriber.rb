@@ -118,7 +118,7 @@ module Promenade
             delivery_attempts = broker_values[:txretries]
             broker_labels = {
               broker_id: broker_values[:name],
-              topic: broker_values[:toppars][0][:topic]
+              topic: broker_values[:toppars].values[0][:topic]
             }
 
             Promenade.metric(:kafka_producer_delivery_attempts).observe(labels.merge(broker_labels), attempts)
