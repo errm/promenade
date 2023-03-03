@@ -3,7 +3,7 @@ require "active_support/notifications"
 require "active_support/isolated_execution_state"
 
 RSpec.describe Promenade::Karafka do
-  let(:client_id) { "test_client" }
+  let(:client) { "test_client" }
   let(:topic_name) { "test_topic" }
   let(:consumer_group_id) { "consumer_group_id" }
   let(:partition) { "0" }
@@ -13,12 +13,12 @@ RSpec.describe Promenade::Karafka do
   let(:backend) { ActiveSupport::Notifications }
   let(:metadata) { Struct.new(:partition, :topic).new(partition, topic_name) }
   let(:messages) { Struct.new(:size, :metadata).new(messages_size, metadata) }
-  let(:topic) { Struct.new(:consumer_group).new(Struct.new(:id).new(consumer_group_id)) }
+  let(:topic) { Struct.new(:consumer_group, :kafka).new(Struct.new(:id).new(consumer_group_id), {:"client.id" => client }) }
   let(:consumer) { Struct.new(:messages, :topic).new(messages, topic) }
 
 
   let(:labels) do
-    { group: consumer_group_id, topic: topic_name, partition: partition }
+    { client: client, group: consumer_group_id, topic: topic_name, partition: partition }
   end
 
   describe "consumer.karafka" do

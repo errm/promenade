@@ -33,6 +33,7 @@ module Promenade
           metadata = consumer.messages.metadata
 
           {
+            client: consumer.topic.kafka[:"client.id"],
             group: consumer.topic.consumer_group.id,
             topic: metadata.topic,
             partition: metadata.partition,
