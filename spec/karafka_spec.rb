@@ -52,6 +52,7 @@ RSpec.describe Promenade::Karafka do
   end
 
   describe "statistics.karafka" do
+    let(:group) { "consumer_group" }
     let(:statistics) do
       {
         topics: {
@@ -80,6 +81,7 @@ RSpec.describe Promenade::Karafka do
       11.times do
         backend.instrument(
           "emitted.statistics.karafka",
+          consumer_group_id: group,
           statistics: statistics,
         )
       end
@@ -87,7 +89,7 @@ RSpec.describe Promenade::Karafka do
 
     describe "reports partition_metrics" do
       let(:labels) do
-        { client: "client_id", topic: "topic_name", partition: "0" }
+        { client: "client_id", topic: "topic_name", partition: "0",  group: group }
       end
 
       it "exposes the ofest lag" do

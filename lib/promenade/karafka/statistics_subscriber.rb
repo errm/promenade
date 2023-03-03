@@ -20,19 +20,21 @@ module Promenade
       end
 
       def emitted(event)
+        group = event.payload[:consumer_group_id]
         statistics = event.payload[:statistics].with_indifferent_access
 
-        report_topic_metrics(statistics)
+        report_topic_metrics(statistics, group)
         report_connection_metrics(statistics)
       end
 
       private
 
-        def report_topic_metrics(statistics)
+        def report_topic_metrics(statistics, group)
           statistics[:topics].map do |topic_name, topic_values|
             labels = {
               client: statistics[:client_id],
               topic: topic_name,
+              group: group,
             }
             report_partition_metrics(topic_values, labels)
           end
