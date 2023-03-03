@@ -112,19 +112,18 @@ module Promenade
         def report_broker_metrics(statistics)
           labels = get_labels(statistics)
 
-          statistics[:brokers].map do |_broker_name, broker_values|
+          statistics[:brokers].map do |broker_name, broker_values|
             next if broker_values[:nodeid] == -1
 
-            broker_id = broker_values[:name]
             delivery_attempts = broker_values[:txretries]
             broker_labels = {
-              broker_id: broker_id,
+              broker_id: broker_name,
               topic: broker_values[:toppars].values[0][:topic]
             }
 
             Promenade.metric(:kafka_producer_delivery_attempts).observe(labels.merge(broker_labels), delivery_attempts)
 
-            Rails.logger.info "[Statistics][Producer Broker Delivery Attempts] #{broker_id}: #{delivery_attempts}"
+            Rails.logger.info "[Statistics][Producer Broker Delivery Attempts] #{broker_name}: #{delivery_attempts}"
           end
         end
 
