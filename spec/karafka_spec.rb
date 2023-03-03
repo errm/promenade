@@ -46,7 +46,7 @@ RSpec.describe Promenade::Karafka do
         1 => 1,
         2.5 => 1,
         5 => 1,
-        10 => 1
+        10 => 1,
       )
     end
   end
@@ -58,10 +58,10 @@ RSpec.describe Promenade::Karafka do
           topic_name: {
             partitions: {
               "0": {
-                consumer_lag_stored: 1
-              }
-            }
-          }
+                consumer_lag_stored: 1,
+              },
+            },
+          },
         },
         brokers: {
           "localhost:9092/2": {
@@ -69,18 +69,20 @@ RSpec.describe Promenade::Karafka do
             rtt: {
               avg: 0.5,
             },
-            connects: 5
-          }
+            connects: 5,
+          },
         },
-        client_id: "client_id"
+        client_id: "client_id",
       }
     end
 
     before do
-      11.times {  backend.instrument(
-        "emitted.statistics.karafka",
-        statistics: statistics
-      )}
+      11.times do
+        backend.instrument(
+          "emitted.statistics.karafka",
+          statistics: statistics,
+        )
+      end
     end
 
     describe "reports partition_metrics" do
@@ -114,9 +116,26 @@ RSpec.describe Promenade::Karafka do
           1 => 11.0,
           2.5 => 11.0,
           5 => 11.0,
-          10 => 11.0
+          10 => 11.0,
         )
       end
+    end
+  end
+
+  describe "error.karafka" do
+    let(:labels) do
+      { error_type: "consumer.consume.error" }
+    end
+
+    before do
+      backend.instrument(
+        "occurred.error.karafka",
+        type: "consumer.consume.error",
+      )
+    end
+
+    it "exposes the karafka errors" do
+      expect(Promenade.metric(:karafka_errors).get(labels)).to eq 1
     end
   end
 end

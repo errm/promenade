@@ -13,14 +13,14 @@ module Promenade
         labels = get_labels(event)
 
         Promenade.metric(:karafka_errors).increment(labels)
-        Rails.logger.error "[Error][karafka] error occurred: #{labels}"
+        $stdout.puts "[Error][karafka] error occurred: #{labels}"
       end
 
       private
 
         def get_labels(event)
           {
-            error_type: event.payload[:type]
+            error_type: event.payload[:type],
           }
         end
     end
