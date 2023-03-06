@@ -29,7 +29,7 @@ module Promenade
 
       def acknowledged(event)
         labels = {
-          client: event.payload[:producer_id]
+          client: event.payload[:producer_id],
         }
 
         Rails.logger.info "[waterdrop] message acknowledged: #{event.payload.inspect}"
@@ -43,7 +43,7 @@ module Promenade
 
           {
             client: payload[:producer_id],
-            topic: event.payload[:message][:topic]
+            topic: event.payload[:message][:topic],
           }
         end
     end

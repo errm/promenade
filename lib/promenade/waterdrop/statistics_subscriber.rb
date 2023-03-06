@@ -1,4 +1,5 @@
 require "promenade/waterdrop/subscriber"
+require "active_support/core_ext/hash"
 
 module Promenade
   module Waterdrop
@@ -49,27 +50,27 @@ module Promenade
 
       private
 
-        def report_root_metrics(statistics)
+        def report_root_metrics(statistics) # rubocop:disable Metrics/AbcSize
           labels = get_labels(statistics)
           queue_size = statistics[:msg_cnt]
           max_queue_size = statistics[:msg_max]
           message_size = statistics[:msg_size]
           delivered_messages = statistics[:txmsgs]
-          queue_fill_ratio = queue_size.to_f / max_queue_size.to_f
+          queue_fill_ratio = queue_size.to_f / max_queue_size
 
           Promenade.metric(:kafka_async_producer_queue_size).set(labels, queue_size)
-          Rails.logger.info "[Statistics][Producer queue_size] #{queue_size}"
+          $stdout.puts "[Statistics][Producer queue_size] #{queue_size}"
           Promenade.metric(:kafka_async_producer_max_queue_size).set(labels, max_queue_size)
-          Rails.logger.info "[Statistics][Producer max_queue_size] #{max_queue_size}"
+          $stdout.puts "[Statistics][Producer max_queue_size] #{max_queue_size}"
           Promenade.metric(:kafka_async_producer_queue_fill_ratio).set(labels, queue_fill_ratio)
-          Rails.logger.info "[Statistics][Producer queue_fill_ratio] #{queue_fill_ratio}"
+          $stdout.puts "[Statistics][Producer queue_fill_ratio] #{queue_fill_ratio}"
           Promenade.metric(:kafka_producer_message_size).observe(labels, message_size)
-          Rails.logger.info "[Statistics][Producer message_size] #{message_size}"
+          $stdout.puts "[Statistics][Producer message_size] #{message_size}"
           Promenade.metric(:kafka_producer_delivered_messages).increment(labels, delivered_messages)
-          Rails.logger.info "[Statistics][karafka Producer Delivered Messages] #{delivered_messages}"
+          $stdout.puts "[Statistics][karafka Producer Delivered Messages] #{delivered_messages}"
         end
 
-        def report_broker_metrics(statistics)
+        def report_broker_metrics(statistics) # rubocop:disable Metrics/AbcSize
           labels = get_labels(statistics)
 
           statistics[:brokers].map do |broker_name, broker_values|
@@ -79,18 +80,18 @@ module Promenade
             ack_latency = broker_values[:rtt][:avg]
             broker_labels = {
               broker_id: broker_name,
-              topic: broker_values[:toppars].values[0][:topic]
+              topic: broker_values[:toppars].values[0][:topic],
             }
 
             Promenade.metric(:kafka_producer_delivery_attempts).observe(labels.merge(broker_labels), delivery_attempts)
             Promenade.metric(:kafka_producer_ack_latency).observe(labels, ack_latency)
-            Rails.logger.info "[Statistics][Producer Broker ack_latency] #{ack_latency}"
-            Rails.logger.info "[Statistics][Producer Broker Delivery Attempts] #{broker_name}: #{delivery_attempts}"
+            $stdout.puts "[Statistics][Producer Broker ack_latency] #{ack_latency}"
+            $stdout.puts "[Statistics][Producer Broker Delivery Attempts] #{broker_name}: #{delivery_attempts}"
           end
         end
 
         def get_labels(statistics)
-          labels = {
+          {
             client: statistics[:client_id],
           }
         end

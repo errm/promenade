@@ -13,14 +13,14 @@ module Promenade
         labels = get_labels(event)
 
         Promenade.metric(:waterdrop_errors).increment(labels)
-        Rails.logger.error "[Error][Waterdrop] error occurred: #{labels}"
+        $stdout.puts "[Error][Waterdrop] error occurred: #{labels}"
       end
 
       private
 
         def get_labels(event)
           {
-            error_type: event.payload[:type]
+            error_type: event.payload[:type],
           }
         end
     end
