@@ -6,7 +6,7 @@ module Promenade
       attach_to "consumer.karafka"
 
       Promenade.histogram :kafka_consumer_batch_processing_latency do
-        doc "Consumer message processing latency"
+        doc "Consumer message processing latency in milliseconds"
         buckets :network
       end
 

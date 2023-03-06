@@ -7,7 +7,7 @@ module Promenade
       attach_to "statistics.karafka"
 
       Promenade.histogram :kafka_connection_latency do
-        doc "Request latency (rtt)"
+        doc "Request latency (rtt) in milliseconds"
         buckets :network
       end
 
@@ -57,7 +57,7 @@ module Promenade
           end
         end
 
-        def report_connection_metrics(statistics)
+        def report_connection_metrics(statistics) # rubocop:disable Metrics/AbcSize
           labels = {
             client: statistics[:client_id],
             api: "unknown",
@@ -66,7 +66,7 @@ module Promenade
           statistics[:brokers].map do |broker_name, broker_values|
             next if broker_values[:nodeid] == -1
 
-            rtt = broker_values[:rtt][:avg]
+            rtt = broker_values[:rtt][:avg] / 1000
             connection_calls = broker_values[:connects]
 
             $stdout.puts "[Statistics][karafka Broker RTT] #{broker_name}: #{rtt}"

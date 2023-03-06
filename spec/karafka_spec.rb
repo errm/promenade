@@ -128,12 +128,12 @@ RSpec.describe Promenade::Karafka do
 
       it "exposes the kafka connection latency" do
         expect(Promenade.metric(:kafka_connection_latency).get(labels)).to eq(
-          0.005 => 0.0,
-          0.01 => 0.0,
-          0.025 => 0.0,
-          0.05 => 0.0,
-          0.1 => 0.0,
-          0.25 => 0.0,
+          0.005 => 11.0,
+          0.01 => 11.0,
+          0.025 => 11.0,
+          0.05 => 11.0,
+          0.1 => 11.0,
+          0.25 => 11.0,
           0.5 => 11.0,
           1 => 11.0,
           2.5 => 11.0,
