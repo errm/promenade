@@ -17,20 +17,20 @@ module Promenade
         data = event.payload[:message].slice(:key, :topic).merge(producer_id: event.payload[:producer_id])
         Rails.logger.info("[waterdrop] produced_async: #{data.inspect}")
 
-        Promenade.metric(:kafka_producer_messages).increment(get_labels(event)
+        Promenade.metric(:kafka_producer_messages).increment(get_labels(event))
       end
 
       def produced_sync(event)
         data = event.payload[:message].slice(:key, :topic).merge(producer_id: event.payload[:producer_id])
         Rails.logger.info("[waterdrop] produced_sync: #{data.inspect}")
 
-        Promenade.metric(:kafka_producer_messages).increment(get_labels(event)
+        Promenade.metric(:kafka_producer_messages).increment(get_labels(event))
       end
 
       def acknowledged(event)
         Rails.logger.info "[waterdrop] message acknowledged: #{event.payload.inspect}"
 
-        Promenade.metric(:kafka_producer_ack_messages).increment(get_labels(event)
+        Promenade.metric(:kafka_producer_ack_messages).increment(get_labels(event))
       end
 
       private
