@@ -3,25 +3,24 @@ require "active_support/notifications"
 require "active_support/isolated_execution_state"
 
 RSpec.describe Promenade::Karafka do
-  let(:client) { "test_client" }
-  let(:topic_name) { "test_topic" }
+  let(:backend) { ActiveSupport::Notifications }
+  let(:client_id) { "test_client" }
+  let(:topic_name) { "topic_name" }
   let(:consumer_group_id) { "consumer_group_id" }
   let(:partition) { "0" }
-  let(:messages_size) { 8 }
-  let(:time) { 1 }
-
-  let(:backend) { ActiveSupport::Notifications }
-  let(:metadata) { Struct.new(:partition, :topic).new(partition, topic_name) }
-  let(:messages) { Struct.new(:size, :metadata).new(messages_size, metadata) }
-  let(:topic) { Struct.new(:consumer_group, :kafka).new(Struct.new(:id).new(consumer_group_id), {:"client.id" => client }) }
-  let(:consumer) { Struct.new(:messages, :topic).new(messages, topic) }
-
 
   let(:labels) do
-    { client: client, group: consumer_group_id, topic: topic_name, partition: partition }
+    { client: client_id, group: consumer_group_id, topic: topic_name, partition: partition }
   end
 
   describe "consumer.karafka" do
+    let(:metadata) { Struct.new(:partition, :topic).new(partition, topic_name) }
+    let(:messages) { Struct.new(:size, :metadata).new(messages_size, metadata) }
+    let(:topic) { Struct.new(:consumer_group, :kafka).new(Struct.new(:id).new(consumer_group_id), { "client.id": client_id }) }
+    let(:consumer) { Struct.new(:messages, :topic).new(messages, topic) }
+    let(:messages_size) { 8 }
+    let(:time) { 1 }
+
     before do
       backend.instrument(
         "consumed.consumer.karafka",
@@ -31,7 +30,7 @@ RSpec.describe Promenade::Karafka do
     end
 
     it "counts the messages processed" do
-      expect(Promenade.metric(:kafka_consumer_messages_processed).get(labels)).to eq 8
+      expect(Promenade.metric(:kafka_consumer_messages_processed).get(labels)).to eq messages_size
     end
 
     it "has a histogram of batch latency" do
@@ -52,14 +51,14 @@ RSpec.describe Promenade::Karafka do
   end
 
   describe "statistics.karafka" do
-    let(:group) { "consumer_group" }
+    let(:consumer_lag_stored) { 1 }
     let(:statistics) do
       {
         topics: {
-          topic_name: {
+          topic_name => {
             partitions: {
-              "0": {
-                consumer_lag_stored: 1,
+              partition => {
+                consumer_lag_stored: consumer_lag_stored,
               },
             },
           },
@@ -73,7 +72,7 @@ RSpec.describe Promenade::Karafka do
             connects: 5,
           },
         },
-        client_id: "client_id",
+        client_id: client_id,
       }
     end
 
@@ -81,7 +80,7 @@ RSpec.describe Promenade::Karafka do
       11.times do
         backend.instrument(
           "emitted.statistics.karafka",
-          consumer_group_id: group,
+          consumer_group_id: consumer_group_id,
           statistics: statistics,
         )
       end
@@ -89,17 +88,17 @@ RSpec.describe Promenade::Karafka do
 
     describe "reports partition_metrics" do
       let(:labels) do
-        { client: "client_id", topic: "topic_name", partition: "0",  group: group }
+        { client: client_id, topic: topic_name, partition: partition, group: consumer_group_id }
       end
 
       it "exposes the ofest lag" do
-        expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels)).to eq 1
+        expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels)).to eq consumer_lag_stored
       end
     end
 
     describe "reports connection_metrics" do
       let(:labels) do
-        { client: "client_id", api: "unknown", broker: "localhost:9092/2" }
+        { client: client_id, api: "unknown", broker: "localhost:9092/2" }
       end
 
       it "exposes the kafka connection calls" do
