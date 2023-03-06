@@ -52,6 +52,9 @@ RSpec.describe Promenade::Karafka do
 
   describe "statistics.karafka" do
     let(:consumer_lag_stored) { 1 }
+    let(:internal_partition) { "-1" }
+    let(:bootstraps_broker) { "bootstraps" }
+
     let(:statistics) do
       {
         topics: {
@@ -61,11 +64,21 @@ RSpec.describe Promenade::Karafka do
                 consumer_lag_stored: consumer_lag_stored,
               },
             },
+            internal_partition => {
+              consumer_lag_stored: 10,
+            },
           },
         },
         brokers: {
           "localhost:9092/2": {
             nodeid: 3,
+            rtt: {
+              avg: 0.5,
+            },
+            connects: 5,
+          },
+          bootstraps_broker => {
+            nodeid: -1,
             rtt: {
               avg: 0.5,
             },
@@ -94,6 +107,10 @@ RSpec.describe Promenade::Karafka do
       it "exposes the ofest lag" do
         expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels)).to eq consumer_lag_stored
       end
+
+      it "does not expose the ofest lag for internal partitions" do
+        expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels.merge(partition: internal_partition))).to eq 0
+      end
     end
 
     describe "reports connection_metrics" do
@@ -103,6 +120,10 @@ RSpec.describe Promenade::Karafka do
 
       it "exposes the kafka connection calls" do
         expect(Promenade.metric(:kafka_connection_calls).get(labels)).to eq 55
+      end
+
+      it "does not expose the connection_metrics for bootstrap broker" do
+        expect(Promenade.metric(:kafka_connection_calls).get(labels.merge(broker: bootstraps_broker))).to eq 0
       end
 
       it "exposes the kafka connection latency" do
