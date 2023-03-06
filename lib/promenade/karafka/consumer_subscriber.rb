@@ -17,15 +17,14 @@ module Promenade
       def consumed(event)
         consumer = event.payload[:caller]
         messages = consumer.messages
-        metadata = messages.metadata
 
         labels = get_labels(consumer)
 
         Promenade.metric(:kafka_consumer_messages_processed).increment(labels, messages.size)
-        Rails.logger.info "[Consumer][karafka] messages processed: #{messages.size}"
+        $stdout.puts "[Consumer][karafka] messages processed: #{messages.size}"
 
         Promenade.metric(:kafka_consumer_batch_processing_latency).observe(labels, event.payload[:time])
-        Rails.logger.info "[Consumer][karafka] batch processing latency: #{event.payload[:time]}"
+        $stdout.puts "[Consumer][karafka] batch processing latency: #{event.payload[:time]}"
       end
 
       private
@@ -34,6 +33,7 @@ module Promenade
           metadata = consumer.messages.metadata
 
           {
+            client: consumer.topic.kafka[:"client.id"],
             group: consumer.topic.consumer_group.id,
             topic: metadata.topic,
             partition: metadata.partition,
