@@ -28,9 +28,12 @@ module Promenade
       end
 
       def acknowledged(event)
+        labels = {
+          client: event.payload[:producer_id]
+        }
         Rails.logger.info "[waterdrop] message acknowledged: #{event.payload.inspect}"
 
-        Promenade.metric(:kafka_producer_ack_messages).increment(get_labels(event))
+        Promenade.metric(:kafka_producer_ack_messages).increment(labels)
       end
 
       private
