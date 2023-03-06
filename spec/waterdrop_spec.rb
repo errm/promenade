@@ -45,6 +45,24 @@ RSpec.describe Promenade::Waterdrop do
         expect(Promenade.metric(:kafka_producer_messages).get(labels)).to eq 1
       end
     end
+
+    describe "acknowledged" do
+      before do
+        backend.instrument(
+          "acknowledged.message.waterdrop",
+          producer_id: producer_id,
+        )
+      end
+
+      let(:labels) do
+        { client: producer_id }
+      end
+
+
+      it "exposes the kafka_producer_ack_messages" do
+        expect(Promenade.metric(:kafka_producer_ack_messages).get(labels)).to eq 1
+      end
+    end
   end
 
   describe "statistics.karafka" do
