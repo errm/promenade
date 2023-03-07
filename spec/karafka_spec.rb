@@ -117,7 +117,7 @@ RSpec.describe Promenade::Karafka do
 
     describe "reports connection_metrics" do
       let(:labels) do
-        { client: client_id, api: "unknown", broker: "localhost:9092/2" }
+        { client: client_id, api: "", broker: "localhost:9092/2" }
       end
 
       it "exposes the kafka connection calls" do
