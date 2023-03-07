@@ -25,3 +25,4 @@ module Promenade
     end
   end
 end
+Prometheus::Client::LabelSetValidator::InvalidLabelSetError

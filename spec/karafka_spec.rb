@@ -21,7 +21,7 @@ RSpec.describe Promenade::Karafka do
     let(:topic) { Struct.new(:consumer_group, :kafka).new(Struct.new(:id).new(consumer_group_id), { "client.id": client_id }) }
     let(:consumer) { Struct.new(:messages, :topic).new(messages, topic) }
     let(:messages_size) { 8 }
-    let(:time) { 1 }
+    let(:time) { 1000 }
 
     before do
       backend.instrument(
@@ -36,7 +36,7 @@ RSpec.describe Promenade::Karafka do
     end
 
     it "has a histogram of batch latency" do
-      expect(Promenade.metric(:kafka_consumer_batch_processing_latency).get(labels)).to eq(
+      expect(Promenade.metric(:kafka_consumer_batch_processing_duration).get(labels)).to eq(
         0.005 => 0.0,
         0.01 => 0.0,
         0.025 => 0.0,
