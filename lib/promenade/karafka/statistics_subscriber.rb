@@ -58,8 +58,7 @@ module Promenade
 
         def report_connection_metrics(brokers, client_id)
           labels = {
-            client: client_id,
-            api: "",
+            client: client_id
           }
 
           brokers.map do |broker_name, broker_values|
