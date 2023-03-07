@@ -22,17 +22,18 @@ module Promenade
       def emitted(event)
         group = event.payload[:consumer_group_id]
         statistics = event.payload[:statistics].with_indifferent_access
+        client_id = statistics[:client_id]
 
-        report_topic_metrics(statistics, group)
-        report_connection_metrics(statistics)
+        report_topic_metrics(statistics[:topics], group, client_id)
+        report_connection_metrics(statistics[:brokers], client_id)
       end
 
       private
 
-        def report_topic_metrics(statistics, group)
-          statistics[:topics].map do |topic_name, topic_values|
+        def report_topic_metrics(topics, group, client_id)
+          topics.map do |topic_name, topic_values|
             labels = {
-              client: statistics[:client_id],
+              client: client_id,
               topic: topic_name,
               group: group,
             }
@@ -57,13 +58,12 @@ module Promenade
           end
         end
 
-        def report_connection_metrics(statistics) # rubocop:disable Metrics/AbcSize
+        def report_connection_metrics(brokers, client_id)
           labels = {
-            client: statistics[:client_id],
-            api: "unknown",
+            client: client_id,
           }
 
-          statistics[:brokers].map do |broker_name, broker_values|
+          brokers.map do |broker_name, broker_values|
             next if broker_values[:nodeid] == -1
 
             rtt = broker_values[:rtt][:avg] / 1000
