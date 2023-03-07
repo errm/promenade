@@ -5,10 +5,11 @@ require "active_support/isolated_execution_state"
 RSpec.describe Promenade::Waterdrop do
   let(:backend) { ActiveSupport::Notifications }
   let(:client_id) { "test_client" }
+  let(:topic) { "topic_name" }
 
   describe "message.waterdrop" do
     let(:producer_id) { "producer_id" }
-    let(:topic) { "topic_name" }
+
 
     let(:labels) do
       { client: producer_id, topic: topic }
@@ -67,15 +68,16 @@ RSpec.describe Promenade::Waterdrop do
 
   describe "statistics.karafka" do
     let(:client_id) { "test_client" }
-    let(:consumer_lag_stored) { 1 }
-    let(:internal_partition) { "-1" }
     let(:bootstraps_broker) { "bootstraps" }
     let(:labels) do
       { client: client_id }
     end
+    let(:broker_name) { "localhost:9092/2" }
 
     before do
       size = 128
+      ack_latency = 0.01
+      attempts = 2
 
       10.times do
         backend.instrument(
@@ -86,10 +88,33 @@ RSpec.describe Promenade::Waterdrop do
             msg_size: size,
             txmsgs: 13,
             client_id: client_id,
-            brokers: {},
+            brokers: {
+              broker_name => {
+                nodeid: 3,
+                txretries: attempts,
+                rtt: {
+                  avg: ack_latency,
+                },
+                toppars: {
+                  topic => {
+                    topic: topic,
+                    partition: 1,
+                  },
+                },
+              },
+              bootstraps_broker => {
+                nodeid: -1,
+                rtt: {
+                  avg: 0.5,
+                },
+                connects: 5,
+              },
+            },
           },
         )
         size = size * 2
+        ack_latency = ack_latency * 2
+        attempts = attempts * 2
       end
     end
 
@@ -124,6 +149,45 @@ RSpec.describe Promenade::Waterdrop do
 
       it "exposes kafka_producer_delivered_messages" do
         expect(Promenade.metric(:kafka_producer_delivered_messages).get(labels)).to eq 130
+      end
+    end
+
+    describe "delivery metrics" do
+      let(:labels) do
+        { client: client_id, broker_id: broker_name, topic: topic }
+      end
+
+      it "exposes kafka_producer_delivery_attempts" do
+        expect(Promenade.metric(:kafka_producer_delivery_attempts).get(labels)).to eq(
+          0 => 0,
+          6 => 2,
+          12 => 3,
+          18 => 4,
+          24 => 4,
+          30 => 4,
+        )
+      end
+    end
+
+    describe "ack latency" do
+      let(:labels) do
+        { client: client_id }
+      end
+
+      it "exposes kafka_producer_delivery_attempts" do
+        expect(Promenade.metric(:kafka_producer_ack_latency).get(labels)).to eq(
+          0.005 => 9.0,
+          0.01 => 10.0,
+          0.025 => 10.0,
+          0.05 => 10.0,
+          0.1 => 10.0,
+          0.25 => 10.0,
+          0.5 => 10.0,
+          1 => 10.0,
+          2.5 => 10.0,
+          5 => 10.0,
+          10 => 10.0
+        )
       end
     end
   end
