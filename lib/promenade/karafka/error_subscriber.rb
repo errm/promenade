@@ -13,7 +13,6 @@ module Promenade
         labels = get_labels(event)
 
         Promenade.metric(:karafka_errors).increment(labels)
-        $stdout.puts "[Error][karafka] error occurred: #{labels}"
       end
 
       private

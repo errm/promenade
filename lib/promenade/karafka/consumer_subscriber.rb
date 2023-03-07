@@ -22,10 +22,7 @@ module Promenade
         labels = get_labels(consumer)
 
         Promenade.metric(:kafka_consumer_messages_processed).increment(labels, messages.size)
-        $stdout.puts "[Consumer][karafka] messages processed: #{messages.size}"
-
         Promenade.metric(:kafka_consumer_batch_processing_duration).observe(labels, batch_processing_duration)
-        $stdout.puts "[Consumer][karafka] batch processing duration: #{batch_processing_duration} seconds"
       end
 
       private
