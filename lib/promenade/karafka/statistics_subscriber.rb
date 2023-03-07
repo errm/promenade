@@ -66,7 +66,7 @@ module Promenade
           brokers.map do |broker_name, broker_values|
             next if broker_values[:nodeid] == -1
 
-            rtt = broker_values[:rtt][:avg] / 1000
+            rtt = broker_values[:rtt][:avg] / 1000.to_f
             connection_calls = broker_values[:connects]
 
             $stdout.puts "[Statistics][karafka Broker RTT] #{broker_name}: #{rtt}"

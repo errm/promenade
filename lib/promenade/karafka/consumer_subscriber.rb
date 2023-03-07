@@ -17,7 +17,7 @@ module Promenade
       def consumed(event)
         consumer = event.payload[:caller]
         messages = consumer.messages
-        batch_processing_duration = event.payload[:time] / 1000
+        batch_processing_duration = event.payload[:time] / 1000.to_f
 
         labels = get_labels(consumer)
 
