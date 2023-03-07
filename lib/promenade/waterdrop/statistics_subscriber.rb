@@ -21,7 +21,7 @@ module Promenade
       end
 
       Promenade.histogram :kafka_producer_ack_latency do
-        doc "Delay between message being produced and Acked"
+        doc "Delay between message being produced and Acked in miliseconds"
         buckets :network
       end
 
@@ -77,7 +77,7 @@ module Promenade
             next if broker_values[:nodeid] == -1
 
             delivery_attempts = broker_values[:txretries]
-            ack_latency = broker_values[:rtt][:avg]
+            ack_latency = broker_values[:rtt][:avg] / 1000
             broker_labels = {
               broker_id: broker_name,
               topic: broker_values[:toppars].values[0][:topic],
