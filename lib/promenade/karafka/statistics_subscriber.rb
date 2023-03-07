@@ -6,7 +6,7 @@ module Promenade
     class StatisticsSubscriber < Subscriber
       attach_to "statistics.karafka"
 
-      Promenade.histogram :kafka_connection_latency do
+      Promenade.histogram :kafka_connection_latency_seconds do
         doc "Request latency (rtt) in milliseconds"
         buckets :network
       end
@@ -65,12 +65,16 @@ module Promenade
           brokers.map do |broker_name, broker_values|
             next if broker_values[:nodeid] == -1
 
-            rtt = broker_values[:rtt][:avg] / 1000.to_f
+            rtt = convert_microseconds_to_seconds(broker_values[:rtt][:avg])
             connection_calls = broker_values[:connects]
 
             Promenade.metric(:kafka_connection_calls).increment(labels.merge(broker: broker_name), connection_calls)
-            Promenade.metric(:kafka_connection_latency).observe(labels.merge(broker: broker_name), rtt)
+            Promenade.metric(:kafka_connection_latency_seconds).observe(labels.merge(broker: broker_name), rtt)
           end
+        end
+
+        def convert_microseconds_to_seconds(microseconds)
+          microseconds.to_f / 10**6
         end
     end
   end
