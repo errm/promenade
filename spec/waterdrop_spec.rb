@@ -10,7 +10,6 @@ RSpec.describe Promenade::Waterdrop do
   describe "message.waterdrop" do
     let(:producer_id) { "producer_id" }
 
-
     let(:labels) do
       { client: producer_id, topic: topic }
     end
