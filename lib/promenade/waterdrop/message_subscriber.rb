@@ -14,16 +14,10 @@ module Promenade
       end
 
       def produced_async(event)
-        data = event.payload[:message].slice(:key, :topic).merge(producer_id: event.payload[:producer_id])
-
-        $stdout.puts("[waterdrop] produced_async: #{data.inspect}")
         Promenade.metric(:waterdrop_producer_messages).increment(get_labels(event))
       end
 
       def produced_sync(event)
-        data = event.payload[:message].slice(:key, :topic).merge(producer_id: event.payload[:producer_id])
-
-        $stdout.puts("[waterdrop] produced_sync: #{data.inspect}")
         Promenade.metric(:waterdrop_producer_messages).increment(get_labels(event))
       end
 
@@ -32,7 +26,6 @@ module Promenade
           client: event.payload[:producer_id],
         }
 
-        $stdout.puts "[waterdrop] message acknowledged: #{event.payload.inspect}"
         Promenade.metric(:waterdrop_producer_ack_messages).increment(labels)
       end
 

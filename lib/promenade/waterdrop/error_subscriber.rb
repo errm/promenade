@@ -13,7 +13,6 @@ module Promenade
         labels = get_labels(event)
 
         Promenade.metric(:waterdrop_errors).increment(labels)
-        $stdout.puts "[Error][Waterdrop] error occurred: #{labels}"
       end
 
       private

@@ -51,7 +51,7 @@ module Promenade
 
       private
 
-        def report_root_metrics(statistics, labels) # rubocop:disable Metrics/AbcSize
+        def report_root_metrics(statistics, labels)
           queue_size = statistics[:msg_cnt]
           max_queue_size = statistics[:msg_max]
           message_size = statistics[:msg_size]
@@ -59,15 +59,10 @@ module Promenade
           queue_fill_ratio = queue_size.to_f / max_queue_size
 
           Promenade.metric(:waterdrop_async_producer_queue_size).set(labels, queue_size)
-          $stdout.puts "[Statistics][Producer queue_size] #{queue_size}"
           Promenade.metric(:waterdrop_async_producer_max_queue_size).set(labels, max_queue_size)
-          $stdout.puts "[Statistics][Producer max_queue_size] #{max_queue_size}"
           Promenade.metric(:waterdrop_async_producer_queue_fill_ratio).set(labels, queue_fill_ratio)
-          $stdout.puts "[Statistics][Producer queue_fill_ratio] #{queue_fill_ratio}"
           Promenade.metric(:waterdrop_producer_message_size).observe(labels, message_size)
-          $stdout.puts "[Statistics][Producer message_size] #{message_size}"
           Promenade.metric(:waterdrop_producer_delivered_messages).increment(labels, delivered_messages)
-          $stdout.puts "[Statistics][karafka Producer Delivered Messages] #{delivered_messages}"
         end
 
         def report_broker_metrics(brokers, labels)
@@ -82,8 +77,6 @@ module Promenade
 
             Promenade.metric(:waterdrop_producer_delivery_attempts).observe(labels.merge(broker_labels), attempts)
             Promenade.metric(:waterdrop_producer_ack_latency_seconds).observe(labels, ack_latency)
-            $stdout.puts "[Statistics][Producer Broker ack_latency] #{ack_latency}"
-            $stdout.puts "[Statistics][Producer Broker Delivery Attempts] #{broker_name}: #{attempts}"
           end
         end
 
