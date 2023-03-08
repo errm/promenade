@@ -28,7 +28,7 @@ RSpec.describe Promenade::Waterdrop do
       end
 
       it "exposes the kafka_producer_messages" do
-        expect(Promenade.metric(:kafka_producer_messages).get(labels)).to eq 1
+        expect(Promenade.metric(:waterdrop_producer_messages).get(labels)).to eq 1
       end
     end
 
@@ -42,7 +42,7 @@ RSpec.describe Promenade::Waterdrop do
       end
 
       it "exposes the kafka_producer_messages" do
-        expect(Promenade.metric(:kafka_producer_messages).get(labels)).to eq 1
+        expect(Promenade.metric(:waterdrop_producer_messages).get(labels)).to eq 1
       end
     end
 
@@ -60,7 +60,7 @@ RSpec.describe Promenade::Waterdrop do
 
 
       it "exposes the kafka_producer_ack_messages" do
-        expect(Promenade.metric(:kafka_producer_ack_messages).get(labels)).to eq 1
+        expect(Promenade.metric(:waterdrop_producer_ack_messages).get(labels)).to eq 1
       end
     end
   end
@@ -119,19 +119,19 @@ RSpec.describe Promenade::Waterdrop do
 
     describe "exposes root metrics" do
       it "exposes the kafka_async_producer_queue_size" do
-        expect(Promenade.metric(:kafka_async_producer_queue_size).get(labels)).to eq 1
+        expect(Promenade.metric(:waterdrop_async_producer_queue_size).get(labels)).to eq 1
       end
 
       it "exposes kafka_async_producer_max_queue_size" do
-        expect(Promenade.metric(:kafka_async_producer_max_queue_size).get(labels)).to eq 10
+        expect(Promenade.metric(:waterdrop_async_producer_max_queue_size).get(labels)).to eq 10
       end
 
       it "exposes kafka_async_producer_max_queue_size" do
-        expect(Promenade.metric(:kafka_async_producer_max_queue_size).get(labels)).to eq 10
+        expect(Promenade.metric(:waterdrop_async_producer_max_queue_size).get(labels)).to eq 10
       end
 
       it "exposes kafka_producer_message_size" do
-        expect(Promenade.metric(:kafka_producer_message_size).get(labels)).to eq(
+        expect(Promenade.metric(:waterdrop_producer_message_size).get(labels)).to eq(
           128 => 1.0,
           256 => 2.0,
           512 => 3.0,
@@ -147,17 +147,17 @@ RSpec.describe Promenade::Waterdrop do
       end
 
       it "exposes kafka_producer_delivered_messages" do
-        expect(Promenade.metric(:kafka_producer_delivered_messages).get(labels)).to eq 130
+        expect(Promenade.metric(:waterdrop_producer_delivered_messages).get(labels)).to eq 130
       end
     end
 
     describe "delivery metrics" do
       let(:labels) do
-        { client: client_id, broker_id: broker_name, topic: topic }
+        { client: client_id, broker_id: broker_name }
       end
 
       it "exposes kafka_producer_delivery_attempts" do
-        expect(Promenade.metric(:kafka_producer_delivery_attempts).get(labels)).to eq(
+        expect(Promenade.metric(:waterdrop_producer_delivery_attempts).get(labels)).to eq(
           0 => 0,
           6 => 2,
           12 => 3,
@@ -174,8 +174,8 @@ RSpec.describe Promenade::Waterdrop do
       end
 
       it "exposes kafka_producer_delivery_attempts" do
-        expect(Promenade.metric(:kafka_producer_ack_latency).get(labels)).to eq(
-          0.005 => 9.0,
+        expect(Promenade.metric(:waterdrop_producer_ack_latency_seconds).get(labels)).to eq(
+          0.005 => 10.0,
           0.01 => 10.0,
           0.025 => 10.0,
           0.05 => 10.0,

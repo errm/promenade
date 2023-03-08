@@ -5,11 +5,11 @@ module Promenade
     class MessageSubscriber < Subscriber
       attach_to "message.waterdrop"
 
-      Promenade.counter :kafka_producer_messages do
+      Promenade.counter :waterdrop_producer_messages do
         doc "Number of messages written to Kafka producer"
       end
 
-      Promenade.counter :kafka_producer_ack_messages do
+      Promenade.counter :waterdrop_producer_ack_messages do
         doc "Count of the number of messages Acked by Kafka"
       end
 
@@ -17,14 +17,14 @@ module Promenade
         data = event.payload[:message].slice(:key, :topic).merge(producer_id: event.payload[:producer_id])
 
         $stdout.puts("[waterdrop] produced_async: #{data.inspect}")
-        Promenade.metric(:kafka_producer_messages).increment(get_labels(event))
+        Promenade.metric(:waterdrop_producer_messages).increment(get_labels(event))
       end
 
       def produced_sync(event)
         data = event.payload[:message].slice(:key, :topic).merge(producer_id: event.payload[:producer_id])
 
         $stdout.puts("[waterdrop] produced_sync: #{data.inspect}")
-        Promenade.metric(:kafka_producer_messages).increment(get_labels(event))
+        Promenade.metric(:waterdrop_producer_messages).increment(get_labels(event))
       end
 
       def acknowledged(event)
@@ -33,7 +33,7 @@ module Promenade
         }
 
         $stdout.puts "[waterdrop] message acknowledged: #{event.payload.inspect}"
-        Promenade.metric(:kafka_producer_ack_messages).increment(labels)
+        Promenade.metric(:waterdrop_producer_ack_messages).increment(labels)
       end
 
       private
