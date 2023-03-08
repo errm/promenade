@@ -185,7 +185,7 @@ RSpec.describe Promenade::Waterdrop do
           1 => 10.0,
           2.5 => 10.0,
           5 => 10.0,
-          10 => 10.0
+          10 => 10.0,
         )
       end
     end
