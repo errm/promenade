@@ -10,9 +10,17 @@ module Promenade
       class HTTPRequestDurationCollector < MiddlwareBase
         REQUEST_DURATION_HISTOGRAM_NAME = :http_req_duration_seconds
 
+        # We specifically want to record a separate metric `http_requests_total` even
+        # though we know it is a duplicate of http_req_duration_seconds_count.
+        # This is a very commonly used prometheus metric name, and is very useful
+        # e.g. for autoscaling.  Using the http_req_duration_seconds_count in such
+        # queries can be confusing
+        REQUESTS_COUNTER_NAME = :http_requests_total
+
         EXCEPTIONS_COUNTER_NAME = :http_exceptions_total
 
         private_constant :REQUEST_DURATION_HISTOGRAM_NAME,
+          :REQUESTS_COUNTER_NAME,
           :EXCEPTIONS_COUNTER_NAME
 
         def initialize(app,
@@ -42,6 +50,7 @@ module Promenade
           end
 
           def record_request_duration(labels, duration)
+            requests_counter.increment(labels)
             durations_histogram.observe(labels, duration)
           end
 
@@ -57,7 +66,13 @@ module Promenade
             registry.get(REQUEST_DURATION_HISTOGRAM_NAME)
           end
 
+          def requests_counter
+            registry.get(REQUESTS_COUNTER_NAME)
+          end
+
           def register_metrics!
+            registry.counter(REQUESTS_COUNTER_NAME,
+              "A counter of the total number of HTTP requests made.")
             registry.histogram(REQUEST_DURATION_HISTOGRAM_NAME,
               "A histogram of the response latency.", {}, latency_buckets)
             registry.counter(EXCEPTIONS_COUNTER_NAME,
@@ -71,6 +86,7 @@ module Promenade
           def default_exception_handler
             ExceptionHandler.initialize_singleton(
               histogram_name: REQUEST_DURATION_HISTOGRAM_NAME,
+              requests_counter_name: REQUESTS_COUNTER_NAME,
               exceptions_counter_name: EXCEPTIONS_COUNTER_NAME,
               registry: registry,
             )

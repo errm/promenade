@@ -5,26 +5,24 @@ module Promenade
     class ConsumerSubscriber < Subscriber
       attach_to "consumer.karafka"
 
-      Promenade.histogram :kafka_consumer_batch_processing_latency do
-        doc "Consumer message processing latency"
+      Promenade.histogram :karafka_consumer_batch_processing_duration_seconds do
+        doc "Consumer message processing latency in seconds"
         buckets :network
       end
 
-      Promenade.counter :kafka_consumer_messages_processed do
+      Promenade.counter :karafka_consumer_messages_processed do
         doc "Messages processed by this consumer"
       end
 
       def consumed(event)
         consumer = event.payload[:caller]
         messages = consumer.messages
+        batch_processing_duration = event.payload[:time] / 1000.to_f
 
         labels = get_labels(consumer)
 
-        Promenade.metric(:kafka_consumer_messages_processed).increment(labels, messages.size)
-        $stdout.puts "[Consumer][karafka] messages processed: #{messages.size}"
-
-        Promenade.metric(:kafka_consumer_batch_processing_latency).observe(labels, event.payload[:time])
-        $stdout.puts "[Consumer][karafka] batch processing latency: #{event.payload[:time]}"
+        Promenade.metric(:karafka_consumer_messages_processed).increment(labels, messages.size)
+        Promenade.metric(:karafka_consumer_batch_processing_duration_seconds).observe(labels, batch_processing_duration)
       end
 
       private

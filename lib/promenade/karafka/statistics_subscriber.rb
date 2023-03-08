@@ -6,33 +6,34 @@ module Promenade
     class StatisticsSubscriber < Subscriber
       attach_to "statistics.karafka"
 
-      Promenade.histogram :kafka_connection_latency do
-        doc "Request latency (rtt)"
+      Promenade.histogram :karafka_connection_latency_seconds do
+        doc "Request latency (rtt) in seconds"
         buckets :network
       end
 
-      Promenade.counter :kafka_connection_calls do
+      Promenade.counter :karafka_connection_calls do
         doc "Count of calls made to Kafka broker"
       end
 
-      Promenade.gauge :kafka_consumer_ofset_lag do
+      Promenade.gauge :karafka_consumer_offset_lag do
         doc "Lag between message create and consume time"
       end
 
       def emitted(event)
         group = event.payload[:consumer_group_id]
         statistics = event.payload[:statistics].with_indifferent_access
+        client_id = statistics[:client_id]
 
-        report_topic_metrics(statistics, group)
-        report_connection_metrics(statistics)
+        report_topic_metrics(statistics[:topics], group, client_id)
+        report_connection_metrics(statistics[:brokers], client_id)
       end
 
       private
 
-        def report_topic_metrics(statistics, group)
-          statistics[:topics].map do |topic_name, topic_values|
+        def report_topic_metrics(topics, group, client_id)
+          topics.map do |topic_name, topic_values|
             labels = {
-              client: statistics[:client_id],
+              client: client_id,
               topic: topic_name,
               group: group,
             }
@@ -51,29 +52,23 @@ module Promenade
 
             offset_lag = partition_values[:consumer_lag_stored]
 
-            $stdout.puts "[Statistics][karafka Topics] #{labels} - Offset Lag: #{offset_lag}"
-
-            Promenade.metric(:kafka_consumer_ofset_lag).set(labels, offset_lag)
+            Promenade.metric(:karafka_consumer_offset_lag).set(labels, offset_lag)
           end
         end
 
-        def report_connection_metrics(statistics)
+        def report_connection_metrics(brokers, client_id)
           labels = {
-            client: statistics[:client_id],
-            api: "unknown",
+            client: client_id,
           }
 
-          statistics[:brokers].map do |broker_name, broker_values|
+          brokers.map do |broker_name, broker_values|
             next if broker_values[:nodeid] == -1
 
-            rtt = broker_values[:rtt][:avg]
+            rtt = broker_values[:rtt][:avg] / 1_000_000.to_f
             connection_calls = broker_values[:connects]
 
-            $stdout.puts "[Statistics][karafka Broker RTT] #{broker_name}: #{rtt}"
-            $stdout.puts "[Statistics][karafka Broker Conn Calls] #{broker_name}: #{connection_calls}"
-
-            Promenade.metric(:kafka_connection_calls).increment(labels.merge(broker: broker_name), connection_calls)
-            Promenade.metric(:kafka_connection_latency).observe(labels.merge(broker: broker_name), rtt)
+            Promenade.metric(:karafka_connection_calls).increment(labels.merge(broker: broker_name), connection_calls)
+            Promenade.metric(:karafka_connection_latency_seconds).observe(labels.merge(broker: broker_name), rtt)
           end
         end
     end
