@@ -32,11 +32,11 @@ RSpec.describe Promenade::Karafka do
     end
 
     it "counts the messages processed" do
-      expect(Promenade.metric(:kafka_consumer_messages_processed).get(labels)).to eq messages_size
+      expect(Promenade.metric(:karafka_consumer_messages_processed).get(labels)).to eq messages_size
     end
 
     it "has a histogram of batch latency" do
-      expect(Promenade.metric(:kafka_consumer_batch_processing_duration).get(labels)).to eq(
+      expect(Promenade.metric(:karafka_consumer_batch_processing_duration).get(labels)).to eq(
         0.005 => 0.0,
         0.01 => 0.0,
         0.025 => 0.0,
@@ -107,11 +107,11 @@ RSpec.describe Promenade::Karafka do
       end
 
       it "exposes the ofest lag" do
-        expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels)).to eq consumer_lag_stored
+        expect(Promenade.metric(:karafka_consumer_ofset_lag).get(labels)).to eq consumer_lag_stored
       end
 
       it "does not expose the ofest lag for internal partitions" do
-        expect(Promenade.metric(:kafka_consumer_ofset_lag).get(labels.merge(partition: internal_partition))).to eq 0
+        expect(Promenade.metric(:karafka_consumer_ofset_lag).get(labels.merge(partition: internal_partition))).to eq 0
       end
     end
 
@@ -121,15 +121,15 @@ RSpec.describe Promenade::Karafka do
       end
 
       it "exposes the kafka connection calls" do
-        expect(Promenade.metric(:kafka_connection_calls).get(labels)).to eq 55
+        expect(Promenade.metric(:karafka_connection_calls).get(labels)).to eq 55
       end
 
       it "does not expose the connection_metrics for bootstrap broker" do
-        expect(Promenade.metric(:kafka_connection_calls).get(labels.merge(broker: bootstraps_broker))).to eq 0
+        expect(Promenade.metric(:karafka_connection_calls).get(labels.merge(broker: bootstraps_broker))).to eq 0
       end
 
       it "exposes the kafka connection latency" do
-        expect(Promenade.metric(:kafka_connection_latency).get(labels)).to eq(
+        expect(Promenade.metric(:karafka_connection_latency).get(labels)).to eq(
           0.005 => 11.0,
           0.01 => 11.0,
           0.025 => 11.0,
