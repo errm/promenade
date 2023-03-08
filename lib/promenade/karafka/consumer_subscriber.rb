@@ -5,7 +5,7 @@ module Promenade
     class ConsumerSubscriber < Subscriber
       attach_to "consumer.karafka"
 
-      Promenade.histogram :karafka_consumer_batch_processing_duration do
+      Promenade.histogram :karafka_consumer_batch_processing_duration_seconds do
         doc "Consumer message processing latency in seconds"
         buckets :network
       end
@@ -22,7 +22,7 @@ module Promenade
         labels = get_labels(consumer)
 
         Promenade.metric(:karafka_consumer_messages_processed).increment(labels, messages.size)
-        Promenade.metric(:karafka_consumer_batch_processing_duration).observe(labels, batch_processing_duration)
+        Promenade.metric(:karafka_consumer_batch_processing_duration_seconds).observe(labels, batch_processing_duration)
       end
 
       private

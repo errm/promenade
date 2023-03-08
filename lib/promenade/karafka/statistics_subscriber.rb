@@ -6,8 +6,8 @@ module Promenade
     class StatisticsSubscriber < Subscriber
       attach_to "statistics.karafka"
 
-      Promenade.histogram :karafka_connection_latency do
-        doc "Request latency (rtt) in milliseconds"
+      Promenade.histogram :karafka_connection_latency_seconds do
+        doc "Request latency (rtt) in seconds"
         buckets :network
       end
 
@@ -15,7 +15,7 @@ module Promenade
         doc "Count of calls made to Kafka broker"
       end
 
-      Promenade.gauge :karafka_consumer_ofset_lag do
+      Promenade.gauge :karafka_consumer_offset_lag do
         doc "Lag between message create and consume time"
       end
 
@@ -52,7 +52,7 @@ module Promenade
 
             offset_lag = partition_values[:consumer_lag_stored]
 
-            Promenade.metric(:karafka_consumer_ofset_lag).set(labels, offset_lag)
+            Promenade.metric(:karafka_consumer_offset_lag).set(labels, offset_lag)
           end
         end
 
@@ -64,11 +64,11 @@ module Promenade
           brokers.map do |broker_name, broker_values|
             next if broker_values[:nodeid] == -1
 
-            rtt = broker_values[:rtt][:avg] / 1000.to_f
+            rtt = broker_values[:rtt][:avg] / 1_000_000.to_f
             connection_calls = broker_values[:connects]
 
             Promenade.metric(:karafka_connection_calls).increment(labels.merge(broker: broker_name), connection_calls)
-            Promenade.metric(:karafka_connection_latency).observe(labels.merge(broker: broker_name), rtt)
+            Promenade.metric(:karafka_connection_latency_seconds).observe(labels.merge(broker: broker_name), rtt)
           end
         end
     end
