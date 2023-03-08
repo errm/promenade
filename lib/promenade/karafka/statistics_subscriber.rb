@@ -64,12 +64,16 @@ module Promenade
           brokers.map do |broker_name, broker_values|
             next if broker_values[:nodeid] == -1
 
-            rtt = broker_values[:rtt][:avg] / 1_000_000.to_f
+            rtt = convert_microseconds_to_seconds(broker_values[:rtt][:avg])
             connection_calls = broker_values[:connects]
 
             Promenade.metric(:karafka_connection_calls).increment(labels.merge(broker: broker_name), connection_calls)
             Promenade.metric(:karafka_connection_latency_seconds).observe(labels.merge(broker: broker_name), rtt)
           end
+        end
+
+        def convert_microseconds_to_seconds(time_in_microseconds)
+          time_in_microseconds / 1_000_000.to_f
         end
     end
   end

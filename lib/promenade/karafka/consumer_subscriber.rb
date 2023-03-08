@@ -17,7 +17,7 @@ module Promenade
       def consumed(event)
         consumer = event.payload[:caller]
         messages = consumer.messages
-        batch_processing_duration = event.payload[:time] / 1000.to_f
+        batch_processing_duration = convert_milliseconds_to_seconds(event.payload[:time])
 
         labels = get_labels(consumer)
 
@@ -36,6 +36,10 @@ module Promenade
             topic: metadata.topic,
             partition: metadata.partition,
           }
+        end
+
+        def convert_milliseconds_to_seconds(time_in_milliseconds)
+          time_in_milliseconds / 1000.to_f
         end
     end
   end
