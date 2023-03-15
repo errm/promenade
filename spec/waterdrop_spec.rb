@@ -10,10 +10,6 @@ RSpec.describe Promenade::Waterdrop do
   describe "message.waterdrop" do
     let(:producer_id) { "producer_id" }
 
-    let(:labels) do
-      { client: producer_id, topic: topic }
-    end
-
     let(:message) do
       { key: "message_key", topic: topic }
     end
@@ -27,8 +23,12 @@ RSpec.describe Promenade::Waterdrop do
         )
       end
 
+      let(:labels) do
+        { client: producer_id, topic: topic, producer_type: "async" }
+      end
+
       it "exposes the kafka_producer_messages" do
-        expect(Promenade.metric(:waterdrop_producer_messages).get(labels)).to eq 1
+        expect(Promenade.metric(:waterdrop_producer_messages_total).get(labels)).to eq 1
       end
     end
 
@@ -41,8 +41,12 @@ RSpec.describe Promenade::Waterdrop do
         )
       end
 
+      let(:labels) do
+        { client: producer_id, topic: topic, producer_type: "sync" }
+      end
+
       it "exposes the kafka_producer_messages" do
-        expect(Promenade.metric(:waterdrop_producer_messages).get(labels)).to eq 1
+        expect(Promenade.metric(:waterdrop_producer_messages_total).get(labels)).to eq 1
       end
     end
 
@@ -60,7 +64,7 @@ RSpec.describe Promenade::Waterdrop do
 
 
       it "exposes the kafka_producer_ack_messages" do
-        expect(Promenade.metric(:waterdrop_producer_ack_messages).get(labels)).to eq 1
+        expect(Promenade.metric(:waterdrop_producer_ack_messages_total).get(labels)).to eq 1
       end
     end
   end
@@ -205,7 +209,7 @@ RSpec.describe Promenade::Waterdrop do
     end
 
     it "exposes the karafka errors" do
-      expect(Promenade.metric(:waterdrop_errors).get(labels)).to eq 1
+      expect(Promenade.metric(:waterdrop_errors_total).get(labels)).to eq 1
     end
   end
 end

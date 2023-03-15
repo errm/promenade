@@ -5,14 +5,14 @@ module Promenade
     class ErrorSubscriber < Subscriber
       attach_to "error.waterdrop"
 
-      Promenade.counter :waterdrop_errors do
+      Promenade.counter :waterdrop_errors_total do
         doc "Count of Waterdrop errors"
       end
 
       def occurred(event)
         labels = get_labels(event)
 
-        Promenade.metric(:waterdrop_errors).increment(labels)
+        Promenade.metric(:waterdrop_errors_total).increment(labels)
       end
 
       private
