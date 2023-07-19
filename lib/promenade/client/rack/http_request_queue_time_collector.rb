@@ -7,7 +7,7 @@ module Promenade
   module Client
     module Rack
       class HTTPRequestQueueTimeCollector < MiddlwareBase
-        REQUEST_QUEUE_TIME_HISTOGRAM_NAME = :http_req_queue_time_seconds
+        REQUEST_QUEUE_TIME_HISTOGRAM_NAME = :http_request_queue_time_seconds
 
         private_constant :REQUEST_QUEUE_TIME_HISTOGRAM_NAME
 
