@@ -37,7 +37,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
       app = TestRackApp.new
       middleware = described_class.new(app)
 
-      histogram = fetch_metric(:http_req_duration_seconds)
+      histogram = fetch_metric(:http_request_duration_seconds)
       expect(histogram).to receive(:observe)
 
       middleware.call(env)
@@ -55,7 +55,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
       middleware = described_class.new(app)
 
       expected_duration = 1.0
-      histogram = fetch_metric(:http_req_duration_seconds)
+      histogram = fetch_metric(:http_request_duration_seconds)
       expected_labels = {
         code: "201",
         controller_action: "test_controller#test_action",
@@ -100,7 +100,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
       middleware = described_class.new(app, label_builder: custom_label_builder)
 
       expected_duration = 1.0
-      histogram = fetch_metric(:http_req_duration_seconds)
+      histogram = fetch_metric(:http_request_duration_seconds)
       expected_labels = { foo: "bar", fizz: "buzz", code: "200" }
 
       expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
@@ -154,7 +154,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
       app = TestRackApp.new
       middleware = described_class.new(app)
       expected_labels = { code: "200", controller_action: "unknown#unknown", host: "", method: "get" }
-      histogram = fetch_metric(:http_req_duration_seconds)
+      histogram = fetch_metric(:http_request_duration_seconds)
 
       expect(middleware).to receive(:duration_since).and_return(1.5)
 
