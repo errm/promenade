@@ -4,7 +4,7 @@ PATH
     promenade (0.11.0)
       actionpack
       activesupport (> 6.0, < 8.0)
-      prometheus-client-mmap (~> 1.0)
+      prometheus-client-mmap (~> 0.28)
       rack
 
 GEM
@@ -123,7 +123,7 @@ GEM
     parser (3.2.2.3)
       ast (~> 2.4.1)
       racc
-    prometheus-client-mmap (1.0.2)
+    prometheus-client-mmap (0.28.1)
       rb_sys (~> 0.9)
     racc (1.7.1)
     rack (2.2.7)
