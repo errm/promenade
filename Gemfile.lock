@@ -6,6 +6,7 @@ PATH
       activesupport (> 6.0, < 8.0)
       prometheus-client-mmap (~> 1.1)
       rack
+      rackup
 
 GEM
   remote: https://rubygems.org/

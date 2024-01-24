@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activesupport", "> 6.0", "< 8.0"
   spec.add_dependency "prometheus-client-mmap", "~> 1.1"
   spec.add_dependency "rack"
+  spec.add_dependency "rackup"
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "climate_control"
