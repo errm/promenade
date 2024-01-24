@@ -100,11 +100,11 @@ RSpec.describe Promenade::Client::Rack::ExceptionHandler, reset_prometheus_clien
       exception_counter = Prometheus::Client.registry.get(:http_exceptions_total)
       request_duration_seconds = 1.0
 
-      expect(Proc.new do
+      expect do
         Promenade::Client::Rack::ExceptionHandler.call(exception,
           env_hash,
           request_duration_seconds)
-      end).to raise_error(exception_klass)
+      end.to raise_error(exception_klass)
     end
   end
 
