@@ -123,7 +123,7 @@ GEM
     parser (3.2.2.3)
       ast (~> 2.4.1)
       racc
-    prometheus-client-mmap (1.1.0)
+    prometheus-client-mmap (1.1.1)
       rb_sys (~> 0.9.86)
     racc (1.7.1)
     rack (2.2.7)
