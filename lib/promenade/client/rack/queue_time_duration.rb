@@ -6,7 +6,7 @@ module Promenade
 
         QUEUE_START_HEADER = "HTTP_X_QUEUE_START".freeze
 
-        HEADER_VALUE_MATCHER = /^(?:t=)(?<timestamp>\d{10}(?:\.\d+))$/.freeze
+        HEADER_VALUE_MATCHER = /^(?:t=)(?<timestamp>\d{10}(?:\.\d+))$/
 
         def initialize(env:, request_received_time:)
           @env = env
