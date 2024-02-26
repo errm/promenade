@@ -18,6 +18,13 @@ RSpec.describe Promenade::YJIT::Stats do
         described_class.instrument
 
         expect(Promenade.metric(:ruby_yjit_code_region_size).get).to eq RubyVM::YJIT.runtime_stats[:code_region_size]
+      else
+        version = RUBY_VERSION.match(/(\d).(\d).\d/)
+        major = version[1].to_i
+        minor = version[2].to_i
+        if major >= 3 && minor >= 3
+          flunk "YJIT must be avalibe to test properly in ruby 3.3+"
+        end
       end
     end
   end
