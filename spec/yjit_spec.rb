@@ -6,7 +6,7 @@ RSpec.describe Promenade::YJIT::Stats do
       # This method should not blow up in any case
       expect { described_class.instrument }.not_to raise_error
 
-      if defined? RubyVM::YJIT && defined? RubyVM::YJIT.enable
+      if defined?(RubyVM::YJIT) && defined?(RubyVM::YJIT.enable)
 
         # We want to test that this doesn't blow up when yjit is present but isn't enabled yet
         # you need to run the testsuite with yjit disabled for this to work
