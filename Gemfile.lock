@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    promenade (0.12.1)
+    promenade (0.12.2)
       actionpack
       activesupport (> 6.0, < 8.0)
       prometheus-client-mmap (~> 1.1)
