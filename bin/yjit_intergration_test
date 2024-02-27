@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "promenade"
+require "promenade/yjit/stats"
+require "prometheus/client"
+require "prometheus/client/formats/text"
+
+Promenade.setup
+Promenade::YJIT::Stats.instrument
+puts Prometheus::Client::Formats::Text.marshal_multiprocess
