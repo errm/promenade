@@ -33,7 +33,7 @@ RSpec.describe Promenade::YJIT::Stats do
   def run_yjit_metrics(rubyopt)
     dir = Dir.mktmpdir
     begin
-      output, status = Open3.capture2e({"PROMETHEUS_MULTIPROC_DIR" => dir, "RUBYOPT" => rubyopt}, "bin/yjit_intergration_test")
+      output, status = Open3.capture2e({ "PROMETHEUS_MULTIPROC_DIR" => dir, "RUBYOPT" => rubyopt }, "bin/yjit_intergration_test")
       expect(status).to eq 0
       parse_metrics(output)
     ensure
@@ -42,18 +42,17 @@ RSpec.describe Promenade::YJIT::Stats do
   end
 
   def parse_metrics(output)
-    Hash[
-      output.lines.reject { |line| line.match("#") }.map do |line|
-        match = line.match(/([a-z_]+)\{.+\} (\d+\.?\d*)/)
-        next unless match
-        [match[1].to_sym, parse_number(match[2])]
-      end.compact
-    ]
+    output.lines.reject { |line| line.match("#") }.filter_map do |line|
+      match = line.match(/([a-z_]+)\{.+\} (\d+\.?\d*)/)
+      next unless match
+
+      [match[1].to_sym, parse_number(match[2])]
+    end.to_h
   end
 
   def parse_number(string)
     Integer(string)
-  rescue
+  rescue StandardError
     string.to_f
   end
 end
