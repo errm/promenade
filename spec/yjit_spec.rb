@@ -4,8 +4,11 @@ require "open3"
 RSpec.describe Promenade::YJIT::Stats do
   describe "recording yjit stats" do
     it "doesn't explode" do
-      # This method should not blow up in any case
+      # This method should not blow up in any case, on any version of ruby
       expect { described_class.instrument }.not_to raise_error
+
+      metrics = run_yjit_metrics("")
+      expect(metrics).to be_empty
     end
 
     it "records yjit stats" do
@@ -15,9 +18,6 @@ RSpec.describe Promenade::YJIT::Stats do
       unless major >= 3 && minor >= 3
         pending "YJIT metrics are only expected to work in ruby 3.3.0+"
       end
-
-      metrics = run_yjit_metrics("")
-      expect(metrics).to be_empty
 
       metrics = run_yjit_metrics("--yjit")
       expect(metrics[:ruby_yjit_code_region_size]).to satisfy("be nonzero") { |n| n > 0 }
