@@ -27,11 +27,23 @@ module Promenade
     ENV["prometheus_multiproc_dir"] = multiprocess_files_dir.to_s
 
     require "prometheus/client"
-    require "prometheus/client/support/unicorn"
 
     ::Prometheus::Client.configure do |config|
       config.multiprocess_files_dir = multiprocess_files_dir
-      config.pid_provider = ::Prometheus::Client::Support::Unicorn.method(:worker_pid_provider)
+
+      # This workaround enables us to utilize the same PID provider for both Unicorn and Pitchfork.
+      # We cannot employ the same method directly because Unicorn and Pitchfork are not loaded simultaneously.
+      # Instead, we define a method that dynamically loads the appropriate PID provider based on the active server.
+
+      if defined?(Unicorn)
+        require "prometheus/client/support/unicorn"
+        pid_provider_method = ::Prometheus::Client::Support::Unicorn.method(:worker_pid_provider)
+      elsif defined?(::Pitchfork)
+        require "promenade/pitchfork/worker_pid_provider"
+        pid_provider_method = Pitchfork::WorkerPidProvider.method(:fetch)
+      end
+
+      config.pid_provider = pid_provider_method
     end
   end
 end
