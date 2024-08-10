@@ -36,7 +36,7 @@ module Promenade
       # Instead, we define a method that dynamically loads the appropriate PID provider based on the active server.
       # As a fallback, we use the process ID.
 
-      if defined?(Unicorn)
+      if defined?(::Unicorn)
         require "prometheus/client/support/unicorn"
         pid_provider_method = ::Prometheus::Client::Support::Unicorn.method(:worker_pid_provider)
       elsif defined?(::Pitchfork)
