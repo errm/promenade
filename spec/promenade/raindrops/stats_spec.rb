@@ -18,13 +18,15 @@ RSpec.describe Promenade::Raindrops::Stats do
     end
 
     it "sets the metrics correctly" do
+      stats = Promenade::Raindrops::Stats.new
+
       expect(Promenade).to receive(:metric).with(:rack_active_workers).and_return(metric)
       expect(Promenade).to receive(:metric).with(:rack_queued_requests).and_return(metric)
 
       expect(metric).to receive(:set).with({}, 1)
       expect(metric).to receive(:set).with({}, 1)
 
-      described_class.instrument
+      stats.instrument
     end
   end
 end
