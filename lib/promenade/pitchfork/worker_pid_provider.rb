@@ -2,11 +2,7 @@ module Promenade
   module Pitchfork
     class WorkerPidProvider
       def self.fetch
-        if wid = worker_id
-          wid
-        else
-          "process_id_#{Process.pid}"
-        end
+        worker_id || "process_id_#{Process.pid}"
       end
 
       def self.object_based_worker_id
@@ -24,9 +20,9 @@ module Promenade
       end
 
       def self.worker_id
-        if matchdata = program_name.match(/pitchfork.*worker\[(.+)\]/)
+        if matchdata = program_name.match(/pitchfork.*worker\[(.+)\]/) # rubocop:disable Lint/AssignmentInCondition
           "pitchfork_#{matchdata[1]}"
-        elsif object_worker_id = object_based_worker_id
+        elsif object_worker_id = object_based_worker_id # rubocop:disable Lint/AssignmentInCondition
           "pitchfork_#{object_worker_id}"
         end
       end
