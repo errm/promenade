@@ -23,3 +23,4 @@ jobs:
       uses: codecov/test-results-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage/coverage.xml
