@@ -27,8 +27,11 @@ RSpec.describe Promenade::Pitchfork::WorkerPidProvider do
 
   describe ".worker_id" do
     subject { described_class.send(:worker_id) }
-    before do
-      allow(described_class).to receive(:program_name).and_return(program_name)
+    around(:example) do |ex|
+      old_name = $PROGRAM_NAME
+      $PROGRAM_NAME = program_name
+      ex.run
+      $PROGRAM_NAME = old_name
     end
 
     context "when program_name matches pitchfork worker" do
@@ -41,6 +44,19 @@ RSpec.describe Promenade::Pitchfork::WorkerPidProvider do
         let(:program_name) { "pitchfork worker[1]" }
 
         it { is_expected.to eq("pitchfork_1") }
+      end
+
+      context "when program_name doesn't match pitchfork worker" do
+        let(:program_name) { "something else" }
+
+        let(:worker) { double("Pitchfork::Worker", nr: 2) }
+
+        before do
+          stub_const("Pitchfork::Worker", Class.new)
+          allow(ObjectSpace).to receive(:each_object).with(Pitchfork::Worker).and_return([worker])
+        end
+
+        it { is_expected.to eq("pitchfork_2") }
       end
     end
   end
