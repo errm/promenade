@@ -1,4 +1,5 @@
 require "promenade/yjit/stats"
+require "promenade/yjit/middleware"
 require "open3"
 
 RSpec.describe Promenade::YJIT::Stats do
@@ -54,5 +55,19 @@ RSpec.describe Promenade::YJIT::Stats do
     Integer(string)
   rescue StandardError
     string.to_f
+  end
+end
+
+RSpec.describe Promenade::YJIT::Middlware do
+  let(:app) { double(:app, call: nil) }
+
+  it "is adds it's instrumentation method to the rack.after_reply array" do
+    stats = class_spy("Promenade::YJIT::Stats").as_stubbed_const
+
+    after_reply = []
+    described_class.new(app).call({ "rack.after_reply" => after_reply })
+    after_reply.each(&:call)
+
+    expect(stats).to have_received(:instrument)
   end
 end
