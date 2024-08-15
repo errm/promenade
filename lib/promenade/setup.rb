@@ -19,7 +19,7 @@ module Promenade
     ENV.fetch("PROMETHEUS_MULTIPROC_DIR", root_dir.join("tmp", "promenade"))
   end
 
-  def setup # rubocop:disable Metrics/AbcSize
+  def setup
     unless File.directory? multiprocess_files_dir
       FileUtils.mkdir_p multiprocess_files_dir
     end
