@@ -13,6 +13,16 @@ module Promenade
         Promenade::Client::Rack::HTTPRequestDurationCollector
       Rails.application.config.middleware.insert 0,
         Promenade::Client::Rack::HTTPRequestQueueTimeCollector
+
+      if defined?(::Raindrops)
+        require "promenade/raindrops/middleware"
+        Rails.application.config.middleware.use Promenade::Raindrops::Middleware
+      end
+
+      if defined?(::Pitchfork)
+        require "promenade/pitchfork/middleware"
+        Rails.application.config.middleware.use Promenade::Pitchfork::Middleware
+      end
     end
   end
 end

@@ -30,8 +30,8 @@ module Promenade
       end
 
       def instrument
-        Promenade.metric(:rack_active_workers).set({}, active_workers)
-        Promenade.metric(:rack_queued_requests).set({}, queued_requests)
+        Promenade.metric(:rack_active_workers).set({}, active_workers) if active_workers
+        Promenade.metric(:rack_queued_requests).set({}, queued_requests) if queued_requests
       end
 
       def self.instrument(listener_address: nil)

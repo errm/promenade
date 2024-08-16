@@ -2,6 +2,7 @@ require "simplecov"
 SimpleCov.minimum_coverage 99
 SimpleCov.start do
   add_filter "/spec/"
+  add_filter "/lib/promenade/railtie.rb"
 end
 
 if ENV["CI"]

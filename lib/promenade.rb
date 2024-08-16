@@ -2,7 +2,6 @@ require "promenade/version"
 require "promenade/setup"
 require "promenade/configuration"
 require "promenade/prometheus"
-require "promenade/periodic_stats"
 
 module Promenade
   class << self
