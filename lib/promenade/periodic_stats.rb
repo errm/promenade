@@ -33,12 +33,14 @@ module Promenade
       @thread_stopped = false
       @thread = Thread.new do
         while active?
-          block.call
+          begin
+            block.call
+          rescue StandardError => e
+            logger&.error("Promenade: Error in periodic stats: #{e.message}")
+          end
           sleep(frequency) # Ensure the sleep is inside the loop
         end
       end
-    rescue StandardError => e
-      logger&.error("Promenade: Error in periodic stats: #{e.message}")
     end
 
     def stop
