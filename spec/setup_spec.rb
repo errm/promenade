@@ -2,6 +2,33 @@ require "tmpdir"
 
 RSpec.describe Promenade do
   describe ".setup" do
+    context "pid_provider" do
+      before do
+        stub_const(self.class.description, true)
+      end
+
+      context "Unicorn" do
+        it "uses the unicorn pid provider" do
+          Promenade.setup
+          expect(Prometheus::Client.configuration.pid_provider.to_s).to match "Prometheus::Client::Support::Unicorn"
+        end
+      end
+
+      context "Pitchfork" do
+        it "uses the pitchfork pid provider" do
+          Promenade.setup
+          expect(Prometheus::Client.configuration.pid_provider.to_s).to match "Promenade::Pitchfork::WorkerPidProvider"
+        end
+      end
+
+      context "Puma" do
+        it "uses the puma pid provider" do
+          Promenade.setup
+          expect(Prometheus::Client.configuration.pid_provider.to_s).to match "Prometheus::Client::Support::Puma"
+        end
+      end
+    end
+
     context "without rails" do
       context "environment variable set" do
         let(:multiproc_root) { Pathname.new(Dir.mktmpdir) }

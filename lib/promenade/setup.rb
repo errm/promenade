@@ -27,11 +27,31 @@ module Promenade
     ENV["prometheus_multiproc_dir"] = multiprocess_files_dir.to_s
 
     require "prometheus/client"
-    require "prometheus/client/support/unicorn"
 
     ::Prometheus::Client.configure do |config|
       config.multiprocess_files_dir = multiprocess_files_dir
-      config.pid_provider = ::Prometheus::Client::Support::Unicorn.method(:worker_pid_provider)
+
+      config.pid_provider = pid_provider_method
+    end
+  end
+
+  def pid_provider_method
+    # This workaround enables us to utilize the same PID provider for both Unicorn, Pitchfork and Puma.
+    # We cannot employ the same method directly because Unicorn and Pitchfork are not loaded simultaneously.
+    # Instead, we define a method that dynamically loads the appropriate PID provider based on the active server.
+    # As a fallback, we use the process ID.
+
+    if defined?(::Unicorn)
+      require "prometheus/client/support/unicorn"
+      ::Prometheus::Client::Support::Unicorn.method(:worker_pid_provider)
+    elsif defined?(::Pitchfork)
+      require "promenade/pitchfork/worker_pid_provider"
+      Pitchfork::WorkerPidProvider.method(:fetch)
+    elsif defined?(::Puma)
+      require "prometheus/client/support/puma"
+      ::Prometheus::Client::Support::Puma.method(:worker_pid_provider)
+    else
+      -> { "process_id_#{Process.pid}" }
     end
   end
 end
