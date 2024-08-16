@@ -8,7 +8,7 @@ RSpec.describe Promenade::YJIT::Stats do
       # This method should not blow up in any case, on any version of ruby
       expect { described_class.instrument }.not_to raise_error
 
-      metrics = run_yjit_metrics("")
+      metrics = run_yjit_metrics
       expect(metrics).to be_empty
     end
 
@@ -19,6 +19,18 @@ RSpec.describe Promenade::YJIT::Stats do
       unless major >= 3 && minor >= 3
         pending "YJIT metrics are only expected to work in ruby 3.3.0+"
       end
+
+      RubyVM::YJIT.enable
+      described_class.instrument
+
+      expect(Prometheus::Client.registry.get(:ruby_yjit_code_region_size).values[{}].get).to satisfy("be nonzero") { |n| n > 0 }
+
+      # These intergration tests are run in another process so we can have greater control
+      # over enabling yjit.
+      metrics = run_yjit_metrics
+      # we don't expect these metrics to have a value when yjit isn't enabled
+      expect(metrics[:ruby_yjit_code_region_size]).to be_nil
+      expect(metrics[:ruby_yjit_ratio_in_yjit]).to be_nil
 
       metrics = run_yjit_metrics("--yjit")
       expect(metrics[:ruby_yjit_code_region_size]).to satisfy("be nonzero") { |n| n > 0 }
@@ -31,7 +43,7 @@ RSpec.describe Promenade::YJIT::Stats do
     end
   end
 
-  def run_yjit_metrics(rubyopt)
+  def run_yjit_metrics(rubyopt = "")
     dir = Dir.mktmpdir
     begin
       output, status = Open3.capture2e({ "PROMETHEUS_MULTIPROC_DIR" => dir, "RUBYOPT" => rubyopt }, "bin/yjit_intergration_test")
