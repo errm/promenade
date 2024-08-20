@@ -188,6 +188,7 @@ GEM
       thor (~> 1.0, >= 1.2.2)
       zeitwerk (~> 2.6)
     rainbow (3.1.1)
+    raindrops (0.20.1)
     rake (13.1.0)
     rb_sys (0.9.87)
     rdoc (6.6.3.1)
@@ -271,6 +272,7 @@ GEM
     zeitwerk (2.6.13)
 
 PLATFORMS
+  arm64-darwin-21
   arm64-darwin-22
   x86_64-darwin-22
   x86_64-linux
@@ -281,6 +283,7 @@ DEPENDENCIES
   climate_control
   promenade!
   rails (> 3.0, < 8.0)
+  raindrops
   rake
   rspec (~> 3.11)
   rspec-rails (~> 5.1)
