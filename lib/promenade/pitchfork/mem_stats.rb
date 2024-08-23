@@ -7,7 +7,6 @@ end
 module Promenade
   module Pitchfork
     class MemStats
-
       Promenade.gauge :pitchfork_mem_rss do
         doc "Resident Set Size of the pitchfork process, Total memory used by the process."
       end
@@ -30,7 +29,7 @@ module Promenade
 
       def self.instrument
         new.instrument
-      rescue StandardError => e
+      rescue StandardError
       end
     end
   end

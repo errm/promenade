@@ -23,7 +23,7 @@ module Promenade
         Rails.application.config.middleware.use Promenade::Raindrops::Middleware
       end
 
-      if pitchfork_stats_enabled &&defined?(::Pitchfork)
+      if pitchfork_stats_enabled && defined?(::Pitchfork)
         require "promenade/pitchfork/middleware"
         Rails.application.config.middleware.use Promenade::Pitchfork::Middleware
       end
