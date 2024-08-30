@@ -16,7 +16,7 @@ module Promenade
     end
 
     initializer "promenade.configure_middlewares", after: :load_config_initializers do
-      pitchfork_stats_enabled = Promenade.configuration.pitchfork_stats_enabled
+      pitchfork_stats_enabled = false
 
       if pitchfork_stats_enabled && defined?(::Raindrops)
         require "promenade/raindrops/middleware"
