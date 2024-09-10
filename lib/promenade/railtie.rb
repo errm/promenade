@@ -13,17 +13,13 @@ module Promenade
         Promenade::Client::Rack::HTTPRequestDurationCollector
       Rails.application.config.middleware.insert 0,
         Promenade::Client::Rack::HTTPRequestQueueTimeCollector
-    end
 
-    initializer "promenade.configure_middlewares", after: :load_config_initializers do
-      pitchfork_stats_enabled = false
-
-      if pitchfork_stats_enabled && defined?(::Raindrops)
+      if defined?(::Raindrops)
         require "promenade/raindrops/middleware"
         Rails.application.config.middleware.use Promenade::Raindrops::Middleware
       end
 
-      if pitchfork_stats_enabled && defined?(::Pitchfork)
+      if defined?(::Pitchfork)
         require "promenade/pitchfork/middleware"
         Rails.application.config.middleware.use Promenade::Pitchfork::Middleware
       end
