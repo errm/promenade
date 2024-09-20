@@ -19,7 +19,14 @@ module Promenade
       private
 
         def tcp_listener_names
-          ::Pitchfork.listener_names
+          if defined?(::Pitchfork)
+            ::Pitchfork.listener_names
+          elsif defined?(::Unicorn)
+            ::Unicorn.listener_names
+          else
+            raise StandardError,
+              "Promenade::Raindrops::Middleware expects either ::Pitchfork or ::Unicorn to be defined"
+          end
         end
 
         def instrument
