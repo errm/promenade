@@ -11,7 +11,6 @@ module Promenade
         doc "Memory usage in bytes, broken down by type (RSS, PSS, SHARED_MEMORY)"
       end
 
-
       def initialize
         return unless defined?(::Pitchfork) && defined?(::Pitchfork::MemInfo)
 
