@@ -7,24 +7,20 @@ end
 module Promenade
   module Pitchfork
     class MemStats
-      Promenade.gauge :pitchfork_mem_rss do
-        doc "Resident Set Size of the pitchfork process, Total memory used by the process."
-      end
-
-      Promenade.gauge :pitchfork_shared_mem do
-        doc "Shared memory of the pitchfork process, memory that is shared between multiple processes."
+      Promenade.gauge :pitchfork_memory_usage_bytes do
+        doc "Memory usage in bytes, broken down by type (RSS, PSS, SHARED_MEMORY)"
       end
 
       def initialize
         return unless defined?(::Pitchfork) && defined?(::Pitchfork::MemInfo)
 
         @mem_info = ::Pitchfork::MemInfo.new(Process.pid)
-        @parent_mem_info = ::Pitchfork::MemInfo.new(Process.ppid)
       end
 
       def instrument
-        Promenade.metric(:pitchfork_mem_rss).set({}, @mem_info.rss)
-        Promenade.metric(:pitchfork_shared_mem).set({}, @mem_info.shared_memory)
+        Promenade.metric(:pitchfork_memory_usage_bytes).set({ type: "RSS" }, @mem_info.rss * 1024)
+        Promenade.metric(:pitchfork_memory_usage_bytes).set({ type: "PSS" }, @mem_info.pss * 1024)
+        Promenade.metric(:pitchfork_memory_usage_bytes).set({ type: "Shared" }, @mem_info.shared_memory * 1024)
       end
 
       def self.instrument
