@@ -147,14 +147,26 @@ GEM
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
-    prometheus-client-mmap (1.1.1)
-      rb_sys (~> 0.9.86)
-    prometheus-client-mmap (1.1.1-arm64-darwin)
-      rb_sys (~> 0.9.86)
-    prometheus-client-mmap (1.1.1-x86_64-darwin)
-      rb_sys (~> 0.9.86)
-    prometheus-client-mmap (1.1.1-x86_64-linux)
-      rb_sys (~> 0.9.86)
+    prometheus-client-mmap (1.2.9)
+      base64
+      bigdecimal
+      logger
+      rb_sys (~> 0.9.109)
+    prometheus-client-mmap (1.2.9-arm64-darwin)
+      base64
+      bigdecimal
+      logger
+      rb_sys (~> 0.9.109)
+    prometheus-client-mmap (1.2.9-x86_64-darwin)
+      base64
+      bigdecimal
+      logger
+      rb_sys (~> 0.9.109)
+    prometheus-client-mmap (1.2.9-x86_64-linux-gnu)
+      base64
+      bigdecimal
+      logger
+      rb_sys (~> 0.9.109)
     psych (5.2.6)
       date
       stringio
@@ -199,7 +211,9 @@ GEM
     rainbow (3.1.1)
     raindrops (0.20.1)
     rake (13.2.1)
-    rb_sys (0.9.87)
+    rake-compiler-dock (1.9.1)
+    rb_sys (0.9.114)
+      rake-compiler-dock (= 1.9.1)
     rdoc (6.13.1)
       psych (>= 4.0.0)
     regexp_parser (2.9.0)
