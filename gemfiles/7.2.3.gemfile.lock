@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    promenade (0.12.4)
+    promenade (0.12.5)
       actionpack
       activesupport (> 6.0, < 9.0)
       prometheus-client-mmap (~> 1.5)
@@ -141,6 +141,10 @@ GEM
     nio4r (2.7.5)
     nokogiri (1.19.0-arm64-darwin)
       racc (~> 1.4)
+    nokogiri (1.19.0-x86_64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.19.0-x86_64-linux-gnu)
+      racc (~> 1.4)
     parallel (1.27.0)
     parser (3.3.10.1)
       ast (~> 2.4.1)
@@ -150,6 +154,16 @@ GEM
     prettyprint (0.2.0)
     prism (1.9.0)
     prometheus-client-mmap (1.5.0-arm64-darwin)
+      base64
+      bigdecimal
+      logger
+      rb_sys (~> 0.9.124)
+    prometheus-client-mmap (1.5.0-x86_64-darwin)
+      base64
+      bigdecimal
+      logger
+      rb_sys (~> 0.9.124)
+    prometheus-client-mmap (1.5.0-x86_64-linux-gnu)
       base64
       bigdecimal
       logger
