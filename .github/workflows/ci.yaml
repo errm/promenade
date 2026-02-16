@@ -10,7 +10,10 @@ jobs:
       fail-fast: false
       matrix:
         ruby: ["3.2", "3.3", "3.4", "4.0"]
+        rails: ["7.2.3", "8.0.4", "8.1.2"]
     runs-on: ubuntu-latest
+    env:
+      RAILS_VERSION: ${{ matrix.rails }}
     steps:
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
