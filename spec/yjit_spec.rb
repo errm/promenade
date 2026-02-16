@@ -17,7 +17,7 @@ RSpec.describe Promenade::YJIT::Stats do
       major = version[1].to_i
       minor = version[2].to_i
 
-      unless major > 3 || major == 3 && minor >= 3
+      unless major > 3 || (major == 3 && minor >= 3)
         pending "YJIT metrics are only expected to work in ruby 3.3.0+"
       end
 

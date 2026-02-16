@@ -14,10 +14,8 @@ RSpec.describe Promenade::Karafka do
   end
 
   describe "consumer.karafka" do
-    # rubocop:disable Lint/StructNewOverride:
-    let(:metadata) { Struct.new(:partition, :topic).new(partition, topic_name) }
-    let(:messages) { Struct.new(:size, :metadata).new(messages_size, metadata) }
-    # rubocop:enable Lint/StructNewOverride:
+    let(:metadata) { Struct.new(:partition, :topic).new(partition, topic_name) } # rubocop:disable Lint/StructNewOverride
+    let(:messages) { Struct.new(:size, :metadata).new(messages_size, metadata) } # rubocop:disable Lint/StructNewOverride
     let(:topic) { Struct.new(:consumer_group, :kafka).new(Struct.new(:id).new(consumer_group_id), { "client.id": client_id }) }
     let(:consumer) { Struct.new(:messages, :topic).new(messages, topic) }
     let(:messages_size) { 8 }

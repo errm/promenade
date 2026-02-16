@@ -14,10 +14,9 @@ module Promenade
         def initialize(app,
                        registry: ::Prometheus::Client.registry,
                        label_builder: RequestLabeler)
-
           @queue_time_buckets = Promenade.configuration.queue_time_buckets
 
-          super(app, registry: registry, label_builder: label_builder)
+          super
         end
 
         private

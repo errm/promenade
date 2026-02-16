@@ -12,7 +12,7 @@ module Promenade
       end
 
       def initialize
-        return unless defined?(::Pitchfork) && defined?(::Pitchfork::MemInfo)
+        return unless defined?(::Pitchfork::MemInfo)
 
         @mem_info = ::Pitchfork::MemInfo.new(Process.pid)
       end

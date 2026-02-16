@@ -17,7 +17,7 @@ module Promenade
       def self.instrument
         return unless defined?(::RubyVM::YJIT) && ::RubyVM::YJIT.enabled?
 
-        ::RubyVM::YJIT.runtime_stats.select { |stat, _| RUNTIME_STATS.include? stat }.each do |stat, value|
+        ::RubyVM::YJIT.runtime_stats.slice(*RUNTIME_STATS).each do |stat, value|
           Promenade.metric(:"ruby_yjit_#{stat}").set({}, value)
         end
       end
