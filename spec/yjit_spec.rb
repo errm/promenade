@@ -13,9 +13,7 @@ RSpec.describe Promenade::YJIT::Stats do
     end
 
     it "records yjit stats" do
-      version = RUBY_VERSION.match(/(\d).(\d).\d/)
-      major = version[1].to_i
-      minor = version[2].to_i
+      major, minor, patch = RUBY_VERSION.split(".").map(&:to_i)
 
       unless major > 3 || (major == 3 && minor >= 3)
         pending "YJIT metrics are only expected to work in ruby 3.3.0+"
