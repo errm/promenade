@@ -2,7 +2,7 @@ inherit_from:
   - https://raw.githubusercontent.com/cookpad/guides/master/.rubocop.yml
 
 AllCops:
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.2
   NewCops: enable
   Exclude:
     - vendor/**/*

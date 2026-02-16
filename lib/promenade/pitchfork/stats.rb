@@ -20,7 +20,7 @@ module Promenade
       end
 
       def initialize
-        return unless defined?(::Pitchfork) && defined?(::Pitchfork::Info)
+        return unless defined?(::Pitchfork::Info)
 
         @workers_count = ::Pitchfork::Info.workers_count
         @live_workers_count = ::Pitchfork::Info.live_workers_count

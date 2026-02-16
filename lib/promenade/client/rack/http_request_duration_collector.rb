@@ -27,11 +27,10 @@ module Promenade
                        registry: ::Prometheus::Client.registry,
                        label_builder: RequestControllerActionLabeler,
                        exception_handler: nil)
-
           @latency_buckets = Promenade.configuration.rack_latency_buckets
           @_exception_handler = exception_handler
 
-          super(app, registry: registry, label_builder: label_builder)
+          super(app, registry:, label_builder:)
         end
 
         private

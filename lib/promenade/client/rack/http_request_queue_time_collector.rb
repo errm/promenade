@@ -14,10 +14,9 @@ module Promenade
         def initialize(app,
                        registry: ::Prometheus::Client.registry,
                        label_builder: RequestLabeler)
-
           @queue_time_buckets = Promenade.configuration.queue_time_buckets
 
-          super(app, registry: registry, label_builder: label_builder)
+          super
         end
 
         private
@@ -34,8 +33,8 @@ module Promenade
           end
 
           def record_request_queue_time(labels:, env:, request_received_time:)
-            request_queue_duration = QueueTimeDuration.new(env: env,
-              request_received_time: request_received_time)
+            request_queue_duration = QueueTimeDuration.new(env:,
+              request_received_time:)
             return unless request_queue_duration.valid_header_present?
 
             queue_time_histogram.observe(labels, request_queue_duration.queue_time_seconds)

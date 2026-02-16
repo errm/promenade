@@ -35,7 +35,7 @@ module Promenade
       end
 
       def self.instrument(listener_address: nil)
-        new(listener_address: listener_address).instrument
+        new(listener_address:).instrument
       end
     end
   end

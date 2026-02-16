@@ -13,10 +13,9 @@ RSpec.describe Promenade::YJIT::Stats do
     end
 
     it "records yjit stats" do
-      version = RUBY_VERSION.match(/(\d).(\d).\d/)
-      major = version[1].to_i
-      minor = version[2].to_i
-      unless major >= 3 && minor >= 3
+      major, minor, patch = RUBY_VERSION.split(".").map(&:to_i)
+
+      unless major > 3 || (major == 3 && minor >= 3)
         pending "YJIT metrics are only expected to work in ruby 3.3.0+"
       end
 
@@ -37,9 +36,13 @@ RSpec.describe Promenade::YJIT::Stats do
       # ratio_in_yjit is only set when --yjit-stats is enabled
       expect(metrics[:ruby_yjit_ratio_in_yjit]).to be_nil
 
-      metrics = run_yjit_metrics("--yjit --yjit-stats=quiet")
-      expect(metrics[:ruby_yjit_code_region_size]).to satisfy("be nonzero") { |n| n > 0 }
-      expect(metrics[:ruby_yjit_ratio_in_yjit]).to satisfy("be nonzero") { |n| n > 0 }
+      if major == 3
+        # ruby_yjit_ratio_in_yjit is only set when --yjit-stats is enabled but
+        # is not supported in default builds of ruby 4.0.0+
+        metrics = run_yjit_metrics("--yjit --yjit-stats=quiet")
+        expect(metrics[:ruby_yjit_code_region_size]).to satisfy("be nonzero") { |n| n > 0 }
+        expect(metrics[:ruby_yjit_ratio_in_yjit]).to satisfy("be nonzero") { |n| n > 0 }
+      end
     end
   end
 
