@@ -63,7 +63,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
         method: "post",
       }
 
-      expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
+      allow(middleware).to receive(:current_time).and_return(1.0, 2.0)
       expect(histogram).to receive(:observe).with(expected_labels, expected_duration)
 
       middleware.call(env)
@@ -103,7 +103,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
       histogram = fetch_metric(:http_request_duration_seconds)
       expected_labels = { foo: "bar", fizz: "buzz", code: "200" }
 
-      expect(middleware).to receive(:current_time).and_return(1.0, 2.0)
+      allow(middleware).to receive(:current_time).and_return(1.0, 2.0)
       expect(histogram).to receive(:observe).with(expected_labels, expected_duration)
 
       middleware.call(env)
@@ -127,7 +127,11 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
       app = proc { raise(StandardError, "Status code 500") }
       middleware = described_class.new(app)
       counter = fetch_metric(:http_exceptions_total)
+      histogram = fetch_metric(:http_request_duration_seconds)
+      requests_counter = fetch_metric(:http_requests_total)
 
+      allow(histogram).to receive(:observe)
+      allow(requests_counter).to receive(:increment)
       expect(counter).to receive(:increment).with(exception: "StandardError")
 
       expect { middleware.call(env) }.to raise_error(StandardError)
@@ -140,6 +144,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
       exception_handler = proc { |exception| test_handler.received_exception(exception.message) }
       middleware = described_class.new(app, exception_handler: exception_handler)
 
+      allow(middleware).to receive(:current_time).and_return(1.0, 2.0)
       expect(test_handler).to receive(:received_exception).with("Status code 500")
 
       middleware.call(env)
@@ -156,7 +161,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
       expected_labels = { code: "200", controller_action: "unknown#unknown", host: "", method: "get" }
       histogram = fetch_metric(:http_request_duration_seconds)
 
-      expect(middleware).to receive(:duration_since).and_return(1.5)
+      allow(middleware).to receive(:duration_since).and_return(1.5)
 
       middleware.call(env)
 
