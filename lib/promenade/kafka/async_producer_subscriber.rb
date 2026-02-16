@@ -44,7 +44,7 @@ module Promenade
         client = event.payload.fetch(:client_id)
         message_count = event.payload.fetch(:message_count)
 
-        Promenade.metric(:kafka_async_producer_dropped_messages).increment({ client: client }, message_count)
+        Promenade.metric(:kafka_async_producer_dropped_messages).increment({ client: }, message_count)
       end
     end
   end

@@ -9,7 +9,7 @@ module Promenade
         def get_labels(event)
           client = event.payload.fetch(:client_id)
           topic = event.payload.fetch(:topic)
-          { client: client, topic: topic }
+          { client:, topic: }
         end
     end
   end

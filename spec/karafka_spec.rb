@@ -61,7 +61,7 @@ RSpec.describe Promenade::Karafka do
           topic_name => {
             partitions: {
               partition => {
-                consumer_lag_stored: consumer_lag_stored,
+                consumer_lag_stored:,
               },
             },
             internal_partition => {
@@ -93,8 +93,8 @@ RSpec.describe Promenade::Karafka do
       11.times do
         backend.instrument(
           "emitted.statistics.karafka",
-          consumer_group_id: consumer_group_id,
-          statistics: statistics,
+          consumer_group_id:,
+          statistics:,
         )
       end
     end

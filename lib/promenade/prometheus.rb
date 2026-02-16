@@ -79,8 +79,8 @@ module Promenade
         end
       end
 
-      def evaluate(&block)
-        instance_eval(&block)
+      def evaluate(&)
+        instance_eval(&)
         self
       end
     end

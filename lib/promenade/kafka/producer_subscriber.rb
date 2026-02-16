@@ -102,7 +102,7 @@ module Promenade
         client = event.payload.fetch(:client_id)
         topic = event.payload.fetch(:topic)
 
-        Promenade.metric(:kafka_producer_ack_errors).increment(client: client, topic: topic)
+        Promenade.metric(:kafka_producer_ack_errors).increment(client:, topic:)
       end
 
       private
@@ -110,7 +110,7 @@ module Promenade
         def get_labels(event)
           client = event.payload.fetch(:client_id)
           topic = event.payload.fetch(:topic)
-          { client: client, topic: topic }
+          { client:, topic: }
         end
     end
   end

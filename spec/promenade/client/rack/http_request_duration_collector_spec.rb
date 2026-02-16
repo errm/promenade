@@ -142,7 +142,7 @@ RSpec.describe Promenade::Client::Rack::HTTPRequestDurationCollector, reset_prom
       env = Rack::MockRequest.env_for("/", "fizz" => "buzz")
       app = proc { |_| raise(StandardError, "Status code 500") }
       exception_handler = proc { |exception| test_handler.received_exception(exception.message) }
-      middleware = described_class.new(app, exception_handler: exception_handler)
+      middleware = described_class.new(app, exception_handler:)
 
       allow(middleware).to receive(:current_time).and_return(1.0, 2.0)
       expect(test_handler).to receive(:received_exception).with("Status code 500")

@@ -65,8 +65,8 @@ RSpec.describe Promenade::Kafka do
         5.times do
           backend.instrument(
             "buffer_overflow.producer.kafka",
-            client_id: client_id,
-            topic: topic,
+            client_id:,
+            topic:,
           )
         end
       end
@@ -130,9 +130,9 @@ RSpec.describe Promenade::Kafka do
         [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10].each do |delay|
           backend.instrument(
             "ack_message.producer.kafka",
-            client_id: client_id,
-            topic: topic,
-            delay: delay,
+            client_id:,
+            topic:,
+            delay:,
           )
         end
       end
@@ -198,8 +198,8 @@ RSpec.describe Promenade::Kafka do
         11.times do
           backend.instrument(
             "buffer_overflow.async_producer.kafka",
-            client_id: client_id,
-            topic: topic,
+            client_id:,
+            topic:,
           )
         end
       end

@@ -18,8 +18,8 @@ RSpec.describe Promenade::Waterdrop do
       before do
         backend.instrument(
           "produced_async.message.waterdrop",
-          message: message,
-          producer_id: producer_id,
+          message:,
+          producer_id:,
         )
       end
 
@@ -36,8 +36,8 @@ RSpec.describe Promenade::Waterdrop do
       before do
         backend.instrument(
           "produced_sync.message.waterdrop",
-          message: message,
-          producer_id: producer_id,
+          message:,
+          producer_id:,
         )
       end
 
@@ -54,7 +54,7 @@ RSpec.describe Promenade::Waterdrop do
       before do
         backend.instrument(
           "acknowledged.message.waterdrop",
-          producer_id: producer_id,
+          producer_id:,
         )
       end
 
@@ -198,7 +198,7 @@ RSpec.describe Promenade::Waterdrop do
   describe "error.karafka" do
     let(:error_type) { "librdkafka.dispatch_error" }
     let(:labels) do
-      { error_type: error_type }
+      { error_type: }
     end
 
     before do

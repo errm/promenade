@@ -33,8 +33,8 @@ module Promenade
           end
 
           def record_request_queue_time(labels:, env:, request_received_time:)
-            request_queue_duration = QueueTimeDuration.new(env: env,
-              request_received_time: request_received_time)
+            request_queue_duration = QueueTimeDuration.new(env:,
+              request_received_time:)
             return unless request_queue_duration.valid_header_present?
 
             queue_time_histogram.observe(labels, request_queue_duration.queue_time_seconds)

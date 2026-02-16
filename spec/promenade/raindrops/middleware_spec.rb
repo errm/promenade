@@ -12,7 +12,7 @@ RSpec.describe Promenade::Raindrops::Middleware do
       described_class.new(app).call({ "rack.after_reply" => after_reply })
       after_reply.each(&:call)
 
-      expect(stats).to have_received(:instrument).with(listener_address: listener_address)
+      expect(stats).to have_received(:instrument).with(listener_address:)
     end
   end
 
