@@ -4,52 +4,35 @@
 package rackservermetrics
 
 import (
-	"fmt"
 	"net/netip"
+	"strings"
 	"testing"
 
 	"github.com/florianl/go-diag"
-	"github.com/prometheus/client_golang/prometheus"
-	dto "github.com/prometheus/client_model/go"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	"golang.org/x/sys/unix"
 )
-
-type expectedMetricFamily struct {
-	name    string
-	metrics []expectedMetric
-}
-
-type expectedMetric struct {
-	labels map[string]string
-	value  float64
-}
 
 func TestCollector_Collect(t *testing.T) {
 	tests := []struct {
 		name               string
 		listenObjects      []diag.NetObject
 		establishedObjects []diag.NetObject
-		wantMetrics        []expectedMetricFamily
+		expected           string
 	}{
 		{
 			name: "idle listener",
 			listenObjects: []diag.NetObject{
 				makeNetObject("0.0.0.0", 3000, unix.BPF_TCP_LISTEN, 0),
 			},
-			wantMetrics: []expectedMetricFamily{
-				{
-					name: "rack_active_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 0},
-					},
-				},
-				{
-					name: "rack_queued_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 0},
-					},
-				},
-			},
+			expected: `
+# HELP rack_active_requests Number of active requests in progress
+# TYPE rack_active_requests gauge
+rack_active_requests{listener="0.0.0.0:3000"} 0
+# HELP rack_queued_requests Number of requests in queue
+# TYPE rack_queued_requests gauge
+rack_queued_requests{listener="0.0.0.0:3000"} 0
+`,
 		},
 		{
 			name: "listener with active connections",
@@ -61,20 +44,14 @@ func TestCollector_Collect(t *testing.T) {
 				makeNetObject("172.19.0.2", 3000, unix.BPF_TCP_ESTABLISHED, 12345),
 				makeNetObject("172.19.0.3", 3000, unix.BPF_TCP_ESTABLISHED, 12346),
 			},
-			wantMetrics: []expectedMetricFamily{
-				{
-					name: "rack_active_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 2},
-					},
-				},
-				{
-					name: "rack_queued_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 0},
-					},
-				},
-			},
+			expected: `
+# HELP rack_active_requests Number of active requests in progress
+# TYPE rack_active_requests gauge
+rack_active_requests{listener="0.0.0.0:3000"} 2
+# HELP rack_queued_requests Number of requests in queue
+# TYPE rack_queued_requests gauge
+rack_queued_requests{listener="0.0.0.0:3000"} 0
+`,
 		},
 		{
 			name: "listener with queued connections",
@@ -86,20 +63,14 @@ func TestCollector_Collect(t *testing.T) {
 				makeNetObject("172.19.0.2", 3000, unix.BPF_TCP_ESTABLISHED, 0),
 				makeNetObject("172.19.0.3", 3000, unix.BPF_TCP_ESTABLISHED, 0),
 			},
-			wantMetrics: []expectedMetricFamily{
-				{
-					name: "rack_active_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 0},
-					},
-				},
-				{
-					name: "rack_queued_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 2},
-					},
-				},
-			},
+			expected: `
+# HELP rack_active_requests Number of active requests in progress
+# TYPE rack_active_requests gauge
+rack_active_requests{listener="0.0.0.0:3000"} 0
+# HELP rack_queued_requests Number of requests in queue
+# TYPE rack_queued_requests gauge
+rack_queued_requests{listener="0.0.0.0:3000"} 2
+`,
 		},
 		{
 			name: "listener with mixed active and queued",
@@ -112,20 +83,14 @@ func TestCollector_Collect(t *testing.T) {
 				makeNetObject("172.19.0.3", 3000, unix.BPF_TCP_ESTABLISHED, 0),
 				makeNetObject("172.19.0.4", 3000, unix.BPF_TCP_ESTABLISHED, 12346),
 			},
-			wantMetrics: []expectedMetricFamily{
-				{
-					name: "rack_active_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 2},
-					},
-				},
-				{
-					name: "rack_queued_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 1},
-					},
-				},
-			},
+			expected: `
+# HELP rack_active_requests Number of active requests in progress
+# TYPE rack_active_requests gauge
+rack_active_requests{listener="0.0.0.0:3000"} 2
+# HELP rack_queued_requests Number of requests in queue
+# TYPE rack_queued_requests gauge
+rack_queued_requests{listener="0.0.0.0:3000"} 1
+`,
 		},
 		{
 			name: "multiple listeners",
@@ -138,22 +103,16 @@ func TestCollector_Collect(t *testing.T) {
 				makeNetObject("172.19.0.2", 3000, unix.BPF_TCP_ESTABLISHED, 12345),
 				makeNetObject("172.19.0.3", 8080, unix.BPF_TCP_ESTABLISHED, 12346),
 			},
-			wantMetrics: []expectedMetricFamily{
-				{
-					name: "rack_active_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 1},
-						{labels: map[string]string{"listener": "127.0.0.1:8080"}, value: 1},
-					},
-				},
-				{
-					name: "rack_queued_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 0},
-						{labels: map[string]string{"listener": "127.0.0.1:8080"}, value: 0},
-					},
-				},
-			},
+			expected: `
+# HELP rack_active_requests Number of active requests in progress
+# TYPE rack_active_requests gauge
+rack_active_requests{listener="0.0.0.0:3000"} 1
+rack_active_requests{listener="127.0.0.1:8080"} 1
+# HELP rack_queued_requests Number of requests in queue
+# TYPE rack_queued_requests gauge
+rack_queued_requests{listener="0.0.0.0:3000"} 0
+rack_queued_requests{listener="127.0.0.1:8080"} 0
+`,
 		},
 		{
 			name: "ignores docker DNS",
@@ -161,20 +120,14 @@ func TestCollector_Collect(t *testing.T) {
 				makeNetObject("127.0.0.11", 53, unix.BPF_TCP_LISTEN, 0),
 				makeNetObject("0.0.0.0", 3000, unix.BPF_TCP_LISTEN, 0),
 			},
-			wantMetrics: []expectedMetricFamily{
-				{
-					name: "rack_active_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 0},
-					},
-				},
-				{
-					name: "rack_queued_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 0},
-					},
-				},
-			},
+			expected: `
+# HELP rack_active_requests Number of active requests in progress
+# TYPE rack_active_requests gauge
+rack_active_requests{listener="0.0.0.0:3000"} 0
+# HELP rack_queued_requests Number of requests in queue
+# TYPE rack_queued_requests gauge
+rack_queued_requests{listener="0.0.0.0:3000"} 0
+`,
 		},
 		{
 			name: "connection without matching listener is ignored",
@@ -185,20 +138,14 @@ func TestCollector_Collect(t *testing.T) {
 				// Connection on different port, should be ignored
 				makeNetObject("172.19.0.2", 9999, unix.BPF_TCP_ESTABLISHED, 12345),
 			},
-			wantMetrics: []expectedMetricFamily{
-				{
-					name: "rack_active_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 0},
-					},
-				},
-				{
-					name: "rack_queued_requests",
-					metrics: []expectedMetric{
-						{labels: map[string]string{"listener": "0.0.0.0:3000"}, value: 0},
-					},
-				},
-			},
+			expected: `
+# HELP rack_active_requests Number of active requests in progress
+# TYPE rack_active_requests gauge
+rack_active_requests{listener="0.0.0.0:3000"} 0
+# HELP rack_queued_requests Number of requests in queue
+# TYPE rack_queued_requests gauge
+rack_queued_requests{listener="0.0.0.0:3000"} 0
+`,
 		},
 	}
 
@@ -210,15 +157,21 @@ func TestCollector_Collect(t *testing.T) {
 			}
 			collector := NewCollectorWithNetlink(mock)
 
-			registry := prometheus.NewRegistry()
-			registry.MustRegister(collector)
-
-			metricFamilies, err := registry.Gather()
-			if err != nil {
-				t.Errorf("Unexpecred Gather() error = %v", err)
+			if err := testutil.CollectAndCompare(collector, strings.NewReader(tt.expected)); err != nil {
+				t.Errorf("CollectAndCompare failed: %v", err)
 			}
 
-			compareMetricFamilies(t, tt.wantMetrics, metricFamilies)
+			problems, err := testutil.CollectAndLint(collector)
+			if err != nil {
+				t.Errorf("CollectAndLint failed: %v", err)
+			}
+
+			if len(problems) > 0 {
+				t.Errorf("CollectAndLint found %d problems:", len(problems))
+				for _, problem := range problems {
+					t.Errorf("  Problem: %v", problem)
+				}
+			}
 		})
 	}
 }
@@ -232,95 +185,6 @@ func TestCollector_Close(t *testing.T) {
 	if err := collector.Close(); err != nil {
 		t.Errorf("Close() error = %v, want nil", err)
 	}
-}
-
-// compareMetricFamilies compares expected metric families with actual ones from the registry.
-func compareMetricFamilies(t *testing.T, expected []expectedMetricFamily, actual []*dto.MetricFamily) {
-	// Create a map of actual families by name for easy lookup
-	actualMap := make(map[string]*dto.MetricFamily)
-	for _, family := range actual {
-		actualMap[family.GetName()] = family
-	}
-
-	// Check each expected family
-	for _, expectedFamily := range expected {
-		actualFamily, found := actualMap[expectedFamily.name]
-		if !found {
-			t.Errorf("Expected metric family %q not found in actual metrics", expectedFamily.name)
-			continue
-		}
-
-		// Compare metrics within the family
-		actualMetrics := actualFamily.GetMetric()
-		if len(actualMetrics) != len(expectedFamily.metrics) {
-			t.Errorf("Metric family %q: expected %d metrics, got %d", expectedFamily.name, len(expectedFamily.metrics), len(actualMetrics))
-			continue
-		}
-
-		// Create a map of actual metrics by their label set for easy lookup
-		actualMetricsMap := make(map[string]*dto.Metric)
-		for _, metric := range actualMetrics {
-			labelKey := labelsToKey(metric.GetLabel())
-			actualMetricsMap[labelKey] = metric
-		}
-
-		// Check each expected metric
-		for _, expectedMetric := range expectedFamily.metrics {
-			labelKey := labelsMapToKey(expectedMetric.labels)
-			actualMetric, found := actualMetricsMap[labelKey]
-			if !found {
-				t.Errorf("Metric family %q: expected metric with labels %v not found", expectedFamily.name, expectedMetric.labels)
-				continue
-			}
-
-			// Compare the value
-			actualValue := actualMetric.GetGauge().GetValue()
-			if actualValue != expectedMetric.value {
-				t.Errorf("Metric family %q with labels %v: expected value %f, got %f",
-					expectedFamily.name, expectedMetric.labels, expectedMetric.value, actualValue)
-			}
-		}
-	}
-
-	// Check for unexpected metric families
-	for _, actualFamily := range actual {
-		found := false
-		for _, expectedFamily := range expected {
-			if actualFamily.GetName() == expectedFamily.name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Errorf("Unexpected metric family found: %q", actualFamily.GetName())
-		}
-	}
-}
-
-// labelsToKey converts a slice of LabelPair to a string key for comparison.
-func labelsToKey(labels []*dto.LabelPair) string {
-	key := ""
-	for _, label := range labels {
-		if key != "" {
-			key += ","
-		}
-		key += fmt.Sprintf("%s=%s", label.GetName(), label.GetValue())
-	}
-	return key
-}
-
-// labelsMapToKey converts a map of labels to a string key for comparison.
-func labelsMapToKey(labels map[string]string) string {
-	key := ""
-	first := true
-	for k, v := range labels {
-		if !first {
-			key += ","
-		}
-		key += fmt.Sprintf("%s=%s", k, v)
-		first = false
-	}
-	return key
 }
 
 // mockNetlinkDumper is a mock implementation of NetlinkDumper for testing.
