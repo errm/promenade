@@ -1,9 +1,0 @@
-services:
-  app:
-    build: example_app/.
-    ports:
-      - 3000:3000
-      - 9394:9394
-  promenade:
-    build: .
-    network_mode: service:app
