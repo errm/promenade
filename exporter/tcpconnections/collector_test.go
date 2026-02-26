@@ -1,7 +1,7 @@
 //go:build linux
 // +build linux
 
-package rackservermetrics
+package tcpconnections
 
 import (
 	"net/netip"
@@ -26,12 +26,12 @@ func TestCollector_Collect(t *testing.T) {
 				makeNetObject("0.0.0.0", 3000, unix.BPF_TCP_LISTEN, 0),
 			},
 			expected: `
-# HELP rack_active_requests Number of active requests in progress
-# TYPE rack_active_requests gauge
-rack_active_requests{listener="0.0.0.0:3000"} 0
-# HELP rack_queued_requests Number of requests in queue
-# TYPE rack_queued_requests gauge
-rack_queued_requests{listener="0.0.0.0:3000"} 0
+# HELP tcp_active_connections Number of active connections
+# TYPE tcp_active_connections gauge
+tcp_active_connections{listener="0.0.0.0:3000"} 0
+# HELP tcp_queued_connections Number of connections in queue
+# TYPE tcp_queued_connections gauge
+tcp_queued_connections{listener="0.0.0.0:3000"} 0
 `,
 		},
 		{
@@ -45,12 +45,12 @@ rack_queued_requests{listener="0.0.0.0:3000"} 0
 				makeNetObject("172.19.0.3", 3000, unix.BPF_TCP_ESTABLISHED, 12346),
 			},
 			expected: `
-# HELP rack_active_requests Number of active requests in progress
-# TYPE rack_active_requests gauge
-rack_active_requests{listener="0.0.0.0:3000"} 2
-# HELP rack_queued_requests Number of requests in queue
-# TYPE rack_queued_requests gauge
-rack_queued_requests{listener="0.0.0.0:3000"} 0
+# HELP tcp_active_connections Number of active connections
+# TYPE tcp_active_connections gauge
+tcp_active_connections{listener="0.0.0.0:3000"} 2
+# HELP tcp_queued_connections Number of connections in queue
+# TYPE tcp_queued_connections gauge
+tcp_queued_connections{listener="0.0.0.0:3000"} 0
 `,
 		},
 		{
@@ -64,12 +64,12 @@ rack_queued_requests{listener="0.0.0.0:3000"} 0
 				makeNetObject("172.19.0.3", 3000, unix.BPF_TCP_ESTABLISHED, 0),
 			},
 			expected: `
-# HELP rack_active_requests Number of active requests in progress
-# TYPE rack_active_requests gauge
-rack_active_requests{listener="0.0.0.0:3000"} 0
-# HELP rack_queued_requests Number of requests in queue
-# TYPE rack_queued_requests gauge
-rack_queued_requests{listener="0.0.0.0:3000"} 2
+# HELP tcp_active_connections Number of active connections
+# TYPE tcp_active_connections gauge
+tcp_active_connections{listener="0.0.0.0:3000"} 0
+# HELP tcp_queued_connections Number of connections in queue
+# TYPE tcp_queued_connections gauge
+tcp_queued_connections{listener="0.0.0.0:3000"} 2
 `,
 		},
 		{
@@ -84,12 +84,12 @@ rack_queued_requests{listener="0.0.0.0:3000"} 2
 				makeNetObject("172.19.0.4", 3000, unix.BPF_TCP_ESTABLISHED, 12346),
 			},
 			expected: `
-# HELP rack_active_requests Number of active requests in progress
-# TYPE rack_active_requests gauge
-rack_active_requests{listener="0.0.0.0:3000"} 2
-# HELP rack_queued_requests Number of requests in queue
-# TYPE rack_queued_requests gauge
-rack_queued_requests{listener="0.0.0.0:3000"} 1
+# HELP tcp_active_connections Number of active connections
+# TYPE tcp_active_connections gauge
+tcp_active_connections{listener="0.0.0.0:3000"} 2
+# HELP tcp_queued_connections Number of connections in queue
+# TYPE tcp_queued_connections gauge
+tcp_queued_connections{listener="0.0.0.0:3000"} 1
 `,
 		},
 		{
@@ -104,14 +104,14 @@ rack_queued_requests{listener="0.0.0.0:3000"} 1
 				makeNetObject("172.19.0.3", 8080, unix.BPF_TCP_ESTABLISHED, 12346),
 			},
 			expected: `
-# HELP rack_active_requests Number of active requests in progress
-# TYPE rack_active_requests gauge
-rack_active_requests{listener="0.0.0.0:3000"} 1
-rack_active_requests{listener="127.0.0.1:8080"} 1
-# HELP rack_queued_requests Number of requests in queue
-# TYPE rack_queued_requests gauge
-rack_queued_requests{listener="0.0.0.0:3000"} 0
-rack_queued_requests{listener="127.0.0.1:8080"} 0
+# HELP tcp_active_connections Number of active connections
+# TYPE tcp_active_connections gauge
+tcp_active_connections{listener="0.0.0.0:3000"} 1
+tcp_active_connections{listener="127.0.0.1:8080"} 1
+# HELP tcp_queued_connections Number of connections in queue
+# TYPE tcp_queued_connections gauge
+tcp_queued_connections{listener="0.0.0.0:3000"} 0
+tcp_queued_connections{listener="127.0.0.1:8080"} 0
 `,
 		},
 		{
@@ -121,12 +121,12 @@ rack_queued_requests{listener="127.0.0.1:8080"} 0
 				makeNetObject("0.0.0.0", 3000, unix.BPF_TCP_LISTEN, 0),
 			},
 			expected: `
-# HELP rack_active_requests Number of active requests in progress
-# TYPE rack_active_requests gauge
-rack_active_requests{listener="0.0.0.0:3000"} 0
-# HELP rack_queued_requests Number of requests in queue
-# TYPE rack_queued_requests gauge
-rack_queued_requests{listener="0.0.0.0:3000"} 0
+# HELP tcp_active_connections Number of active connections
+# TYPE tcp_active_connections gauge
+tcp_active_connections{listener="0.0.0.0:3000"} 0
+# HELP tcp_queued_connections Number of connections in queue
+# TYPE tcp_queued_connections gauge
+tcp_queued_connections{listener="0.0.0.0:3000"} 0
 `,
 		},
 		{
@@ -139,12 +139,12 @@ rack_queued_requests{listener="0.0.0.0:3000"} 0
 				makeNetObject("172.19.0.2", 9999, unix.BPF_TCP_ESTABLISHED, 12345),
 			},
 			expected: `
-# HELP rack_active_requests Number of active requests in progress
-# TYPE rack_active_requests gauge
-rack_active_requests{listener="0.0.0.0:3000"} 0
-# HELP rack_queued_requests Number of requests in queue
-# TYPE rack_queued_requests gauge
-rack_queued_requests{listener="0.0.0.0:3000"} 0
+# HELP tcp_active_connections Number of active connections
+# TYPE tcp_active_connections gauge
+tcp_active_connections{listener="0.0.0.0:3000"} 0
+# HELP tcp_queued_connections Number of connections in queue
+# TYPE tcp_queued_connections gauge
+tcp_queued_connections{listener="0.0.0.0:3000"} 0
 `,
 		},
 	}

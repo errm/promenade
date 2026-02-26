@@ -1,7 +1,7 @@
 //go:build linux
 // +build linux
 
-package rackservermetrics
+package tcpconnections
 
 import (
 	"fmt"
@@ -21,14 +21,14 @@ type NetlinkDumper interface {
 var (
 	// Metric descriptors - created once and reused
 	activeRequestsDesc = prometheus.NewDesc(
-		"rack_active_requests",
-		"Number of active requests in progress",
+		"tcp_active_connections",
+		"Number of active connections",
 		[]string{"listener"},
 		nil,
 	)
 	queuedRequestsDesc = prometheus.NewDesc(
-		"rack_queued_requests",
-		"Number of requests in queue",
+		"tcp_queued_connections",
+		"Number of connections in queue",
 		[]string{"listener"},
 		nil,
 	)

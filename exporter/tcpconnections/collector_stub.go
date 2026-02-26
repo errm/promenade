@@ -1,7 +1,7 @@
 //go:build !linux
 // +build !linux
 
-package rackservermetrics
+package tcpconnections
 
 import (
 	"github.com/prometheus/client_golang/prometheus"

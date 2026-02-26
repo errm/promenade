@@ -8,7 +8,7 @@ import (
 	"github.com/alexflint/go-arg"
 
 	"github.com/errm/promenade/exporter/multiprocess"
-	"github.com/errm/promenade/exporter/rackservermetrics"
+	"github.com/errm/promenade/exporter/tcpconnections"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -28,7 +28,7 @@ func init() {
 func main() {
 	reg := prometheus.NewRegistry()
 
-	serverMetricsCollector, err := rackservermetrics.NewCollector()
+	serverMetricsCollector, err := tcpconnections.NewCollector()
 	if err != nil {
 		log.Fatal(err)
 	}
