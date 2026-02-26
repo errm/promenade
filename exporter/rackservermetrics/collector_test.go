@@ -155,7 +155,7 @@ rack_queued_requests{listener="0.0.0.0:3000"} 0
 				listenObjects:      tt.listenObjects,
 				establishedObjects: tt.establishedObjects,
 			}
-			collector := NewCollectorWithNetlink(mock)
+			collector := &Collector{netlink: mock}
 
 			if err := testutil.CollectAndCompare(collector, strings.NewReader(tt.expected)); err != nil {
 				t.Errorf("CollectAndCompare failed: %v", err)
@@ -180,7 +180,7 @@ func TestCollector_Close(t *testing.T) {
 	mock := &mockNetlinkDumper{
 		closeError: nil,
 	}
-	collector := NewCollectorWithNetlink(mock)
+	collector := &Collector{netlink: mock}
 
 	if err := collector.Close(); err != nil {
 		t.Errorf("Close() error = %v, want nil", err)

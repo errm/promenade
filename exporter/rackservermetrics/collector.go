@@ -5,6 +5,7 @@ package rackservermetrics
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/florianl/go-diag"
 	"github.com/prometheus/client_golang/prometheus"
@@ -33,7 +34,7 @@ var (
 	)
 )
 
-// Collector collects metrics about requests in progress and queuing for a Ruby application server.
+// Collector collects metrics about requests in progress and queuing.
 type Collector struct {
 	netlink NetlinkDumper
 }
@@ -52,15 +53,9 @@ func NewCollector() (*Collector, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not open netlink socket: %w", err)
 	}
-	return NewCollectorWithNetlink(nl), nil
-}
-
-// NewCollectorWithNetlink creates a new Collector with the provided NetlinkDumper.
-// This is useful for testing with a mock netlink implementation.
-func NewCollectorWithNetlink(netlink NetlinkDumper) *Collector {
 	return &Collector{
-		netlink: netlink,
-	}
+		netlink: nl,
+	}, nil
 }
 
 // Describe implements prometheus.Collector.
@@ -73,9 +68,8 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	listenerMetrics, err := c.collectMetrics()
 	if err != nil {
+		log.Println(err)
 		// If collection fails, we don't send any metrics
-		// to avoid breaking Prometheus scraping. In production, you might
-		// want to handle this differently (e.g., expose an error metric).
 		return
 	}
 
