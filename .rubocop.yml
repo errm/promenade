@@ -20,3 +20,5 @@ RSpec/DescribedClass:
   Enabled: false
 Gemspec/DevelopmentDependencies:
   Enabled: false
+Metrics/BlockLength:
+  Max: 70
