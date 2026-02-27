@@ -1,6 +1,8 @@
 require "bundler/gem_tasks"
 require "rspec/core/rake_task"
 require "rubocop/rake_task"
+require "net/http"
+require "uri"
 
 RSpec::Core::RakeTask.new(:spec) do |task|
   task.rspec_opts = "--tag ~type:acceptance"
@@ -26,13 +28,30 @@ namespace :acceptance do
     end
 
     sh "docker compose up --build --detach"
+
+    sleep 1 until check_url("http://localhost:9394/metrics")
+    sleep 1 until check_url("http://localhost:3000/up")
   end
 
   RSpec::Core::RakeTask.new(:spec) do |task|
     task.rspec_opts = "--tag type:acceptance"
   end
 
-  task spec: :prepare
+  task spec: [:prepare, :cleanup]
+
+  task :cleanup do
+    at_exit {
+      sh "docker compose logs"
+      sh "docker compose down"
+    }
+  end
+end
+
+def check_url(url)
+  Net::HTTP.get_response(URI(url)).code == "200"
+rescue Errno::ECONNREFUSED => e
+  puts e
+  false
 end
 
 task :exporter do
