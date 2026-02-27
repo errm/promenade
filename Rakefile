@@ -29,6 +29,14 @@ namespace :acceptance do
 
     sh "docker compose up --build --detach"
 
+    if ENV["CI"]
+      10.times do
+        check_url("http://localhost:3000/up")
+        check_url("http://localhost:9394/metrics")
+        sleep 1
+      end
+    end
+
     sleep 1 until check_url("http://localhost:9394/metrics")
     sleep 1 until check_url("http://localhost:3000/up")
   end
