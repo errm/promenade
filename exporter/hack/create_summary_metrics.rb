@@ -2,7 +2,7 @@ require "promenade"
 
 Promenade.setup
 
-::Prometheus::Client.configure do |config|
+Prometheus::Client.configure do |config|
   config.multiprocess_files_dir = "multiprocess/test_fixtures/summary"
 end
 

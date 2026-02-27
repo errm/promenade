@@ -2,7 +2,7 @@ require "promenade"
 
 Promenade.setup
 
-::Prometheus::Client.configure do |config|
+Prometheus::Client.configure do |config|
   config.multiprocess_files_dir = "multiprocess/test_fixtures/gauge"
 end
 
@@ -39,7 +39,6 @@ Process.fork do
   Promenade.metric(:greenhouse_temperature_celsius).set({ greenhouse: "inside" }, 27.1)
   Promenade.metric(:water_temperature_celsius).set({}, 32.1)
 end
-
 
 Process.fork do
   Promenade.metric(:room_temperature_celsius).set({ room: "lounge" }, 22.4)
