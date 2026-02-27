@@ -25,9 +25,7 @@ namespace :acceptance do
       sh "bundle install"
     end
 
-    unless ENV["CI"]
-      sh "docker compose up --build --detach"
-    end
+    sh "docker compose up --build --detach"
   end
 
   RSpec::Core::RakeTask.new(:spec) do |task|
