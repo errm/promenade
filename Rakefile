@@ -37,13 +37,13 @@ namespace :acceptance do
     task.rspec_opts = "--tag type:acceptance"
   end
 
-  task spec: [:prepare, :cleanup]
+  task spec: %i(prepare cleanup)
 
   task :cleanup do
-    at_exit {
+    at_exit do
       sh "docker compose logs"
       sh "docker compose down"
-    }
+    end
   end
 end
 
