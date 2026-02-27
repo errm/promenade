@@ -2,16 +2,18 @@ require "bundler/gem_tasks"
 require "rspec/core/rake_task"
 require "rubocop/rake_task"
 
-RSpec::Core::RakeTask.new(:spec)
+RSpec::Core::RakeTask.new(:spec) do |task|
+  task.rspec_opts = "--tag ~type:acceptance"
+end
 RuboCop::RakeTask.new
 
-task default: %i(spec rubocop exporter)
+task default: %i(spec rubocop exporter acceptance:spec)
 
 task :clean do
   sh "rm -rf tmp/promenade"
 end
 
-namespace :integration do
+namespace :acceptance do
   task prepare: [:build] do
     FileUtils.rm_rf "example/gem/promenade"
     gem = Dir.glob("pkg/promenade-*.gem").max
@@ -27,6 +29,12 @@ namespace :integration do
       sh "docker compose up --build --detach"
     end
   end
+
+  RSpec::Core::RakeTask.new(:spec) do |task|
+    task.rspec_opts = "--tag type:acceptance"
+  end
+
+  task spec: :prepare
 end
 
 task :exporter do

@@ -20,8 +20,33 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - run: bundle exec rake
+    - run: bundle exec rake spec
     - name: Upload test results to Codecov
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
+
+  exporter:
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version-file: 'exporter/go.mod'
+        cache-dependency-path: 'exporter/go.sum'
+    - name: go test
+      working-directory: exporter
+      run: go test -v ./...
+    - name: go vet
+      working-directory: exporter
+      run: |
+        go vet ./...
+     - name: golangci-lint
+       uses: golangci/golangci-lint-action@v8
+       with:
+         working-directory: exporter
+
+     - name: Run govulncheck
+       working-directory: exporter
+       run: |
+         go install golang.org/x/vuln/cmd/govulncheck@latest
+         govulncheck ./...
