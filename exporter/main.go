@@ -32,7 +32,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer serverMetricsCollector.Close()
+	defer func() {
+		if err = serverMetricsCollector.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
 
 	reg.MustRegister(
 		serverMetricsCollector,
