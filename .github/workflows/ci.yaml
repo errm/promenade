@@ -70,4 +70,6 @@ jobs:
     - run: bundle exec rake acceptance:spec
     - name: stop containers
       if: always()
-      run: docker-compose down
+      run: |
+        docker compose logs
+        docker compose down
