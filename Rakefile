@@ -29,16 +29,16 @@ namespace :acceptance do
 
     sh "docker compose up --build --detach"
 
-    if ENV["CI"]
-      10.times do
-        check_url("http://localhost:3000/up")
-        check_url("http://localhost:9394/metrics")
-        sleep 1
-      end
-    end
-
-    sleep 1 until check_url("http://localhost:9394/metrics")
+    # wait for server to be ready
     sleep 1 until check_url("http://localhost:3000/up")
+    sleep 1 until check_url("http://localhost:9394/metrics")
+
+    # prewarm with some requests
+    4.times.map do
+      Thread.new do
+        10.times { check_url("http://localhost:3000/example") }
+      end
+    end.each(&:join)
   end
 
   RSpec::Core::RakeTask.new(:spec) do |task|
@@ -56,9 +56,11 @@ namespace :acceptance do
 end
 
 def check_url(url)
+  printf "."
   Net::HTTP.get_response(URI(url)).code == "200"
-rescue Errno::ECONNREFUSED => e
+rescue StandardError => e
   puts e
+  sleep 1
   false
 end
 
