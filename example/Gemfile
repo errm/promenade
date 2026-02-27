@@ -1,0 +1,5 @@
+source "https://rubygems.org"
+
+gem "pitchfork"
+gem "promenade", path: "gem/promenade"
+gem "rails", "8.1.2"

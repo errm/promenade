@@ -3,14 +3,11 @@ require "promenade/pitchfork/stats"
 
 RSpec.describe Promenade::Pitchfork::Stats do
   let(:pitchfork_info) { class_double("Pitchfork::Info") }
-  let(:raindrops_stats) { instance_double("Promenade::Raindrops::Stats", active_workers: 6, queued_requests: 2) }
 
   before do
     stub_const("Pitchfork::Info", pitchfork_info)
     allow(pitchfork_info).to receive(:workers_count).and_return(10)
     allow(pitchfork_info).to receive(:live_workers_count).and_return(8)
-
-    allow(Promenade::Raindrops::Stats).to receive(:new).and_return(raindrops_stats)
   end
 
   describe "#instrument" do
@@ -24,15 +21,11 @@ RSpec.describe Promenade::Pitchfork::Stats do
     it "sets the metrics correctly" do
       stats = Promenade::Pitchfork::Stats.new
 
-      expect(Promenade).to receive(:metric).with(:pitchfork_workers_count).and_return(metric)
-      expect(Promenade).to receive(:metric).with(:pitchfork_live_workers_count).and_return(metric)
-      expect(Promenade).to receive(:metric).with(:pitchfork_capacity).and_return(metric)
-      expect(Promenade).to receive(:metric).with(:pitchfork_busy_percent).and_return(metric)
+      expect(Promenade).to receive(:metric).with(:pitchfork_workers).and_return(metric)
+      expect(Promenade).to receive(:metric).with(:pitchfork_live_workers).and_return(metric)
 
       expect(metric).to receive(:set).with({}, 10)
       expect(metric).to receive(:set).with({}, 8)
-      expect(metric).to receive(:set).with({}, 2)
-      expect(metric).to receive(:set).with({}, 75.0)
 
       stats.instrument
     end

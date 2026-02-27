@@ -4,4 +4,3 @@ source "https://rubygems.org"
 gemspec path: "../"
 
 gem "rails", "8.0.4"
-gem "webrick"

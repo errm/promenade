@@ -1,0 +1,31 @@
+services:
+  front:
+    image: nginx:1.29.5
+    volumes:
+      - ./example/config/nginx.conf:/etc/nginx/nginx.conf
+    network_mode: service:app
+  app:
+    build: example/.
+    ports:
+      - 3000:3000
+      - 9292:9292
+      - 9394:9394
+    volumes:
+      - tmp:/app/tmp
+    environment:
+      SECRET_KEY_BASE: 1234567890
+      RUBY_YJIT_ENABLE: 1
+    user: "1000:1000"
+  exporter:
+    build: exporter/.
+    network_mode: service:app
+    volumes:
+      - tmp:/app/tmp
+    user: "1000:1000"
+volumes:
+  tmp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: "size=256m,uid=1000"
