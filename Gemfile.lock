@@ -424,7 +424,7 @@ CHECKSUMS
   pp (0.6.3) sha256=2951d514450b93ccfeb1df7d021cae0da16e0a7f95ee1e2273719669d0ab9df6
   prettyprint (0.2.0) sha256=2bc9e15581a94742064a3cc8b0fb9d45aae3d03a1baa6ef80922627a0766f193
   prism (1.9.0) sha256=7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85
-  promenade (0.12.5)
+  promenade (0.12.6)
   prometheus-client-mmap (1.5.0) sha256=361eb98d6c19ae0f44ae5e02f9e6750436fd92d1c501d1c69843609c1daf0117
   prometheus-client-mmap (1.5.0-aarch64-linux-gnu) sha256=e7fe1a630dda83a237efb0eb4a29ee3da37922722fc89ecac6057a1187372c5d
   prometheus-client-mmap (1.5.0-aarch64-linux-musl) sha256=897fa5d82150ddcb3bc30dfa7af0deb85930655500e71bd8879daa86b5e690ff
