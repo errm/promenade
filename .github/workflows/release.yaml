@@ -1,0 +1,127 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yaml
+  release-rubygem:
+    if: github.repository == 'errm/promenade'
+    needs: [tests]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+    - uses: actions/checkout@v6
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 4.0
+        bundler-cache: true
+    - uses: rubygems/release-gem@v1
+  build-exporter-image-arm64:
+    permissions:
+      contents: read
+      packages: write
+    if: github.repository == 'errm/promenade'
+    needs: [tests]
+    runs-on: ubuntu-24.04-arm
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Docker metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository }}
+        tags: |
+          type=semver,pattern={{version}}-arm64
+    - name: Build exporter image
+      uses: docker/build-push-action@v5
+      id: build
+      with:
+        context: exporter
+        platforms: linux/arm64
+        tags: ${{ steps.meta.outputs.tags }}
+        annotations: ${{ steps.meta.outputs.annotations }}
+        cache-from: type=gha,scope=linux/arm64
+        cache-to: type=gha,scope=linux/arm64,mode=max
+        push: true
+  build-exporter-image-amd64:
+    permissions:
+      contents: read
+      packages: write
+    if: github.repository == 'errm/promenade'
+    needs: [tests]
+    runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Docker metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository }}
+        tags: |
+          type=semver,pattern={{version}}-amd64
+    - name: Build exporter image
+      uses: docker/build-push-action@v5
+      id: build
+      with:
+        context: exporter
+        platforms: linux/amd64
+        tags: ${{ steps.meta.outputs.tags }}
+        annotations: ${{ steps.meta.outputs.annotations }}
+        cache-from: type=gha,scope=linux/amd64
+        cache-to: type=gha,scope=linux/amd64,mode=max
+        push: true
+  push-manifest:
+    permissions:
+      contents: read
+      packages: write
+    if: github.repository == 'errm/promenade'
+    needs: [build-exporter-image-arm64, build-exporter-image-amd64]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Docker metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository }}
+        tags: |
+          type=semver,pattern={{version}}-amd64
+    - name: Get execution timestamp with RFC3339 format
+      id: timestamp
+      run: |
+        echo "timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_OUTPUT
+    - name: Build exporter manifest
+      run: |
+        docker buildx imagetools create \
+          --tag ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }} \
+          ghcr.io/${{ github.repository }}:${{ needs.build-exporter-image-arm64.outputs.digest }} \
+          ghcr.io/${{ github.repository }}:${{ needs.build-exporter-image-amd64.outputs.digest }}

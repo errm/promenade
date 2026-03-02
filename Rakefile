@@ -72,4 +72,37 @@ end
 
 task spec: :clean
 
-task release: :default
+namespace :release do
+  task :prepare do
+    require_relative "./lib/promenade/version"
+    puts "Ready to release v#{Promenade::VERSION}? y/n"
+
+    begin
+      input = STDIN.gets.strip.downcase
+    end until %w(y n).include?(input)
+
+    unless input == "y"
+      puts "Aborting"
+      exit
+    end
+
+    sh "git add lib/promenade/version.rb"
+
+    sh "bundle install"
+    sh "git add Gemfile.lock"
+
+    Dir.chdir("example") do
+      sh "bundle install"
+      sh "git add Gemfile.lock"
+    end
+
+    Dir.glob("gemfiles/*.gemfile").each do |gemfile|
+      sh "bundle install --gemfile=#{gemfile}"
+      sh "git add #{gemfile}.lock"
+    end
+
+    sh "git commit -m 'Release v#{Promenade::VERSION}'"
+    sh "git tag -m 'Promenade v#{Promenade::VERSION}' v#{Promenade::VERSION}"
+    sh "git push origin main --follow-tags"
+  end
+end
