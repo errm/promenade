@@ -147,6 +147,26 @@ tcp_active_connections{listener="0.0.0.0:3000"} 0
 tcp_queued_connections{listener="0.0.0.0:3000"} 0
 `,
 		},
+		{
+			name: "duplicate listeners from netlink are deduplicated",
+			listenObjects: []diag.NetObject{
+				// Same listener reported multiple times (as seen in some environments)
+				makeNetObject("0.0.0.0", 3000, unix.BPF_TCP_LISTEN, 0),
+				makeNetObject("0.0.0.0", 3000, unix.BPF_TCP_LISTEN, 0),
+				makeNetObject("0.0.0.0", 3000, unix.BPF_TCP_LISTEN, 0),
+			},
+			establishedObjects: []diag.NetObject{
+				makeNetObject("172.19.0.2", 3000, unix.BPF_TCP_ESTABLISHED, 12345),
+			},
+			expected: `
+# HELP tcp_active_connections Number of active connections
+# TYPE tcp_active_connections gauge
+tcp_active_connections{listener="0.0.0.0:3000"} 1
+# HELP tcp_queued_connections Number of connections in queue
+# TYPE tcp_queued_connections gauge
+tcp_queued_connections{listener="0.0.0.0:3000"} 0
+`,
+		},
 	}
 
 	for _, tt := range tests {

@@ -107,8 +107,9 @@ func (c *Collector) getSocketStats(state uint8) ([]diag.NetObject, error) {
 
 // collectMetrics collects the socket metrics from netlink.
 func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
-	// First pass: query sockets in the TCP_LISTEN state to identify listeners
-	var listeners []listenerMetrics
+	// First pass: query sockets in the TCP_LISTEN state to identify listeners.
+	// Use a map keyed by "address:port" to avoid duplicate listeners.
+	listeners := make(map[string]*listenerMetrics)
 
 	listenObjs, err := c.getSocketStats(unix.BPF_TCP_LISTEN)
 	if err != nil {
@@ -128,12 +129,17 @@ func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
 		}
 
 		// Initialize metrics for this listener
-		listeners = append(listeners, listenerMetrics{
+		port := diag.Ntohs(object.ID.SPort)
+		key := fmt.Sprintf("%s:%d", ipAddr.String(), port)
+		if _, exists := listeners[key]; exists {
+			continue
+		}
+		listeners[key] = &listenerMetrics{
 			address: ipAddr.String(),
-			port:    diag.Ntohs(object.ID.SPort),
+			port:    port,
 			active:  0,
 			queued:  0,
-		})
+		}
 	}
 
 	// Second pass: get stats for sockets in the TCP_ESTABLISHED state and match to listeners
@@ -144,14 +150,13 @@ func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
 
 	// Loop over established connections
 	for _, object := range establishedObjs {
-		// Match SPort to listener port
 		sPort := diag.Ntohs(object.ID.SPort)
 
-		// Find the listener with matching port
+		// Find a listener with matching port
 		var metrics *listenerMetrics
-		for i := range listeners {
-			if listeners[i].port == sPort {
-				metrics = &listeners[i]
+		for _, m := range listeners {
+			if m.port == sPort {
+				metrics = m
 				break
 			}
 		}
@@ -169,7 +174,11 @@ func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
 		}
 	}
 
-	return listeners, nil
+	result := make([]listenerMetrics, 0, len(listeners))
+	for _, m := range listeners {
+		result = append(result, *m)
+	}
+	return result, nil
 }
 
 // Close closes the netlink connection.
