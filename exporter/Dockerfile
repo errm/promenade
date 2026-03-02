@@ -8,5 +8,6 @@ COPY . ./
 RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=1 go build -buildmode=pie -tags 'osusergo,netgo,static,' -ldflags '-linkmode=external -extldflags "-static-pie"' -o /bin/promenade
 
 FROM scratch
+COPY etc-passwd /etc/passwd
 COPY --from=builder /bin/promenade /bin/promenade
 ENTRYPOINT ["/bin/promenade"]
