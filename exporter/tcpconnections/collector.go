@@ -107,42 +107,36 @@ func (c *Collector) getSocketStats(state uint8) ([]diag.NetObject, error) {
 
 // collectMetrics collects the socket metrics from netlink.
 func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
-	// First pass: query sockets in the TCP_LISTEN state to identify listeners.
-	// Use a map keyed by "address:port" to avoid duplicate listeners.
-	listeners := make(map[string]*listenerMetrics)
+	// First pass: only track listeners bound to 0.0.0.0 (inbound), keyed by port.
+	listeners := make(map[uint16]*listenerMetrics)
 
 	listenObjs, err := c.getSocketStats(unix.BPF_TCP_LISTEN)
 	if err != nil {
 		return nil, fmt.Errorf("could not dump stats for listening sockets: %w", err)
 	}
 
-	// Initialize metrics for each listener
 	for _, object := range listenObjs {
 		ipAddr, err := diag.ToNetipAddrWithFamily(unix.AF_INET, object.ID.Src)
 		if err != nil {
 			continue
 		}
-
-		// Ignore Docker's internal DNS server
-		if ipAddr.String() == "127.0.0.11" {
+		if ipAddr.String() != "0.0.0.0" {
 			continue
 		}
 
-		// Initialize metrics for this listener
 		port := diag.Ntohs(object.ID.SPort)
-		key := fmt.Sprintf("%s:%d", ipAddr.String(), port)
-		if _, exists := listeners[key]; exists {
+		if _, exists := listeners[port]; exists {
 			continue
 		}
-		listeners[key] = &listenerMetrics{
-			address: ipAddr.String(),
+		listeners[port] = &listenerMetrics{
+			address: "0.0.0.0",
 			port:    port,
 			active:  0,
 			queued:  0,
 		}
 	}
 
-	// Second pass: get stats for sockets in the TCP_ESTABLISHED state and match to listeners
+	// Second pass: match established connections to listeners by port
 	establishedObjs, err := c.getSocketStats(unix.BPF_TCP_ESTABLISHED)
 	if err != nil {
 		return nil, fmt.Errorf("could not dump stats for established sockets: %w", err)
@@ -150,25 +144,11 @@ func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
 
 	for _, object := range establishedObjs {
 		sPort := diag.Ntohs(object.ID.SPort)
-
-		// Prefer a listener bound to any address (0.0.0.0); otherwise match by local address and port
-		keyAny := fmt.Sprintf("0.0.0.0:%d", sPort)
-		metrics := listeners[keyAny]
-		if metrics == nil {
-			localAddr, err := diag.ToNetipAddrWithFamily(unix.AF_INET, object.ID.Src)
-			if err != nil {
-				continue
-			}
-			localAddrStr := localAddr.String()
-			keyLocal := fmt.Sprintf("%s:%d", localAddrStr, sPort)
-			metrics = listeners[keyLocal]
-		}
-
+		metrics := listeners[sPort]
 		if metrics == nil {
 			continue
 		}
 
-		// Inode == 0 means the connection is in the queue
 		if object.INode == 0 {
 			metrics.queued++
 		} else {

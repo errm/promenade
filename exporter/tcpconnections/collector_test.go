@@ -96,22 +96,21 @@ tcp_queued_connections{listener="0.0.0.0:3000"} 1
 			name: "multiple listeners",
 			listenObjects: []diag.NetObject{
 				makeNetObject("0.0.0.0", 3000, unix.BPF_TCP_LISTEN, 0),
-				makeNetObject("127.0.0.1", 8080, unix.BPF_TCP_LISTEN, 0),
+				makeNetObject("0.0.0.0", 8080, unix.BPF_TCP_LISTEN, 0),
 			},
 			establishedObjects: []diag.NetObject{
-				// Connections matched by port, not IP
 				makeNetObject("172.19.0.2", 3000, unix.BPF_TCP_ESTABLISHED, 12345),
-				makeNetObject("172.19.0.3", 8080, unix.BPF_TCP_ESTABLISHED, 12346),
+				makeNetObject("127.0.0.1", 8080, unix.BPF_TCP_ESTABLISHED, 12346),
 			},
 			expected: `
 # HELP tcp_active_connections Number of active connections
 # TYPE tcp_active_connections gauge
 tcp_active_connections{listener="0.0.0.0:3000"} 1
-tcp_active_connections{listener="127.0.0.1:8080"} 1
+tcp_active_connections{listener="0.0.0.0:8080"} 1
 # HELP tcp_queued_connections Number of connections in queue
 # TYPE tcp_queued_connections gauge
 tcp_queued_connections{listener="0.0.0.0:3000"} 0
-tcp_queued_connections{listener="127.0.0.1:8080"} 0
+tcp_queued_connections{listener="0.0.0.0:8080"} 0
 `,
 		},
 		{
