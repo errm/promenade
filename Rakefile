@@ -73,13 +73,14 @@ end
 task spec: :clean
 
 namespace :release do
-  task :prepare do
-    require_relative "./lib/promenade/version"
+  task prepare: :default do
+    require_relative "lib/promenade/version"
     puts "Ready to release v#{Promenade::VERSION}? y/n"
 
+    expected_answer = %w(y n)
     begin
-      input = STDIN.gets.strip.downcase
-    end until %w(y n).include?(input)
+      input = $stdin.gets.strip.downcase
+    end until expected_answer.include?(input)
 
     unless input == "y"
       puts "Aborting"
@@ -103,6 +104,6 @@ namespace :release do
 
     sh "git commit -m 'Release v#{Promenade::VERSION}'"
     sh "git tag -m 'Promenade v#{Promenade::VERSION}' v#{Promenade::VERSION}"
-    sh "git push origin main --follow-tags"
+    sh "git push origin master --follow-tags"
   end
 end
