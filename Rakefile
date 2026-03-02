@@ -18,7 +18,7 @@ end
 namespace :acceptance do
   task prepare: [:build] do
     FileUtils.rm_rf "example/gem/promenade"
-    gem = Dir.glob("pkg/promenade-*.gem").max
+    gem = Dir.glob("pkg/promenade-*.gem").max_by { |v| Gem::Version.create((/\d+\.\d+\.\d+/.match v)[0]) }
     sh "gem unpack #{gem} --target=example/gem"
     unpacked = Dir.glob("example/gem/promenade-*").max
     FileUtils.mv(unpacked, "example/gem/promenade")
@@ -75,17 +75,6 @@ task spec: :clean
 namespace :release do
   task prepare: :default do
     require_relative "lib/promenade/version"
-    puts "Ready to release v#{Promenade::VERSION}? y/n"
-
-    expected_answer = %w(y n)
-    begin
-      input = $stdin.gets.strip.downcase
-    end until expected_answer.include?(input)
-
-    unless input == "y"
-      puts "Aborting"
-      exit
-    end
 
     sh "git add lib/promenade/version.rb"
 
@@ -100,6 +89,18 @@ namespace :release do
     Dir.glob("gemfiles/*.gemfile").each do |gemfile|
       sh "bundle install --gemfile=#{gemfile}"
       sh "git add #{gemfile}.lock"
+    end
+
+    puts "Ready to release v#{Promenade::VERSION}? y/n"
+
+    expected_answer = %w(y n)
+    begin
+      input = $stdin.gets.strip.downcase
+    end until expected_answer.include?(input)
+
+    unless input == "y"
+      puts "Aborting"
+      exit
     end
 
     sh "git commit -m 'Release v#{Promenade::VERSION}'"
