@@ -107,61 +107,48 @@ func (c *Collector) getSocketStats(state uint8) ([]diag.NetObject, error) {
 
 // collectMetrics collects the socket metrics from netlink.
 func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
-	// First pass: query sockets in the TCP_LISTEN state to identify listeners
-	var listeners []listenerMetrics
+	// First pass: only track listeners bound to 0.0.0.0 (inbound), keyed by port.
+	listeners := make(map[uint16]*listenerMetrics)
 
 	listenObjs, err := c.getSocketStats(unix.BPF_TCP_LISTEN)
 	if err != nil {
 		return nil, fmt.Errorf("could not dump stats for listening sockets: %w", err)
 	}
 
-	// Initialize metrics for each listener
 	for _, object := range listenObjs {
 		ipAddr, err := diag.ToNetipAddrWithFamily(unix.AF_INET, object.ID.Src)
 		if err != nil {
 			continue
 		}
-
-		// Ignore Docker's internal DNS server
-		if ipAddr.String() == "127.0.0.11" {
+		if ipAddr.String() != "0.0.0.0" {
 			continue
 		}
 
-		// Initialize metrics for this listener
-		listeners = append(listeners, listenerMetrics{
-			address: ipAddr.String(),
-			port:    diag.Ntohs(object.ID.SPort),
+		port := diag.Ntohs(object.ID.SPort)
+		if _, exists := listeners[port]; exists {
+			continue
+		}
+		listeners[port] = &listenerMetrics{
+			address: "0.0.0.0",
+			port:    port,
 			active:  0,
 			queued:  0,
-		})
+		}
 	}
 
-	// Second pass: get stats for sockets in the TCP_ESTABLISHED state and match to listeners
+	// Second pass: match established connections to listeners by port
 	establishedObjs, err := c.getSocketStats(unix.BPF_TCP_ESTABLISHED)
 	if err != nil {
 		return nil, fmt.Errorf("could not dump stats for established sockets: %w", err)
 	}
 
-	// Loop over established connections
 	for _, object := range establishedObjs {
-		// Match SPort to listener port
 		sPort := diag.Ntohs(object.ID.SPort)
-
-		// Find the listener with matching port
-		var metrics *listenerMetrics
-		for i := range listeners {
-			if listeners[i].port == sPort {
-				metrics = &listeners[i]
-				break
-			}
-		}
-
+		metrics := listeners[sPort]
 		if metrics == nil {
-			// Connection doesn't match any known listener, skip it
 			continue
 		}
 
-		// Inode == 0 means the connection is in the queue
 		if object.INode == 0 {
 			metrics.queued++
 		} else {
@@ -169,7 +156,11 @@ func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
 		}
 	}
 
-	return listeners, nil
+	result := make([]listenerMetrics, 0, len(listeners))
+	for _, m := range listeners {
+		result = append(result, *m)
+	}
+	return result, nil
 }
 
 // Close closes the netlink connection.
