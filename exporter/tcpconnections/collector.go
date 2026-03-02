@@ -148,21 +148,23 @@ func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
 		return nil, fmt.Errorf("could not dump stats for established sockets: %w", err)
 	}
 
-	// Loop over established connections
 	for _, object := range establishedObjs {
 		sPort := diag.Ntohs(object.ID.SPort)
 
-		// Find a listener with matching port
-		var metrics *listenerMetrics
-		for _, m := range listeners {
-			if m.port == sPort {
-				metrics = m
-				break
+		// Prefer a listener bound to any address (0.0.0.0); otherwise match by local address and port
+		keyAny := fmt.Sprintf("0.0.0.0:%d", sPort)
+		metrics := listeners[keyAny]
+		if metrics == nil {
+			localAddr, err := diag.ToNetipAddrWithFamily(unix.AF_INET, object.ID.Src)
+			if err != nil {
+				continue
 			}
+			localAddrStr := localAddr.String()
+			keyLocal := fmt.Sprintf("%s:%d", localAddrStr, sPort)
+			metrics = listeners[keyLocal]
 		}
 
 		if metrics == nil {
-			// Connection doesn't match any known listener, skip it
 			continue
 		}
 
