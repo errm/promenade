@@ -14,11 +14,6 @@ module Promenade
       Rails.application.config.middleware.insert 0,
         Promenade::Client::Rack::HTTPRequestQueueTimeCollector
 
-      if defined?(::Raindrops) && (defined?(::Pitchfork) || defined?(::Unicorn))
-        require "promenade/raindrops/middleware"
-        Rails.application.config.middleware.use Promenade::Raindrops::Middleware
-      end
-
       if defined?(::Pitchfork)
         require "promenade/pitchfork/middleware"
         Rails.application.config.middleware.use Promenade::Pitchfork::Middleware
