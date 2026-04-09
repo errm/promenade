@@ -10,9 +10,9 @@ module Promenade
 
         def initialize(env:, request_received_time:)
           @env = env
-          @request_queued_time_ms = extract_request_queued_time_from_env(env)
-          @valid_header_present = @request_queued_time_ms.is_a?(Float)
-          @request_received_time_ms = request_received_time.utc.to_f
+          @request_queued_time = extract_request_queued_time_from_env(env)
+          @valid_header_present = @request_queued_time.is_a?(Float)
+          @request_received_time = request_received_time.utc.to_f
 
           freeze
         end
@@ -29,10 +29,10 @@ module Promenade
 
         private
 
-          attr_reader :env, :request_queued_time_ms, :request_received_time_ms
+          attr_reader :env, :request_queued_time, :request_received_time
 
           def queue_time
-            request_received_time_ms - request_queued_time_ms
+            request_received_time - request_queued_time
           end
 
           def extract_request_queued_time_from_env(env_hash)
