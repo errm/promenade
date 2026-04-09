@@ -48,6 +48,10 @@ module Promenade
           def queue_time_histogram
             registry.get(REQUEST_QUEUE_TIME_HISTOGRAM_NAME)
           end
+
+          def labels(env, _)
+            label_builder.call(env)
+          end
       end
     end
   end

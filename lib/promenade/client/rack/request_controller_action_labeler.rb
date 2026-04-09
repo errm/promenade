@@ -15,11 +15,14 @@ module Promenade
 
         SEPARATOR = "#".freeze
 
-        private_constant :PARAMS_KEY, :CONTROLLER, :ACTION, :UNKNOWN, :SEPARATOR
+        REQUEST_METHOD = "REQUEST_METHOD".freeze
+
+        private_constant :PARAMS_KEY, :CONTROLLER, :ACTION, :UNKNOWN, :SEPARATOR, :REQUEST_METHOD
 
         def call(env)
           super.merge({
             controller_action: controller_action_from_env(env),
+            method: env[REQUEST_METHOD].to_s.downcase,
           })
         end
 
