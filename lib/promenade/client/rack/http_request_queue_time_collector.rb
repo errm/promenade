@@ -33,9 +33,8 @@ module Promenade
           end
 
           def record_request_queue_time(labels:, env:, request_received_time:)
-            request_queue_duration = QueueTimeDuration.new(env:, request_received_time:).queue_time_seconds
-            return unless request_queue_duration
-            queue_time_histogram.observe(labels, request_queue_duration)
+            queue_time_seconds = QueueTimeDuration.new(env:, request_received_time:).queue_time_seconds
+            queue_time_seconds && queue_time_histogram.observe(labels, queue_time_seconds)
           end
 
           def register_metrics!
