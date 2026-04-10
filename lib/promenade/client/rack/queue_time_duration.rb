@@ -14,6 +14,8 @@ module Promenade
         end
 
         def queue_time_seconds
+          # Don't collect negative queue times they are not valid
+          return unless queue_time > 0
           queue_time&.round(3)
         end
 
