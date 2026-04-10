@@ -7,29 +7,32 @@ module Promenade
 
         HEADER_VALUE_MATCHER = /^(?:t=)(?<timestamp>\d{10}(?:\.\d+))$/
 
-        def initialize(env:, request_received_time:)
-          @request_queued_time = extract_request_queued_time_from_env(env)
+        def initialize(env:, request_received_time: Time.now.utc)
+          @request_enqueued_time = request_enqueued_time_from(env)
           @request_received_time = request_received_time.utc.to_f
           freeze
         end
 
         def queue_time_seconds
-          # Don't collect negative queue times they are not valid
-          return unless queue_time > 0
-          queue_time&.round(3)
+          # Enqueued time could not be parsed from headers
+          return unless request_enqueued_time
+
+          # A negative queue time is not valid
+          return if queue_time < 0
+
+          queue_time.round(3)
         end
 
         private
 
-          attr_reader :request_queued_time, :request_received_time
+          attr_reader :request_enqueued_time, :request_received_time
 
           def queue_time
-            return unless request_queued_time
-            request_received_time - request_queued_time
+            request_received_time - request_enqueued_time
           end
 
-          def extract_request_queued_time_from_env(env_hash)
-            header_value = env_hash.values_at(REQUEST_START_HEADER, QUEUE_START_HEADER).compact.first
+          def request_enqueued_time_from(env)
+            header_value = env.values_at(REQUEST_START_HEADER, QUEUE_START_HEADER).compact.first
             return if header_value.nil?
 
             header_time_match = header_value.to_s.match(HEADER_VALUE_MATCHER)
