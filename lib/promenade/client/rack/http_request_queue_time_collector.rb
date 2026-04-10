@@ -14,40 +14,28 @@ module Promenade
         def initialize(app,
                        registry: ::Prometheus::Client.registry,
                        label_builder: RequestLabeler)
-          @queue_time_buckets = Promenade.configuration.queue_time_buckets
-
           super
         end
 
         private
 
-          attr_reader :queue_time_buckets
-
           def trace(env)
-            start_timestamp = Time.now.utc
-            response = yield
-            record_request_queue_time(labels: labels(env, response),
-              env: env,
-              request_received_time: start_timestamp)
-            response
+            record_request_queue_time(env: env)
+            yield
           end
 
-          def record_request_queue_time(labels:, env:, request_received_time:)
-            queue_time_seconds = QueueTimeDuration.new(env:, request_received_time:).queue_time_seconds
-            queue_time_seconds && queue_time_histogram.observe(labels, queue_time_seconds)
+          def record_request_queue_time(env:)
+            queue_time_seconds = QueueTimeDuration.new(env:).queue_time_seconds
+            queue_time_seconds && queue_time_histogram.observe(label_builder.call(env), queue_time_seconds)
           end
 
           def register_metrics!
             registry.histogram(REQUEST_QUEUE_TIME_HISTOGRAM_NAME,
-              "A histogram of request queue time", {}, queue_time_buckets)
+              "A histogram of request queue time", {}, Promenade.configuration.queue_time_buckets)
           end
 
           def queue_time_histogram
             registry.get(REQUEST_QUEUE_TIME_HISTOGRAM_NAME)
-          end
-
-          def labels(env, _)
-            label_builder.call(env)
           end
       end
     end
