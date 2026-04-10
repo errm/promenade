@@ -7,47 +7,47 @@ RSpec.describe Promenade::Client::Rack::QueueTimeDuration do
   include ActiveSupport::Testing::TimeHelpers
   include QueueTimeHeaderHelpers
 
-  describe "#valid_header_present?" do
-    it "returns false when no queue header present" do
+
+  describe "#queue_time_seconds" do
+    it "returns nil when no queue header present" do
       duration = Promenade::Client::Rack::QueueTimeDuration.new(
         env: {},
         request_received_time: Time.now.utc,
       )
 
-      expect(duration.valid_header_present?).to be(false)
+      expect(duration.queue_time_seconds).to be_nil
     end
 
-    it "returns false when queue header is Timestamp format" do
+    it "returns nil when queue header is Timestamp format" do
       duration = Promenade::Client::Rack::QueueTimeDuration.new(
         env: { "HTTP_X_REQUEST_START" => Time.now.utc.to_s },
         request_received_time: Time.now.utc,
       )
 
-      expect(duration.valid_header_present?).to be(false)
+      expect(duration.queue_time_seconds).to be_nil
     end
 
-    it "returns false when queue header is an invalid Integer" do
+    it "returns nil when queue header is an invalid Integer" do
       duration = Promenade::Client::Rack::QueueTimeDuration.new(
         env: { "HTTP_X_REQUEST_START" => 1234 },
         request_received_time: Time.now.utc,
       )
 
-      expect(duration.valid_header_present?).to be(false)
+      expect(duration.queue_time_seconds).to be_nil
     end
 
-    it "returns true when queue header is present and a valid value" do
+    it "returns the correct value when queue header is present and a valid value" do
+      env = {}
       freeze_time
+      travel_to(Time.now.utc - 2) { env["HTTP_X_QUEUE_START"] = request_start_timestamp }
+      travel_to(Time.now.utc)
       duration = Promenade::Client::Rack::QueueTimeDuration.new(
-        env: { "HTTP_X_REQUEST_START" => request_start_timestamp },
+        env: env,
         request_received_time: Time.now.utc,
       )
-      travel_to Time.now.utc + 2 do
-        expect(duration.valid_header_present?).to be(true)
-      end
+      expect(duration.queue_time_seconds).to eql(2.0)
     end
-  end
 
-  describe "#queue_time_seconds" do
     it "prioritises HTTP_X_REQUEST_START before HTTP_X_QUEUE_START" do
       env = {}
       freeze_time

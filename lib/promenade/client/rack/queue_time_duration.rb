@@ -3,27 +3,18 @@ module Promenade
     module Rack
       class QueueTimeDuration
         REQUEST_START_HEADER = "HTTP_X_REQUEST_START".freeze
-
         QUEUE_START_HEADER = "HTTP_X_QUEUE_START".freeze
 
         HEADER_VALUE_MATCHER = /^(?:t=)(?<timestamp>\d{10}(?:\.\d+))$/
 
         def initialize(env:, request_received_time:)
           @request_queued_time = extract_request_queued_time_from_env(env)
-          @valid_header_present = @request_queued_time.is_a?(Float)
           @request_received_time = request_received_time.utc.to_f
-
           freeze
         end
 
-        def valid_header_present?
-          @valid_header_present
-        end
-
         def queue_time_seconds
-          return unless valid_header_present?
-
-          queue_time.round(3)
+          queue_time&.round(3)
         end
 
         private
@@ -31,6 +22,7 @@ module Promenade
           attr_reader :request_queued_time, :request_received_time
 
           def queue_time
+            return unless request_queued_time
             request_received_time - request_queued_time
           end
 
