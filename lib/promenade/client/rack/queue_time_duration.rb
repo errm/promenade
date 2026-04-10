@@ -27,7 +27,7 @@ module Promenade
           end
 
           def extract_request_queued_time_from_env(env_hash)
-            header_value = env_hash[REQUEST_START_HEADER] || env_hash[QUEUE_START_HEADER]
+            header_value = env_hash.values_at(REQUEST_START_HEADER, QUEUE_START_HEADER).compact.first
             return if header_value.nil?
 
             header_time_match = header_value.to_s.match(HEADER_VALUE_MATCHER)
