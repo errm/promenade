@@ -6,8 +6,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ["3.2", "3.3", "3.4", "4.0"]
-        rails: ["7.2.3", "8.0.4", "8.1.2"]
+        ruby: ["3.3", "3.4", "4.0"]
+        rails: ["7.2", "8.0", "8.1"]
     runs-on: ubuntu-latest
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.rails }}.gemfile

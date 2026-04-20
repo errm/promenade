@@ -1,5 +1,5 @@
 PATH
-  remote: .
+  remote: ..
   specs:
     promenade (0.12.17)
       actionpack
@@ -343,7 +343,7 @@ DEPENDENCIES
   byebug
   climate_control
   promenade!
-  rails (> 3.0, < 9.0)
+  rails (> 3.0, = 8.1.3, < 9.0)
   rake
   rspec (~> 3.13)
   rspec-rails (~> 8.0)
