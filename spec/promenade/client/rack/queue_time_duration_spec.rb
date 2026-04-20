@@ -48,7 +48,7 @@ RSpec.describe Promenade::Client::Rack::QueueTimeDuration do
         env: {
           "HTTP_X_REQUEST_START" => request_start_timestamp(Time.now.utc - 10),
           "HTTP_X_QUEUE_START" => request_start_timestamp(Time.now.utc - 5),
-        }
+        },
       )
 
       expect(duration.queue_time_seconds).to eql(10.0)
@@ -59,7 +59,7 @@ RSpec.describe Promenade::Client::Rack::QueueTimeDuration do
         env: {
           "HTTP_X_QUEUE_START" => request_start_timestamp(Time.now.utc - 10),
           "HTTP_X_REQUEST_START" => request_start_timestamp(Time.now.utc - 5),
-        }
+        },
       )
 
       expect(duration.queue_time_seconds).to eql(5.0)

@@ -20,7 +20,7 @@ module Promenade
         private
 
           def trace(env)
-            record_request_queue_time(env: env)
+            record_request_queue_time(env:)
             yield
           end
 
