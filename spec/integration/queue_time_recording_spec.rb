@@ -16,9 +16,7 @@ RSpec.describe "Queue time recording", type: :request do
     histogram = Prometheus::Client.registry.get(:http_request_queue_time_seconds)
     expected_queue_time = 0.01
     expected_labels = {
-      code: "200",
       host: "www.example.com",
-      method: "get",
     }
 
     expect(histogram).to receive(:observe).with(expected_labels, expected_queue_time)
@@ -33,9 +31,7 @@ RSpec.describe "Queue time recording", type: :request do
     histogram = Prometheus::Client.registry.get(:http_request_queue_time_seconds)
     expected_queue_time = 0.01
     expected_labels = {
-      code: "200",
       host: "www.example.com",
-      method: "get",
     }
 
     expect(histogram).to receive(:observe).with(expected_labels, expected_queue_time)
