@@ -1,6 +1,6 @@
 module github.com/errm/promenade/exporter
 
-go 1.26.0
+go 1.26.2
 
 require (
 	github.com/alexflint/go-arg v1.6.1
