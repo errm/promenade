@@ -1,5 +1,5 @@
 inherit_from:
-  - https://raw.githubusercontent.com/cookpad/guides/master/.rubocop.yml
+  - https://raw.githubusercontent.com/cookpad/global-style-guides/refs/heads/main/rubocop.yml
 
 AllCops:
   TargetRubyVersion: 3.2
