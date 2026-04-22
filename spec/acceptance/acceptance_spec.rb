@@ -19,6 +19,7 @@ RSpec.describe "promenade" do
 
     expect do
       10.times { get("http://localhost:3000/example") }
+      sleep 0.1
     end.to change {
       get_metric_value('http_request_duration_seconds_bucket{code="200",controller_action="example#index",host="localhost",method="get",le="0.1"}')
     }.by(10)
