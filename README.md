@@ -6,8 +6,6 @@
 
 Promenade is a library to simplify instrumenting Ruby applications with Prometheus.
 
-It is currently under development.
-
 ## Usage
 
 Add promenade to your Gemfle:
@@ -122,13 +120,32 @@ end
 
 ### Exporter
 
-Because promenade is based on prometheus-client you can add the `Prometheus::Client::Rack::Exporter` middleware to your rack middleware stack to expose metrics.
+The recommended way to expose metrics is the **Go exporter sidecar** in [`exporter/`](exporter/). It runs as a separate container that reads the `.db` files written by the Ruby application and exposes them at `:9394/metrics`. This keeps scrape overhead entirely off the Ruby application process and also collects TCP connection metrics (busy/queued workers) via Linux netlink without any native extension.
 
-There is also a stand alone exporter that can be run with the `promenade` command.
+The exporter sidecar shares a network namespace and tmpfs volume with your app container. See [`compose.yml`](compose.yml) for a reference deployment:
 
-This is ideal if you are worried about accidentally exposing your metrics, are concerned about the performance impact prometheus scrapes might have on your application, or for applications without a web server (like background processing jobs). It does mean that you have another process to manage on your server though 🤷.
+```yaml
+services:
+  app:
+    # your Ruby app; writes metrics to tmp/promenade on the shared tmpfs
+    volumes:
+      - tmp:/app/tmp
+    environment:
+      PROMETHEUS_MULTIPROC_DIR: /app/tmp/promenade
+  exporter:
+    image: ghcr.io/errm/promenade:latest
+    network_mode: service:app   # shares the app's network namespace
+    volumes:
+      - tmp:/app/tmp
+volumes:
+  tmp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+```
 
-The exporter runs by default on port `9394` and the metrics are available at the standard path of `/metrics`, the stand-alone exporter is configured to use gzip.
+The exporter is configured with `--multiprocess-dir` (or `PROMETHEUS_MULTIPROC_DIR`) and `--metrics-port` (default `9394`).
 
 
 ### Rails Middleware
@@ -206,7 +223,6 @@ In a typical development environment there should be nothing for you to do. Prom
 
 In a production environment you should try to store the state files on tmpfs for performance, you can configure the path that promenade will write to by setting the `PROMETHEUS_MULTIPROC_DIR` environment variable.
 
-If you are running the stand-alone exporter, you may also set the `PORT` environment variable to bind to a port other than the default (`9394`).
 
 ## Development
 
