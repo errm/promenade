@@ -11,8 +11,6 @@ jobs:
       contents: read
     uses: ./.github/workflows/tests.yaml
   release-rubygem:
-    permissions:
-      contents: read
     if: github.repository == 'errm/promenade'
     needs: [tests]
     runs-on: ubuntu-latest
