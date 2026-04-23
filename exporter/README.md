@@ -1,30 +1,38 @@
 # promenade exporter
 
-A prometheus exporter for ruby applications (written in go)
+A Prometheus exporter for Ruby applications, written in Go.
 
-# Why
+## Why
 
-Promenade was allways designed to minimise the impact of
-metrics collection on the ruby application server.
+Promenade is designed to minimise the impact of metrics collection on the Ruby application server. Running the exporter as a sidecar container means Prometheus scrapes never touch the Ruby process.
 
-Thus it was recomended to run a sidecar container (with a simple
-server) to export metrics collected by the application server.
+The exporter reads metrics files written directly by the Ruby application, so there is no in-process HTTP server needed on the Ruby side.
 
-This takes this a step further, by reading metrics written by
-the application server in a lightwight go based exporter.
+## Metrics
 
-# multiprocess metrics
-* Reads multiprocess metrics written by prometheus-client-mmap
-* Exposes them as prometheus metrics
+### Multiprocess metrics
 
-# rack server metrics
+Reads the mmap `.db` files written by `prometheus-client-mmap` from the shared `PROMETHEUS_MULTIPROC_DIR` directory and exposes them as standard Prometheus metrics.
 
-* Reports the current number of in process connections (busy workers)
-and connections that have not yet been processed (queing).
-* Collects these metrics via netlink / diag like raindrops, but
-without any need for the ruby native extension.
-* Implimentation details are significantly simpler than raindrops, due to robust
-and easy to use libaries for dealing with netlink and socket statistics.
+### TCP connection metrics
+
+Reports `tcp_active_connections_peak` and `tcp_queued_connections_peak` — the high-water mark number of active and queued connections for each listener port, sampled via Linux netlink (SOCK_DIAG) — the same data source as raindrops, but without any native Ruby extension.
+
+Rather than sampling at scrape time, the exporter polls netlink frequently and tracks the peak value seen since the last bucket rotation. This avoids missing short-lived spikes that would be invisible to a single point-in-time sample.
+
+Two buckets (current and previous) are maintained, rotating at half the window duration. On each scrape the exporter returns `max(current, previous)`, so multiple Prometheus instances in an HA setup see consistent values regardless of when they scrape.
+
+## Configuration
+
+All options can be set via flag or environment variable.
+
+| Flag | Env var | Default | Description |
+|---|---|---|---|
+| `--metrics-port` | `PORT` | `9394` | Port to serve metrics on |
+| `--multiprocess-dir` | `PROMETHEUS_MULTIPROC_DIR` | `/app/tmp/promenade` | Directory to read multiprocess metrics from |
+| `--tcp-sampling-interval` | `TCP_SAMPLING_INTERVAL` | `25ms` | How often to poll netlink for TCP connection counts |
+| `--tcp-hwm-window` | `TCP_HWM_WINDOW` | `30s` | High-water mark window; should match your Prometheus scrape interval |
+
 ## Deployment
 
 The exporter runs as a sidecar container sharing a network namespace and tmpfs volume with the application container. See the [`compose.yml`](../compose.yml) at the root of this repo for a reference deployment.
