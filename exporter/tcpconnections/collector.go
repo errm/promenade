@@ -50,6 +50,7 @@ type Collector struct {
 	previous   map[string]listenerHWM
 	done       chan struct{}
 	wg         sync.WaitGroup
+	closeOnce  sync.Once
 }
 
 // NewCollector creates a new Collector and starts the background sampling loop.
@@ -276,13 +277,17 @@ func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
 }
 
 // Close stops the background sampling goroutine and closes the netlink connection.
+// It is safe to call multiple times; subsequent calls are no-ops.
 func (c *Collector) Close() error {
-	if c.done != nil {
-		close(c.done)
-		c.wg.Wait()
-	}
-	if c.netlink != nil {
-		return c.netlink.Close()
-	}
-	return nil
+	var err error
+	c.closeOnce.Do(func() {
+		if c.done != nil {
+			close(c.done)
+			c.wg.Wait()
+		}
+		if c.netlink != nil {
+			err = c.netlink.Close()
+		}
+	})
+	return err
 }
