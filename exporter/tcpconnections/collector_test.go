@@ -48,6 +48,14 @@ func makeActive(port uint16, n int) []diag.NetObject {
 	return objs
 }
 
+// requireSample calls c.sample() and fails the test immediately if it errors.
+func requireSample(t *testing.T, c *Collector) {
+	t.Helper()
+	if err := c.sample(); err != nil {
+		t.Fatalf("unexpected sample error: %v", err)
+	}
+}
+
 func TestCollector_Collect(t *testing.T) {
 	tests := []struct {
 		name               string
@@ -205,7 +213,7 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000"} 0
 				establishedObjects: tt.establishedObjects,
 			}
 			collector := newTestCollector(mock)
-			collector.sample()
+			requireSample(t, collector)
 
 			if err := testutil.CollectAndCompare(collector, strings.NewReader(tt.expected)); err != nil {
 				t.Errorf("CollectAndCompare failed: %v", err)
@@ -233,13 +241,13 @@ func TestCollector_HWM(t *testing.T) {
 		c := newTestCollector(mock)
 
 		mock.establishedObjects = makeActive(3000, 5)
-		c.sample()
+		requireSample(t, c)
 		mock.establishedObjects = makeActive(3000, 3) // lower
-		c.sample()
+		requireSample(t, c)
 		mock.establishedObjects = makeActive(3000, 8) // new peak
-		c.sample()
+		requireSample(t, c)
 		mock.establishedObjects = makeActive(3000, 2) // lower again
-		c.sample()
+		requireSample(t, c)
 
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the last 30s
@@ -257,7 +265,7 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000"} 0
 	t.Run("Collect is idempotent — no reset on scrape", func(t *testing.T) {
 		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 5)}
 		c := newTestCollector(mock)
-		c.sample()
+		requireSample(t, c)
 
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the last 30s
@@ -278,7 +286,7 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000"} 0
 	t.Run("peak persists across rotation into previous bucket", func(t *testing.T) {
 		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 10)}
 		c := newTestCollector(mock)
-		c.sample()  // current: active=10
+		requireSample(t, c)  // current: active=10
 		c.rotate()  // previous: active=10, current: empty
 
 		// No new samples yet — should still see the peak via previous
@@ -298,11 +306,11 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000"} 0
 	t.Run("peak clears after two rotations with no activity", func(t *testing.T) {
 		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 10)}
 		c := newTestCollector(mock)
-		c.sample()  // current: active=10
+		requireSample(t, c)  // current: active=10
 		c.rotate()  // previous: active=10, current: empty
 
 		mock.establishedObjects = nil
-		c.sample()  // current: active=0 (listener present, no connections)
+		requireSample(t, c)  // current: active=0 (listener present, no connections)
 		c.rotate()  // previous: active=0, current: empty
 
 		expected := `
@@ -321,13 +329,13 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000"} 0
 	t.Run("disappeared listener still reported via previous bucket", func(t *testing.T) {
 		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 5)}
 		c := newTestCollector(mock)
-		c.sample()  // current: active=5
+		requireSample(t, c)  // current: active=5
 		c.rotate()  // previous: active=5, current: empty
 
 		// Listener disappears
 		mock.listenObjects = nil
 		mock.establishedObjects = nil
-		c.sample()  // current: empty (no listeners in netlink)
+		requireSample(t, c)  // current: empty (no listeners in netlink)
 
 		// Peak still visible via previous bucket
 		expected := `
