@@ -93,6 +93,7 @@ func NewCollector(interval, window time.Duration) (*Collector, error) {
 // run is the background goroutine that samples netlink and rotates buckets.
 func (c *Collector) run() {
 	defer c.wg.Done()
+	c.sample()
 	sampleTicker := time.NewTicker(c.interval)
 	rotateTicker := time.NewTicker(c.window / 2)
 	defer sampleTicker.Stop()
