@@ -60,8 +60,8 @@ func NewCollector(interval, window time.Duration) (*Collector, error) {
 	if interval <= 0 {
 		return nil, fmt.Errorf("sampling interval must be positive, got %s", interval)
 	}
-	if window <= 0 {
-		return nil, fmt.Errorf("HWM window must be positive, got %s", window)
+	if window/2 <= 0 {
+		return nil, fmt.Errorf("HWM window must be at least 2ns, got %s", window)
 	}
 	nl, err := diag.Open(&diag.Config{})
 	if err != nil {
