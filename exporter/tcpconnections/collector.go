@@ -57,6 +57,12 @@ type Collector struct {
 // Prometheus scrape interval; buckets rotate at window/2 internally so that
 // any scrape always covers at least one full rotation period.
 func NewCollector(interval, window time.Duration) (*Collector, error) {
+	if interval <= 0 {
+		return nil, fmt.Errorf("sampling interval must be positive, got %s", interval)
+	}
+	if window <= 0 {
+		return nil, fmt.Errorf("HWM window must be positive, got %s", window)
+	}
 	nl, err := diag.Open(&diag.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("could not open netlink socket: %w", err)
