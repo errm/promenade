@@ -93,29 +93,57 @@ func NewCollector(interval, window time.Duration) (*Collector, error) {
 // run is the background goroutine that samples netlink and rotates buckets.
 func (c *Collector) run() {
 	defer c.wg.Done()
-	c.sample()
+	if err := c.sample(); err != nil {
+		log.Printf("TCP connection sampling error: %v", err)
+	}
 	sampleTicker := time.NewTicker(c.interval)
 	rotateTicker := time.NewTicker(c.window / 2)
 	defer sampleTicker.Stop()
 	defer rotateTicker.Stop()
+	var backoff time.Duration
 	for {
 		select {
 		case <-c.done:
 			return
 		case <-sampleTicker.C:
-			c.sample()
+			if err := c.sample(); err != nil {
+				backoff = nextBackoff(backoff)
+				log.Printf("TCP connection sampling error (retrying in %s): %v", backoff, err)
+				select {
+				case <-time.After(backoff):
+				case <-c.done:
+					return
+				}
+			} else if backoff > 0 {
+				log.Println("TCP connection sampling recovered")
+				backoff = 0
+			}
 		case <-rotateTicker.C:
 			c.rotate()
 		}
 	}
 }
 
+// nextBackoff returns the next backoff duration, doubling from 1s up to 60s.
+func nextBackoff(current time.Duration) time.Duration {
+	const (
+		initial = time.Second
+		max     = 60 * time.Second
+	)
+	if current == 0 {
+		return initial
+	}
+	if next := current * 2; next < max {
+		return next
+	}
+	return max
+}
+
 // sample polls netlink and advances the current bucket high-water marks.
-func (c *Collector) sample() {
+func (c *Collector) sample() error {
 	metrics, err := c.collectMetrics()
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -130,6 +158,7 @@ func (c *Collector) sample() {
 		}
 		c.current[key] = hwm
 	}
+	return nil
 }
 
 // rotate moves the current bucket to previous and starts a fresh current bucket.
