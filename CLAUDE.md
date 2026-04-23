@@ -28,7 +28,8 @@ Acceptance tests require Docker: `bundle exec rake acceptance:spec`
 
 ```sh
 cd exporter
-go test -v ./...                                           # All tests
+make test                                                  # All tests (via Docker — works on macOS)
+go test -v ./...                                           # All tests (Linux only)
 go test -v ./multiprocess -run TestCollector_Collect/gauge # Single test
 go vet ./...                                               # Vet
 golangci-lint run                                          # Lint
