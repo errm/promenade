@@ -112,6 +112,8 @@ func (c *Collector) run() {
 				log.Printf("TCP connection sampling error (retrying in %s): %v", backoff, err)
 				select {
 				case <-time.After(backoff):
+				case <-rotateTicker.C:
+					c.rotate()
 				case <-c.done:
 					return
 				}
