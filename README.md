@@ -6,25 +6,22 @@
 
 Promenade is a library to simplify instrumenting Ruby applications with Prometheus.
 
-It is currently under development.
-
 ## Usage
 
-Add promenade to your Gemfle:
+Add promenade to your Gemfile:
 
-```
+```ruby
 gem "promenade"
 ```
 
 ### Built in instrumentation
 
-Promenade includes some built in instrumentation that can be used by requiring it (for example in an initializer).
+Promenade includes built-in instrumentation for several libraries. Require the relevant file in an initializer to enable it.
 
-Currently there is support for [ruby-kafka](https://github.com/zendesk/ruby-kafka), but I plan to support other things soon.
-
-```
-# Instrument the ruby-kafka libary
-require "promenade/kafka"
+```ruby
+require "promenade/kafka"     # ruby-kafka
+require "promenade/karafka"   # Karafka consumers
+require "promenade/waterdrop"  # WaterDrop producers
 ```
 
 ### Instrumentation DSL
@@ -52,7 +49,7 @@ class WidgetService
   end
 
   def batch_create
-    You can increment by more than 1 at a time if you need
+    # You can increment by more than 1 at a time if you need
     Promenade.metric(:widgets_created).increment({ type: "guinness" }, 100)
   end
 end
@@ -86,7 +83,7 @@ of all observed values.
 class Calculator
   Promenade.histogram :calculator_time_taken do
     doc "Records how long it takes to do the adding"
-    # promenade also has some bucket presets like :network and :memory for common usecases
+    # promenade also has some bucket presets like :network and :memory for common use cases
     buckets [0.25, 0.5, 1, 2, 4]
   end
 
@@ -122,13 +119,32 @@ end
 
 ### Exporter
 
-Because promenade is based on prometheus-client you can add the `Prometheus::Client::Rack::Exporter` middleware to your rack middleware stack to expose metrics.
+The recommended way to expose metrics is the **Go exporter sidecar** in [`exporter/`](exporter/). It runs as a separate container that reads the `.db` files written by the Ruby application and exposes them at `:9394/metrics`. This keeps scrape overhead entirely off the Ruby application process and also collects TCP connection metrics (busy/queued workers) via Linux netlink without any native extension.
 
-There is also a stand alone exporter that can be run with the `promenade` command.
+The exporter sidecar shares a network namespace and tmpfs volume with your app container. See [`compose.yml`](compose.yml) for a reference deployment:
 
-This is ideal if you are worried about accidentally exposing your metrics, are concerned about the performance impact prometheus scrapes might have on your application, or for applications without a web server (like background processing jobs). It does mean that you have another process to manage on your server though 🤷.
+```yaml
+services:
+  app:
+    # your Ruby app; writes metrics to tmp/promenade on the shared tmpfs
+    volumes:
+      - tmp:/app/tmp
+    environment:
+      PROMETHEUS_MULTIPROC_DIR: /app/tmp/promenade
+  exporter:
+    image: ghcr.io/errm/promenade:latest
+    network_mode: service:app   # shares the app's network namespace
+    volumes:
+      - tmp:/app/tmp
+volumes:
+  tmp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+```
 
-The exporter runs by default on port `9394` and the metrics are available at the standard path of `/metrics`, the stand-alone exporter is configured to use gzip.
+The exporter is configured with `--multiprocess-dir` (or `PROMETHEUS_MULTIPROC_DIR`) and `--metrics-port` (default `9394`).
 
 
 ### Rails Middleware
@@ -137,15 +153,18 @@ Promenade provides custom Rack middleware to track HTTP response times for reque
 
 This was originally inspired by [prometheus-client-mmap](https://gitlab.com/gitlab-org/prometheus-client-mmap/-/blob/master/lib/prometheus/client/rack/collector.rb).
 
-**This middleware is automatically added to your Rack stack if your application is a Ruby on Rails app.**
+**The following middleware is automatically added to your Rack stack if your application is a Ruby on Rails app:**
 
-We recommend you add the middleware after `ActionDispatch::ShowExceptions` in your stack, so you can accurately record the controller and action where an exception was raised.
+- `Promenade::Client::Rack::HTTPRequestQueueTimeCollector` — inserted at the front of the stack, records time spent in the request queue (via `X-Request-Start` / `X-Queue-Start` headers).
+- `Promenade::Client::Rack::HTTPRequestDurationCollector` — inserted after `ActionDispatch::ShowExceptions`, records response duration and HTTP exception counts.
+- `Promenade::YJIT::Middleware` — appended, records YJIT stats (enabled only when `RubyVM::YJIT` is defined).
+- `Promenade::Pitchfork::Middleware` — appended, records worker and memory metrics (enabled only when Pitchfork is present).
 
-If you want to change the position, or customise the labels and exception handling behaviour, simply remove the middleware from the stack and re-insert it with your own preferences.
+If you want to change the position of `HTTPRequestDurationCollector`, or customise its labels and exception handling behaviour, simply remove it from the stack and re-insert it with your own preferences.
 
 ``` ruby
-Rails.application.middleware.delete(Promenade::Client::Rack::Collector)
-Rails.application.middleware.insert_after(Rails::Rack::Logger, Promenade::Client::Rack::Collector)
+Rails.application.middleware.delete(Promenade::Client::Rack::HTTPRequestDurationCollector)
+Rails.application.middleware.insert_after(Rails::Rack::Logger, Promenade::Client::Rack::HTTPRequestDurationCollector)
 ```
 
 #### Customising the labels recorded for each request
@@ -162,29 +181,29 @@ label_builder = Proc.new do |env|
   }
 end
 Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
-        Promenade::Client::Rack::Collector
+        Promenade::Client::Rack::HTTPRequestDurationCollector,
         label_builder: label_builder
 ```
 
 #### Customising how the middleware handles exceptions
 
-The default implementation will capture exceptions, count the execption class name (e.g. `"StandardError"`), and then re-raise the exception.
+The default implementation will capture exceptions, count the exception class name (e.g. `"StandardError"`), and then re-raise the exception.
 
 If you would like to customise this behaviour, you may do so by customising the middleware installation:
 
 ``` ruby
-exception_handler = Proc.new do |exception, exception_counter, env_hash, request_duration_seconds|
-  # This simple example just re-raises the execption
+exception_handler = Proc.new do |exception, env_hash, duration|
+  # This simple example just re-raises the exception
   raise exception
 end
 Rails.application.config.middleware.insert_after ActionDispatch::ShowExceptions,
-        Promenade::Client::Rack::Collector
+        Promenade::Client::Rack::HTTPRequestDurationCollector,
         exception_handler: exception_handler
 ```
 
 #### Customising the histogram buckets
 
-The default buckets cover a range of latencies from 5 ms to 10s see [Promenade::Configuration::DEFAULT_RACK_LATENCY_BUCKETS](https://github.com/errm/promenade/blob/ea7eb54c04257770a601b7e28b3e13db5d2430bb/lib/promenade/configuration.rb#L5). This is intended to capture the typical range of latencies for a web application. However, this might not be suitable for your Service-Level Agreements (SLAs), and other bucket size intervals may be required (see [histogram bins](https://en.wikipedia.org/wiki/Histogram#Number_of_bins_and_width)).
+The default buckets cover a range of latencies from 5 ms to 10s see [Promenade::Configuration::DEFAULT_RACK_LATENCY_BUCKETS](https://github.com/errm/promenade/blob/master/lib/promenade/configuration.rb#L5) and [Promenade::Configuration::DEFAULT_QUEUE_TIME_BUCKETS](https://github.com/errm/promenade/blob/master/lib/promenade/configuration.rb#L7). This is intended to capture the typical range of latencies for a web application. However, this might not be suitable for your Service-Level Agreements (SLAs), and other bucket size intervals may be required (see [histogram bins](https://en.wikipedia.org/wiki/Histogram#Number_of_bins_and_width)).
 
 If you would like to customise the histogram buckets, you can do so by configuring Promenade in an initializer:
 
@@ -192,21 +211,21 @@ If you would like to customise the histogram buckets, you can do so by configuri
 # config/initializers/promenade.rb
 
 Promenade.configure do |config|
-  config.rack_latency_buckets = [0.25, 0.350, 0.5, 1, 1.5, 2.5, 5, 10, 15, 19]
+  config.rack_latency_buckets = [0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+  config.queue_time_buckets = [0.01, 0.5, 1.0, 10.0, 30.0]  # optional, for queue time collector
 end
 ```
 
 ### Configuration
 
-If you are using rails it should load a railtie and configure promenade.
+If you are using Rails it should load a railtie and configure promenade.
 
-If are not using rails you should call `Promenade.setup` after your environment has loaded.
+If you are not using Rails you should call `Promenade.setup` after your environment has loaded.
 
 In a typical development environment there should be nothing for you to do. Promenade stores its state files in `tmp/promenade` and will create that directory if it does not exist.
 
 In a production environment you should try to store the state files on tmpfs for performance, you can configure the path that promenade will write to by setting the `PROMETHEUS_MULTIPROC_DIR` environment variable.
 
-If you are running the stand-alone exporter, you may also set the `PORT` environment variable to bind to a port other than the default (`9394`).
 
 ## Development
 
@@ -218,8 +237,6 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/errm/promenade.
 
-This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
 ## Acknowledgements
 
 The original code for the Rack middleware collector class was copied from [Prometheus Client MMap](https://gitlab.com/gitlab-org/prometheus-client-mmap/-/blob/master/lib/prometheus/client/rack/collector.rb).
@@ -227,7 +244,3 @@ The original code for the Rack middleware collector class was copied from [Prome
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Promenade project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/promenade/blob/master/CODE_OF_CONDUCT.md).
