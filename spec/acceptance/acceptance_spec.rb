@@ -6,13 +6,13 @@ RSpec.describe "promenade" do
     expect(get("http://localhost:9394/metrics").code).to eq("200")
 
     # Check we have connection metrics for pitchfork and nginx listeners
-    expect(get_metric_value('tcp_active_connections{listener="0.0.0.0:3000"}')).to eq(0)
-    expect(get_metric_value('tcp_active_connections{listener="0.0.0.0:9292"}')).to eq(0)
+    expect(get_metric_value('tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"}')).not_to be_nil
+    expect(get_metric_value('tcp_active_connections_peak{listener="0.0.0.0:9292",window="30s"}')).not_to be_nil
 
-    expect(get_metric_value('tcp_queued_connections{listener="0.0.0.0:3000"}')).to eq(0)
-    expect(get_metric_value('tcp_queued_connections{listener="0.0.0.0:9292"}')).to eq(0)
+    expect(get_metric_value('tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"}')).not_to be_nil
+    expect(get_metric_value('tcp_queued_connections_peak{listener="0.0.0.0:9292",window="30s"}')).not_to be_nil
 
-    # Make a reuqest so initial value of all metrics is written
+    # Make a request so initial value of all metrics is written
     get("http://localhost:3000/example")
 
     expect(get_metric_value("pitchfork_workers")).to eq(4)
@@ -33,7 +33,7 @@ RSpec.describe "promenade" do
     # Wait for all the requests to start
     sleep 0.5
 
-    expect(get_metric_value('tcp_active_connections{listener="0.0.0.0:9292"}')).to eq(4)
-    expect(get_metric_value('tcp_queued_connections{listener="0.0.0.0:9292"}').to_i).to be >= 6
+    expect(get_metric_value('tcp_active_connections_peak{listener="0.0.0.0:9292",window="30s"}')).to eq(4)
+    expect(get_metric_value('tcp_queued_connections_peak{listener="0.0.0.0:9292",window="30s"}').to_i).to be >= 6
   end
 end
