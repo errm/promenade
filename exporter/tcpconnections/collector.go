@@ -14,6 +14,19 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+var (
+	activeDesc = prometheus.NewDesc(
+		"tcp_active_connections_peak",
+		"Peak number of active TCP connections in the configured high-water mark window.",
+		[]string{"listener", "window"}, nil,
+	)
+	queuedDesc = prometheus.NewDesc(
+		"tcp_queued_connections_peak",
+		"Peak number of queued TCP connections in the configured high-water mark window.",
+		[]string{"listener", "window"}, nil,
+	)
+)
+
 // NetlinkDumper is an interface for dumping netlink socket information.
 type NetlinkDumper interface {
 	NetDump(opt *diag.NetOption) ([]diag.NetObject, error)
@@ -40,12 +53,10 @@ type listenerMetrics struct {
 // previous and a fresh current starts. Collect returns max(current, previous),
 // making it safe for multiple Prometheus instances scraping at different times.
 type Collector struct {
-	netlink    NetlinkDumper
-	interval   time.Duration
-	window     time.Duration
-	activeDesc *prometheus.Desc
-	queuedDesc *prometheus.Desc
-	mu         sync.Mutex
+	netlink  NetlinkDumper
+	interval time.Duration
+	window   time.Duration
+	mu       sync.Mutex
 	current    map[string]listenerHWM
 	previous   map[string]listenerHWM
 	done       chan struct{}
@@ -72,16 +83,6 @@ func NewCollector(interval, window time.Duration) (*Collector, error) {
 		netlink:  nl,
 		interval: interval,
 		window:   window,
-		activeDesc: prometheus.NewDesc(
-			"tcp_active_connections_peak",
-			fmt.Sprintf("Peak number of active TCP connections in the last %s", window),
-			[]string{"listener"}, nil,
-		),
-		queuedDesc: prometheus.NewDesc(
-			"tcp_queued_connections_peak",
-			fmt.Sprintf("Peak number of queued TCP connections in the last %s", window),
-			[]string{"listener"}, nil,
-		),
 		current:  make(map[string]listenerHWM),
 		previous: make(map[string]listenerHWM),
 		done:     make(chan struct{}),
@@ -174,8 +175,8 @@ func (c *Collector) rotate() {
 
 // Describe implements prometheus.Collector.
 func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.activeDesc
-	ch <- c.queuedDesc
+	ch <- activeDesc
+	ch <- queuedDesc
 }
 
 // Collect implements prometheus.Collector. It returns max(current, previous)
@@ -199,18 +200,19 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	}
 	c.mu.Unlock()
 
+	window := c.window.String()
 	for listener, hwm := range merged {
 		ch <- prometheus.MustNewConstMetric(
-			c.activeDesc,
+			activeDesc,
 			prometheus.GaugeValue,
 			float64(hwm.active),
-			listener,
+			listener, window,
 		)
 		ch <- prometheus.MustNewConstMetric(
-			c.queuedDesc,
+			queuedDesc,
 			prometheus.GaugeValue,
 			float64(hwm.queued),
-			listener,
+			listener, window,
 		)
 	}
 }
