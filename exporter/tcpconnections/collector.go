@@ -95,6 +95,9 @@ func NewCollector(interval, window time.Duration) (*Collector, error) {
 	for i := range c.buckets {
 		c.buckets[i] = make(map[string]listenerHWM)
 	}
+	if err := c.sample(); err != nil {
+		log.Printf("TCP connection sampling error: %v", err)
+	}
 	c.wg.Add(1)
 	go c.run()
 	return c, nil
@@ -103,9 +106,6 @@ func NewCollector(interval, window time.Duration) (*Collector, error) {
 // run is the background goroutine that samples netlink and rotates buckets.
 func (c *Collector) run() {
 	defer c.wg.Done()
-	if err := c.sample(); err != nil {
-		log.Printf("TCP connection sampling error: %v", err)
-	}
 	sampleTicker := time.NewTicker(c.interval)
 	rotateTicker := time.NewTicker(c.window / 2)
 	defer sampleTicker.Stop()
