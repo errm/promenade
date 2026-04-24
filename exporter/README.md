@@ -20,7 +20,7 @@ Reports `tcp_active_connections_peak` and `tcp_queued_connections_peak` — the 
 
 Rather than sampling at scrape time, the exporter polls netlink frequently and tracks the peak value seen since the last bucket rotation. This avoids missing short-lived spikes that would be invisible to a single point-in-time sample.
 
-Two buckets (current and previous) are maintained, rotating at half the window duration. On each scrape the exporter returns `max(current, previous)`, so multiple Prometheus instances in an HA setup see consistent values regardless of when they scrape.
+A ring buffer of three buckets is maintained, rotating at half the window duration. On each scrape the exporter returns the max across all buckets, guaranteeing a full window of lookback regardless of when the scrape falls relative to a rotation boundary. Multiple Prometheus instances in an HA setup see consistent values regardless of when they scrape.
 
 ## Configuration
 

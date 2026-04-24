@@ -47,21 +47,28 @@ type listenerMetrics struct {
 	queued  int
 }
 
-// Collector collects TCP connection metrics using a two-bucket high-water mark.
+// numBuckets is the number of ring-buffer buckets. Three buckets rotating at
+// window/2 guarantee a full window of lookback at any scrape time: the oldest
+// bucket covers [now-window, now-window/2], the middle [now-window/2, now],
+// and the current is accumulating. Collect returns max across all three.
+const numBuckets = 3
+
+// Collector collects TCP connection metrics using a ring-buffer high-water mark.
 // A background goroutine samples netlink every interval and advances the current
-// bucket upward. Every window/2 duration the bucket rotates: current becomes
-// previous and a fresh current starts. Collect returns max(current, previous),
-// making it safe for multiple Prometheus instances scraping at different times.
+// bucket upward. Every window/2 duration the ring advances: the oldest bucket is
+// cleared and becomes the new current. Collect returns the max across all buckets,
+// guaranteeing a full window of lookback regardless of when the scrape falls
+// relative to a rotation boundary, and consistent values for HA Prometheus setups.
 type Collector struct {
-	netlink  NetlinkDumper
-	interval time.Duration
-	window   time.Duration
-	mu       sync.Mutex
-	current    map[string]listenerHWM
-	previous   map[string]listenerHWM
-	done       chan struct{}
-	wg         sync.WaitGroup
-	closeOnce  sync.Once
+	netlink   NetlinkDumper
+	interval  time.Duration
+	window    time.Duration
+	mu        sync.Mutex
+	buckets   [numBuckets]map[string]listenerHWM
+	head      int // index of the current (most recent) bucket
+	done      chan struct{}
+	wg        sync.WaitGroup
+	closeOnce sync.Once
 }
 
 // NewCollector creates a new Collector and starts the background sampling loop.
@@ -83,9 +90,10 @@ func NewCollector(interval, window time.Duration) (*Collector, error) {
 		netlink:  nl,
 		interval: interval,
 		window:   window,
-		current:  make(map[string]listenerHWM),
-		previous: make(map[string]listenerHWM),
 		done:     make(chan struct{}),
+	}
+	for i := range c.buckets {
+		c.buckets[i] = make(map[string]listenerHWM)
 	}
 	c.wg.Add(1)
 	go c.run()
@@ -151,26 +159,27 @@ func (c *Collector) sample() error {
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	current := c.buckets[c.head]
 	for _, m := range metrics {
 		key := fmt.Sprintf("%s:%d", m.address, m.port)
-		hwm := c.current[key]
+		hwm := current[key]
 		if m.active > hwm.active {
 			hwm.active = m.active
 		}
 		if m.queued > hwm.queued {
 			hwm.queued = m.queued
 		}
-		c.current[key] = hwm
+		current[key] = hwm
 	}
 	return nil
 }
 
-// rotate moves the current bucket to previous and starts a fresh current bucket.
+// rotate advances the ring: the next slot is cleared and becomes the new current.
 func (c *Collector) rotate() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.previous = c.current
-	c.current = make(map[string]listenerHWM)
+	c.head = (c.head + 1) % numBuckets
+	c.buckets[c.head] = make(map[string]listenerHWM)
 }
 
 // Describe implements prometheus.Collector.
@@ -179,24 +188,23 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- queuedDesc
 }
 
-// Collect implements prometheus.Collector. It returns max(current, previous)
+// Collect implements prometheus.Collector. It returns the max across all buckets
 // for each listener and does not reset state, so multiple scrapers see
 // consistent values.
 func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	c.mu.Lock()
-	merged := make(map[string]listenerHWM, len(c.current)+len(c.previous))
-	for k, v := range c.previous {
-		merged[k] = v
-	}
-	for k, v := range c.current {
-		prev := merged[k]
-		if v.active > prev.active {
-			prev.active = v.active
+	merged := make(map[string]listenerHWM)
+	for _, bucket := range c.buckets {
+		for k, v := range bucket {
+			m := merged[k]
+			if v.active > m.active {
+				m.active = v.active
+			}
+			if v.queued > m.queued {
+				m.queued = v.queued
+			}
+			merged[k] = m
 		}
-		if v.queued > prev.queued {
-			prev.queued = v.queued
-		}
-		merged[k] = prev
 	}
 	c.mu.Unlock()
 

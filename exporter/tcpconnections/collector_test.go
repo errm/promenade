@@ -20,12 +20,14 @@ const testWindow = 30 * time.Second
 // pre-initialised buckets, but without starting the background goroutine.
 // Tests drive sampling and rotation directly via sample() and rotate().
 func newTestCollector(mock *mockNetlinkDumper) *Collector {
-	return &Collector{
-		netlink:  mock,
-		window:   testWindow,
-		current:  make(map[string]listenerHWM),
-		previous: make(map[string]listenerHWM),
+	c := &Collector{
+		netlink: mock,
+		window:  testWindow,
 	}
+	for i := range c.buckets {
+		c.buckets[i] = make(map[string]listenerHWM)
+	}
+	return c
 }
 
 // makeActive returns n active (non-zero inode) established connections on port.
@@ -272,13 +274,13 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 		}
 	})
 
-	t.Run("peak persists across rotation into previous bucket", func(t *testing.T) {
+	t.Run("peak persists across rotation into older buckets", func(t *testing.T) {
 		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 10)}
 		c := newTestCollector(mock)
-		requireSample(t, c)  // current: active=10
-		c.rotate()  // previous: active=10, current: empty
+		requireSample(t, c) // bucket[0]: active=10
+		c.rotate()          // head→bucket[1] (empty); bucket[0] still holds active=10
 
-		// No new samples yet — should still see the peak via previous
+		// No new samples yet — peak still visible in older bucket
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
@@ -290,17 +292,27 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
 			t.Errorf("CollectAndCompare failed: %v", err)
 		}
+
+		// Second rotation: peak is now in the oldest bucket, still visible (full window guarantee)
+		c.rotate()
+		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
+			t.Errorf("peak should still be visible after second rotation: %v", err)
+		}
 	})
 
-	t.Run("peak clears after two rotations with no activity", func(t *testing.T) {
+	t.Run("peak clears after three rotations with no activity", func(t *testing.T) {
 		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 10)}
 		c := newTestCollector(mock)
-		requireSample(t, c)  // current: active=10
-		c.rotate()  // previous: active=10, current: empty
+		requireSample(t, c) // bucket[0]: active=10
+		c.rotate()          // head→bucket[1] (empty)
 
 		mock.establishedObjects = nil
-		requireSample(t, c)  // current: active=0 (listener present, no connections)
-		c.rotate()  // previous: active=0, current: empty
+		requireSample(t, c) // bucket[1]: active=0 (listener present, no connections)
+		c.rotate()          // head→bucket[2] (empty); bucket[0] active=10 still in ring
+
+		// Peak still visible in oldest bucket
+		requireSample(t, c) // bucket[2]: active=0
+		c.rotate()          // head→bucket[0], cleared; all buckets now active=0
 
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
@@ -315,18 +327,18 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 		}
 	})
 
-	t.Run("disappeared listener still reported via previous bucket", func(t *testing.T) {
+	t.Run("disappeared listener still reported via older buckets", func(t *testing.T) {
 		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 5)}
 		c := newTestCollector(mock)
-		requireSample(t, c)  // current: active=5
-		c.rotate()  // previous: active=5, current: empty
+		requireSample(t, c) // bucket[0]: active=5
+		c.rotate()          // head→bucket[1] (empty)
 
 		// Listener disappears
 		mock.listenObjects = nil
 		mock.establishedObjects = nil
-		requireSample(t, c)  // current: empty (no listeners in netlink)
+		requireSample(t, c) // bucket[1]: empty (no listeners in netlink)
 
-		// Peak still visible via previous bucket
+		// Peak still visible in older bucket
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
@@ -339,10 +351,16 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 			t.Errorf("CollectAndCompare failed: %v", err)
 		}
 
-		// After a second rotation the listener is fully gone
+		// Second rotation: peak now in oldest bucket, still visible
+		c.rotate()
+		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
+			t.Errorf("expected peak still visible after second rotation: %v", err)
+		}
+
+		// Third rotation: oldest bucket is cleared, listener fully gone
 		c.rotate()
 		if err := testutil.CollectAndCompare(c, strings.NewReader("")); err != nil {
-			t.Errorf("expected no metrics after second rotation: %v", err)
+			t.Errorf("expected no metrics after third rotation: %v", err)
 		}
 	})
 }
