@@ -15,15 +15,19 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-const testWindow = 30 * time.Second
+// testWindow is small so that tests need few rotations to exercise expiry.
+// With rotationInterval=1s this gives int(3s/1s)+1 = 4 buckets.
+const testWindow = 3 * time.Second
 
 // newTestCollector builds a Collector with a mock netlink dumper and
 // pre-initialised buckets, but without starting the background goroutine.
 // Tests drive sampling and rotation directly via sample() and rotate().
 func newTestCollector(mock *mockNetlinkDumper) *Collector {
+	numBuckets := int(testWindow/rotationInterval) + 1
 	c := &Collector{
 		netlink: mock,
 		window:  testWindow,
+		buckets: make([]map[string]connectionCounts, numBuckets),
 		done:    make(chan struct{}),
 	}
 	for i := range c.buckets {
@@ -64,10 +68,10 @@ func TestCollector_Collect(t *testing.T) {
 			expected: `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `,
 		},
 		{
@@ -82,10 +86,10 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 			expected: `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 2
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 2
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `,
 		},
 		{
@@ -100,10 +104,10 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 			expected: `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 2
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 2
 `,
 		},
 		{
@@ -119,10 +123,10 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 2
 			expected: `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 2
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 2
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 1
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 1
 `,
 		},
 		{
@@ -138,12 +142,12 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 1
 			expected: `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 1
-tcp_active_connections_peak{listener="0.0.0.0:8080",window="30s"} 1
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 1
+tcp_active_connections_peak{listener="0.0.0.0:8080",window="3s"} 1
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
-tcp_queued_connections_peak{listener="0.0.0.0:8080",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:8080",window="3s"} 0
 `,
 		},
 		{
@@ -155,10 +159,10 @@ tcp_queued_connections_peak{listener="0.0.0.0:8080",window="30s"} 0
 			expected: `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `,
 		},
 		{
@@ -172,10 +176,10 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 			expected: `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `,
 		},
 		{
@@ -191,10 +195,10 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 			expected: `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 1
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 1
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `,
 		},
 	}
@@ -245,10 +249,10 @@ func TestCollector_HWM(t *testing.T) {
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 8
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 8
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `
 		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
 			t.Errorf("CollectAndCompare failed: %v", err)
@@ -263,10 +267,10 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 5
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 5
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `
 		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
 			t.Errorf("first scrape failed: %v", err)
@@ -280,56 +284,51 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 10)}
 		c := newTestCollector(mock)
 		requireSample(t, c) // bucket[0]: active=10
-		c.rotate()          // head→bucket[1] (empty); bucket[0] still holds active=10
 
-		// No new samples yet — peak still visible in older bucket
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 10
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 10
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `
-		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
-			t.Errorf("CollectAndCompare failed: %v", err)
-		}
-
-		// Second rotation: peak is now in the oldest bucket, still visible (full window guarantee)
-		c.rotate()
-		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
-			t.Errorf("peak should still be visible after second rotation: %v", err)
+		// Peak should survive numBuckets-1 rotations (full window guarantee)
+		for i := 1; i < len(c.buckets); i++ {
+			c.rotate()
+			if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
+				t.Errorf("peak should still be visible after rotation %d: %v", i, err)
+			}
 		}
 	})
 
-	t.Run("peak clears after three rotations with no activity", func(t *testing.T) {
+	t.Run("peak clears after numBuckets rotations with no activity", func(t *testing.T) {
 		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 10)}
 		c := newTestCollector(mock)
 		requireSample(t, c) // bucket[0]: active=10
-		c.rotate()          // head→bucket[1] (empty)
-
+		// Rotate through all remaining buckets with zero activity,
+		// then one more rotation overwrites bucket[0], clearing the peak.
 		mock.establishedObjects = nil
-		requireSample(t, c) // bucket[1]: active=0 (listener present, no connections)
-		c.rotate()          // head→bucket[2] (empty); bucket[0] active=10 still in ring
-
-		// Peak still visible in oldest bucket
-		requireSample(t, c) // bucket[2]: active=0
-		c.rotate()          // head→bucket[0], cleared; all buckets now active=0
+		for i := 1; i < len(c.buckets); i++ {
+			c.rotate()
+			requireSample(t, c) // bucket[i]: active=0
+		}
+		c.rotate() // head wraps back to bucket[0], which is cleared
 
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `
 		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
 			t.Errorf("CollectAndCompare failed: %v", err)
 		}
 	})
 
-	t.Run("disappeared listener still reported via older buckets", func(t *testing.T) {
+	t.Run("disappeared listener still reported until ring fully cycles", func(t *testing.T) {
 		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 5)}
 		c := newTestCollector(mock)
 		requireSample(t, c) // bucket[0]: active=5
@@ -340,29 +339,26 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 		mock.establishedObjects = nil
 		requireSample(t, c) // bucket[1]: empty (no listeners in netlink)
 
-		// Peak still visible in older bucket
+		// Peak still visible while bucket[0] remains in the ring
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 5
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 5
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `
-		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
-			t.Errorf("CollectAndCompare failed: %v", err)
+		for i := 2; i < len(c.buckets); i++ {
+			c.rotate()
+			if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
+				t.Errorf("expected peak still visible after rotation %d: %v", i, err)
+			}
 		}
 
-		// Second rotation: peak now in oldest bucket, still visible
-		c.rotate()
-		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
-			t.Errorf("expected peak still visible after second rotation: %v", err)
-		}
-
-		// Third rotation: oldest bucket is cleared, listener fully gone
+		// One final rotation overwrites bucket[0]; listener fully gone
 		c.rotate()
 		if err := testutil.CollectAndCompare(c, strings.NewReader("")); err != nil {
-			t.Errorf("expected no metrics after third rotation: %v", err)
+			t.Errorf("expected no metrics after ring fully cycled: %v", err)
 		}
 	})
 }
@@ -384,10 +380,10 @@ func TestCollector_SampleError(t *testing.T) {
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 5
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 5
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `
 		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
 			t.Errorf("CollectAndCompare failed: %v", err)
@@ -411,10 +407,10 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 		expected := `
 # HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
 # TYPE tcp_active_connections_peak gauge
-tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 7
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="3s"} 7
 # HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
 # TYPE tcp_queued_connections_peak gauge
-tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="3s"} 0
 `
 		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
 			t.Errorf("CollectAndCompare failed: %v", err)

@@ -39,24 +39,24 @@ type connectionCounts struct {
 	queued int
 }
 
-// numBuckets is the number of ring-buffer buckets. Three buckets rotating at
-// window/2 guarantee a full window of lookback at any scrape time: the oldest
-// bucket covers [now-window, now-window/2], the middle [now-window/2, now],
-// and the current is accumulating. Collect returns max across all three.
-const numBuckets = 3
+// rotationInterval is how often the ring buffer advances to a fresh bucket.
+// Rotating every second means the reported peak can only be stale by at most 1s
+// regardless of the configured window size.
+const rotationInterval = time.Second
 
 // Collector collects TCP connection metrics using a ring-buffer high-water mark.
 // A background goroutine samples netlink every interval and advances the current
-// bucket upward. Every window/2 duration the ring advances: the oldest bucket is
-// cleared and becomes the new current. Collect returns the max across all buckets,
-// guaranteeing a full window of lookback regardless of when the scrape falls
-// relative to a rotation boundary, and consistent values for HA Prometheus setups.
+// bucket upward. Every second the ring advances: the oldest bucket is cleared and
+// becomes the new current. The ring holds window/rotationInterval + 1 buckets so
+// that Collect always returns a max spanning a full window, regardless of when the
+// scrape falls relative to a rotation boundary. Consistent values for HA Prometheus
+// setups are guaranteed because state is never reset on scrape.
 type Collector struct {
 	netlink   NetlinkDumper
 	interval  time.Duration
 	window    time.Duration
 	mu        sync.Mutex
-	buckets   [numBuckets]map[string]connectionCounts
+	buckets   []map[string]connectionCounts
 	head      int // index of the current (most recent) bucket
 	done      chan struct{}
 	wg        sync.WaitGroup
@@ -65,23 +65,25 @@ type Collector struct {
 
 // NewCollector creates a new Collector and starts the background sampling loop.
 // interval controls how often netlink is polled. window should match your
-// Prometheus scrape interval; buckets rotate at window/2 internally so that
-// any scrape always covers at least one full rotation period.
+// Prometheus scrape interval; the ring rotates every second so the reported
+// peak is never more than 1s stale.
 func NewCollector(interval, window time.Duration) (*Collector, error) {
 	if interval <= 0 {
 		return nil, fmt.Errorf("sampling interval must be positive, got %s", interval)
 	}
-	if window/2 <= 0 {
-		return nil, fmt.Errorf("HWM window must be at least 2ns, got %s", window)
+	if window < rotationInterval {
+		return nil, fmt.Errorf("HWM window must be at least %s, got %s", rotationInterval, window)
 	}
 	nl, err := diag.Open(&diag.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("could not open netlink socket: %w", err)
 	}
+	numBuckets := int(window/rotationInterval) + 1
 	c := &Collector{
 		netlink:  nl,
 		interval: interval,
 		window:   window,
+		buckets:  make([]map[string]connectionCounts, numBuckets),
 		done:     make(chan struct{}),
 	}
 	for i := range c.buckets {
@@ -99,7 +101,7 @@ func NewCollector(interval, window time.Duration) (*Collector, error) {
 func (c *Collector) run() {
 	defer c.wg.Done()
 	sampleTicker := time.NewTicker(c.interval)
-	rotateTicker := time.NewTicker(c.window / 2)
+	rotateTicker := time.NewTicker(rotationInterval)
 	defer sampleTicker.Stop()
 	defer rotateTicker.Stop()
 	var backoff time.Duration
@@ -167,7 +169,7 @@ func (c *Collector) sample() error {
 func (c *Collector) rotate() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.head = (c.head + 1) % numBuckets
+	c.head = (c.head + 1) % len(c.buckets)
 	c.buckets[c.head] = make(map[string]connectionCounts)
 }
 
