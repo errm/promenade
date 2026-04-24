@@ -25,7 +25,7 @@ func newTestCollector(mock *mockNetlinkDumper) *Collector {
 		window:  testWindow,
 	}
 	for i := range c.buckets {
-		c.buckets[i] = make(map[string]listenerHWM)
+		c.buckets[i] = make(map[string]connectionCounts)
 	}
 	return c
 }

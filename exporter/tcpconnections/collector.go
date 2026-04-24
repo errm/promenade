@@ -33,19 +33,12 @@ type NetlinkDumper interface {
 	Close() error
 }
 
-// listenerHWM holds the high-water mark active and queued connection counts for a listener.
-type listenerHWM struct {
+// connectionCounts holds the active and queued connection counts for a listener.
+type connectionCounts struct {
 	active int
 	queued int
 }
 
-// listenerMetrics holds the active and queued request counts sampled from netlink.
-type listenerMetrics struct {
-	address string
-	port    uint16
-	active  int
-	queued  int
-}
 
 // numBuckets is the number of ring-buffer buckets. Three buckets rotating at
 // window/2 guarantee a full window of lookback at any scrape time: the oldest
@@ -64,7 +57,7 @@ type Collector struct {
 	interval  time.Duration
 	window    time.Duration
 	mu        sync.Mutex
-	buckets   [numBuckets]map[string]listenerHWM
+	buckets   [numBuckets]map[string]connectionCounts
 	head      int // index of the current (most recent) bucket
 	done      chan struct{}
 	wg        sync.WaitGroup
@@ -93,7 +86,7 @@ func NewCollector(interval, window time.Duration) (*Collector, error) {
 		done:     make(chan struct{}),
 	}
 	for i := range c.buckets {
-		c.buckets[i] = make(map[string]listenerHWM)
+		c.buckets[i] = make(map[string]connectionCounts)
 	}
 	if err := c.sample(); err != nil {
 		log.Printf("TCP connection sampling error: %v", err)
@@ -158,8 +151,7 @@ func (c *Collector) sample() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	current := c.buckets[c.head]
-	for _, m := range metrics {
-		key := fmt.Sprintf("%s:%d", m.address, m.port)
+	for key, m := range metrics {
 		hwm := current[key]
 		if m.active > hwm.active {
 			hwm.active = m.active
@@ -177,7 +169,7 @@ func (c *Collector) rotate() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.head = (c.head + 1) % numBuckets
-	c.buckets[c.head] = make(map[string]listenerHWM)
+	c.buckets[c.head] = make(map[string]connectionCounts)
 }
 
 // Describe implements prometheus.Collector.
@@ -191,7 +183,7 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 // consistent values.
 func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	c.mu.Lock()
-	merged := make(map[string]listenerHWM)
+	merged := make(map[string]connectionCounts)
 	for _, bucket := range c.buckets {
 		for k, v := range bucket {
 			m := merged[k]
@@ -238,14 +230,16 @@ func (c *Collector) getSocketStats(state uint8) ([]diag.NetObject, error) {
 }
 
 // collectMetrics collects the socket metrics from netlink.
-func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
-	listeners := make(map[uint16]*listenerMetrics)
-
+func (c *Collector) collectMetrics() (map[string]connectionCounts, error) {
 	listenObjs, err := c.getSocketStats(unix.BPF_TCP_LISTEN)
 	if err != nil {
 		return nil, fmt.Errorf("could not dump stats for listening sockets: %w", err)
 	}
 
+	// Build the set of wildcard listeners keyed by "address:port".
+	// Use a port→key map to efficiently match established connections below.
+	portKey := make(map[uint16]string)
+	listeners := make(map[string]connectionCounts)
 	for _, object := range listenObjs {
 		ipAddr, err := diag.ToNetipAddrWithFamily(unix.AF_INET, object.ID.Src)
 		if err != nil {
@@ -255,10 +249,12 @@ func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
 			continue
 		}
 		port := diag.Ntohs(object.ID.SPort)
-		if _, exists := listeners[port]; exists {
+		if _, exists := portKey[port]; exists {
 			continue
 		}
-		listeners[port] = &listenerMetrics{address: "0.0.0.0", port: port}
+		key := fmt.Sprintf("0.0.0.0:%d", port)
+		portKey[port] = key
+		listeners[key] = connectionCounts{}
 	}
 
 	establishedObjs, err := c.getSocketStats(unix.BPF_TCP_ESTABLISHED)
@@ -267,23 +263,20 @@ func (c *Collector) collectMetrics() ([]listenerMetrics, error) {
 	}
 
 	for _, object := range establishedObjs {
-		sPort := diag.Ntohs(object.ID.SPort)
-		metrics := listeners[sPort]
-		if metrics == nil {
+		key, ok := portKey[diag.Ntohs(object.ID.SPort)]
+		if !ok {
 			continue
 		}
+		hwm := listeners[key]
 		if object.INode == 0 {
-			metrics.queued++
+			hwm.queued++
 		} else {
-			metrics.active++
+			hwm.active++
 		}
+		listeners[key] = hwm
 	}
 
-	result := make([]listenerMetrics, 0, len(listeners))
-	for _, m := range listeners {
-		result = append(result, *m)
-	}
-	return result, nil
+	return listeners, nil
 }
 
 // Close stops the background sampling goroutine and closes the netlink connection.
