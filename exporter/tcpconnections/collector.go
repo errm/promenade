@@ -136,7 +136,7 @@ func nextBackoff(current time.Duration) time.Duration {
 	if current == 0 {
 		return initial
 	}
-	if next := current * 2; next < max {
+	if next := current * 2; next <= max {
 		return next
 	}
 	return max
