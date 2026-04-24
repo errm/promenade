@@ -366,6 +366,27 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 	})
 }
 
+func TestNextBackoff(t *testing.T) {
+	tests := []struct {
+		current  time.Duration
+		expected time.Duration
+	}{
+		{0, 1 * time.Second},
+		{1 * time.Second, 2 * time.Second},
+		{2 * time.Second, 4 * time.Second},
+		{4 * time.Second, 8 * time.Second},
+		{8 * time.Second, 16 * time.Second},
+		{16 * time.Second, 32 * time.Second},
+		{32 * time.Second, 60 * time.Second},
+		{60 * time.Second, 60 * time.Second}, // capped at max
+	}
+	for _, tt := range tests {
+		if got := nextBackoff(tt.current); got != tt.expected {
+			t.Errorf("nextBackoff(%s) = %s, want %s", tt.current, got, tt.expected)
+		}
+	}
+}
+
 func TestCollector_Close(t *testing.T) {
 	mock := &mockNetlinkDumper{}
 	collector := newTestCollector(mock)
