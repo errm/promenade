@@ -111,21 +111,19 @@ func (c *Collector) run() {
 	defer sampleTicker.Stop()
 	defer rotateTicker.Stop()
 	var backoff time.Duration
+	var retryAfter time.Time
 	for {
 		select {
 		case <-c.done:
 			return
 		case <-sampleTicker.C:
+			if time.Now().Before(retryAfter) {
+				continue
+			}
 			if err := c.sample(); err != nil {
 				backoff = nextBackoff(backoff)
+				retryAfter = time.Now().Add(backoff)
 				log.Printf("TCP connection sampling error (retrying in %s): %v", backoff, err)
-				select {
-				case <-time.After(backoff):
-				case <-rotateTicker.C:
-					c.rotate()
-				case <-c.done:
-					return
-				}
 			} else if backoff > 0 {
 				log.Println("TCP connection sampling recovered")
 				backoff = 0
