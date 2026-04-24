@@ -23,6 +23,7 @@ func newTestCollector(mock *mockNetlinkDumper) *Collector {
 	c := &Collector{
 		netlink: mock,
 		window:  testWindow,
+		done:    make(chan struct{}),
 	}
 	for i := range c.buckets {
 		c.buckets[i] = make(map[string]connectionCounts)

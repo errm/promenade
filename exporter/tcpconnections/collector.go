@@ -39,7 +39,6 @@ type connectionCounts struct {
 	queued int
 }
 
-
 // numBuckets is the number of ring-buffer buckets. Three buckets rotating at
 // window/2 guarantee a full window of lookback at any scrape time: the oldest
 // bucket covers [now-window, now-window/2], the middle [now-window/2, now],
@@ -268,6 +267,7 @@ func (c *Collector) collectMetrics() (map[string]connectionCounts, error) {
 			continue
 		}
 		hwm := listeners[key]
+		// If the inode is zero, the connection is queued.
 		if object.INode == 0 {
 			hwm.queued++
 		} else {
@@ -284,13 +284,9 @@ func (c *Collector) collectMetrics() (map[string]connectionCounts, error) {
 func (c *Collector) Close() error {
 	var err error
 	c.closeOnce.Do(func() {
-		if c.done != nil {
-			close(c.done)
-			c.wg.Wait()
-		}
-		if c.netlink != nil {
-			err = c.netlink.Close()
-		}
+		close(c.done)
+		c.wg.Wait()
+		err = c.netlink.Close()
 	})
 	return err
 }
