@@ -35,11 +35,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func() {
-		if err = serverMetricsCollector.Close(); err != nil {
-			log.Println(err)
-		}
-	}()
 
 	reg.MustRegister(
 		serverMetricsCollector,
@@ -49,5 +44,9 @@ func main() {
 	addr := ":" + strconv.Itoa(cfg.Port)
 	log.Printf("Starting metrics server on %s", addr)
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
-	log.Fatal(http.ListenAndServe(addr, nil))
+	serveErr := http.ListenAndServe(addr, nil)
+	if closeErr := serverMetricsCollector.Close(); closeErr != nil {
+		log.Println(closeErr)
+	}
+	log.Fatal(serveErr)
 }
