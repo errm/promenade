@@ -4,6 +4,7 @@
 package tcpconnections
 
 import (
+	"fmt"
 	"net/netip"
 	"strings"
 	"testing"
@@ -366,6 +367,61 @@ tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
 	})
 }
 
+func TestCollector_SampleError(t *testing.T) {
+	listener := []diag.NetObject{makeNetObject("0.0.0.0", 3000, unix.BPF_TCP_LISTEN, 0)}
+
+	t.Run("error leaves bucket unchanged", func(t *testing.T) {
+		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 5)}
+		c := newTestCollector(mock)
+		requireSample(t, c) // bucket: active=5
+
+		mock.dumpError = fmt.Errorf("netlink unavailable")
+		if err := c.sample(); err == nil {
+			t.Fatal("expected error from sample(), got nil")
+		}
+
+		// Bucket should still reflect the last successful sample
+		expected := `
+# HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
+# TYPE tcp_active_connections_peak gauge
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 5
+# HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
+# TYPE tcp_queued_connections_peak gauge
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+`
+		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
+			t.Errorf("CollectAndCompare failed: %v", err)
+		}
+	})
+
+	t.Run("recovery after error resumes updating bucket", func(t *testing.T) {
+		mock := &mockNetlinkDumper{listenObjects: listener, establishedObjects: makeActive(3000, 3)}
+		c := newTestCollector(mock)
+		requireSample(t, c) // bucket: active=3
+
+		mock.dumpError = fmt.Errorf("netlink unavailable")
+		if err := c.sample(); err == nil {
+			t.Fatal("expected error from sample(), got nil")
+		}
+
+		mock.dumpError = nil
+		mock.establishedObjects = makeActive(3000, 7)
+		requireSample(t, c) // bucket: active=7 (new peak)
+
+		expected := `
+# HELP tcp_active_connections_peak Peak number of active TCP connections in the configured high-water mark window.
+# TYPE tcp_active_connections_peak gauge
+tcp_active_connections_peak{listener="0.0.0.0:3000",window="30s"} 7
+# HELP tcp_queued_connections_peak Peak number of queued TCP connections in the configured high-water mark window.
+# TYPE tcp_queued_connections_peak gauge
+tcp_queued_connections_peak{listener="0.0.0.0:3000",window="30s"} 0
+`
+		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
+			t.Errorf("CollectAndCompare failed: %v", err)
+		}
+	})
+}
+
 func TestNextBackoff(t *testing.T) {
 	tests := []struct {
 		current  time.Duration
@@ -399,10 +455,14 @@ func TestCollector_Close(t *testing.T) {
 type mockNetlinkDumper struct {
 	listenObjects      []diag.NetObject
 	establishedObjects []diag.NetObject
+	dumpError          error
 	closeError         error
 }
 
 func (m *mockNetlinkDumper) NetDump(opt *diag.NetOption) ([]diag.NetObject, error) {
+	if m.dumpError != nil {
+		return nil, m.dumpError
+	}
 	if opt.State&(1<<unix.BPF_TCP_LISTEN) != 0 {
 		return m.listenObjects, nil
 	}
