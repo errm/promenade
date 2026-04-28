@@ -1,3 +1,3 @@
 module Promenade
-  VERSION = "0.12.18".freeze
+  VERSION = "0.12.19".freeze
 end
