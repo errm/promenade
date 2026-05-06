@@ -154,7 +154,8 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 func groupEntries(entries iter.Seq[Entry]) iter.Seq[[]Entry] {
 	groups := make(map[string][]Entry)
 	for entry := range entries {
-		groups[entry.groupKey()] = append(groups[entry.groupKey()], entry)
+		key := entry.groupKey()
+		groups[key] = append(groups[key], entry)
 	}
 	return maps.Values(groups)
 }
@@ -342,7 +343,7 @@ func parseEntries(info *FileInfo) ([]Entry, error) {
 			return nil, fmt.Errorf("corrupted entry at pos %d", pos-4)
 		}
 
-		jsonStr := string(info.Data[pos : pos+int(encodedLen)])
+		jsonBytes := info.Data[pos : pos+int(encodedLen)]
 		pos += int(encodedLen)
 
 		padding := paddingLen(int(encodedLen))
@@ -362,7 +363,7 @@ func parseEntries(info *FileInfo) ([]Entry, error) {
 		var parts []interface{}
 		var familyName, metricName string
 		labels := make(map[string]string)
-		if err := json.Unmarshal([]byte(jsonStr), &parts); err == nil && len(parts) >= 4 {
+		if err := json.Unmarshal(jsonBytes, &parts); err == nil && len(parts) >= 4 {
 			familyName, _ = parts[0].(string)
 			metricName, _ = parts[1].(string)
 			labelList, _ := parts[2].([]interface{})
@@ -404,7 +405,8 @@ func mergeEntries(allEntries []Entry) iter.Seq[Entry] {
 	merged := make(map[string]Entry)
 
 	for _, entry := range allEntries {
-		if existing, ok := merged[entry.mergeKey()]; ok {
+		key := entry.mergeKey()
+		if existing, ok := merged[key]; ok {
 			// Merge values based on type and multiprocess mode
 			if existing.Type == "gauge" {
 				switch existing.MultiprocessMode {
@@ -424,9 +426,9 @@ func mergeEntries(allEntries []Entry) iter.Seq[Entry] {
 			} else {
 				existing.Value += entry.Value
 			}
-			merged[entry.mergeKey()] = existing
+			merged[key] = existing
 		} else {
-			merged[entry.mergeKey()] = entry
+			merged[key] = entry
 		}
 	}
 
