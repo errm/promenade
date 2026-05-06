@@ -16,7 +16,7 @@ task :clean do
 end
 
 namespace :acceptance do
-  task prepare: [:build] do
+  task :update_gem do
     FileUtils.rm_rf "example/gem/promenade"
     gem = Dir.glob("pkg/promenade-*.gem").max_by { |v| Gem::Version.create((/\d+\.\d+\.\d+/.match v)[0]) }
     sh "gem unpack #{gem} --target=example/gem"
@@ -26,7 +26,9 @@ namespace :acceptance do
     Dir.chdir("example") do
       sh "bundle install"
     end
+  end
 
+  task prepare: %i(update_gem build) do
     sh "docker compose up --build --detach"
 
     # wait for server to be ready
@@ -73,7 +75,7 @@ end
 task spec: :clean
 
 namespace :release do
-  task :update do
+  task update: "acceptance:update_gem" do
     require_relative "lib/promenade/version"
 
     sh "git add lib/promenade/version.rb"
