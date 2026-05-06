@@ -73,7 +73,7 @@ end
 task spec: :clean
 
 namespace :release do
-  task prepare: :default do
+  task :update do
     require_relative "lib/promenade/version"
 
     sh "git add lib/promenade/version.rb"
@@ -90,7 +90,9 @@ namespace :release do
       sh "bundle install --gemfile=#{gemfile}"
       sh "git add #{gemfile}.lock"
     end
+  end
 
+  task prepare: %i(update default) do
     puts "Ready to release v#{Promenade::VERSION}? y/n"
 
     expected_answer = %w(y n)
