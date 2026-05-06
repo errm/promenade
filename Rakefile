@@ -16,7 +16,7 @@ task :clean do
 end
 
 namespace :acceptance do
-  task :update_gem do
+  task update_gem: :build do
     FileUtils.rm_rf "example/gem/promenade"
     gem = Dir.glob("pkg/promenade-*.gem").max_by { |v| Gem::Version.create((/\d+\.\d+\.\d+/.match v)[0]) }
     sh "gem unpack #{gem} --target=example/gem"
@@ -28,7 +28,7 @@ namespace :acceptance do
     end
   end
 
-  task prepare: %i(update_gem build) do
+  task prepare: :update_gem do
     sh "docker compose up --build --detach"
 
     # wait for server to be ready
