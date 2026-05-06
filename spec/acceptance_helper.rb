@@ -1,5 +1,6 @@
 require "spec_helper"
 require "net/http"
+require "rspec/wait"
 require "uri"
 
 SimpleCov.minimum_coverage 0
